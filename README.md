@@ -122,7 +122,7 @@ library(shiny)
 runApp('/path/to/the/ScRDAVis-master', launch.browser = TRUE)
 ```
 Replace /path/to/the/ScRDAVis-master with the actual path to the downloaded folder
-### Usage
+## Usage
 
 A detailed user manual is available under the "Manual" tab at: [https://www.gudalab-rtools.net/ScRDAVis](https://www.gudalab-rtools.net/ScRDAVis)
 
@@ -143,6 +143,6 @@ These datasets are ideal for:
 
 Users can download these datasets directly from the provided links and use them to explore ScRDAVis.
 
-### Tested Platforms
+## Tested Platforms
 
 This application was tested on: Linux (Red Hat and Ubuntu) and Windows (10 and 11)
