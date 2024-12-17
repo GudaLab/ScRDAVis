@@ -126,6 +126,23 @@ Replace /path/to/the/ScRDAVis-master with the actual path to the downloaded fold
 
 A detailed user manual is available under the "Manual" tab at: [https://www.gudalab-rtools.net/ScRDAVis](https://www.gudalab-rtools.net/ScRDAVis)
 
+## Example Datasets
+
+To ensure seamless analysis and reproducibility, **ScRDAVis** includes one reference dataset for each input format. These datasets, sourced from **NCBI**, have been pre-tested with the tool and allow users to explore its functionalities and understand the analysis workflow effectively.
+
+### Available Datasets:
+- **H5 File**: [GSE271107](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE271107)
+- **Matrix Files**: [GSE277476](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE277476)
+- **Seurat Object**: [GSE250488](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE250488)
+- **Matrix Count File**: [GSE155953](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE155953)
+
+These datasets are ideal for:
+- Demonstrating ScRDAVis functionalities.
+- Familiarizing users with the tool's analysis workflow.
+- Testing the application in different input formats.
+
+Users can download these datasets directly from the provided links and use them to explore ScRDAVis.
+
 ### Tested Platforms
 
 This application was tested on: Linux (Red Hat and Ubuntu) and Windows (10 and 11)
