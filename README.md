@@ -102,3 +102,27 @@ github_packages <- list(
 install_cran_packages(cran_packages)
 install_bioc_packages(bioc_packages)
 install_github_packages(github_packages)
+
+###Start the App
+
+    Open an R session in RStudio.
+    Run the following commands to start the application:
+
+library(shiny)
+shiny::runGitHub('ScRDAVis', 'GudaLab')
+
+Alternatively, download the source code from GitHub and run:
+
+library(shiny)
+runApp('/path/to/the/ScRDAVis-master', launch.browser = TRUE)
+
+###Usage
+
+A detailed user manual is available under the "Manual" tab at:
+https://www.gudalab-rtools.net/ScRDAVis
+###Tested Platforms
+
+This application was tested on:
+
+    Linux (Red Hat and Ubuntu)
+    Windows (10 and 11)
