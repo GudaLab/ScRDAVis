@@ -124,8 +124,8 @@ runApp('/path/to/the/ScRDAVis-master', launch.browser = TRUE)
 Replace /path/to/the/ScRDAVis-master with the actual path to the downloaded folder
 ###Usage
 
-A detailed user manual is available under the "Manual" tab at:
-https://www.gudalab-rtools.net/ScRDAVis
+A detailed user manual is available under the "Manual" tab at: **[https://www.gudalab-rtools.net/ScRDAVis](https://www.gudalab-rtools.net/ScRDAVis)**
+
 ###Tested Platforms
 
 This application was tested on:
