@@ -103,13 +103,18 @@ install_cran_packages(cran_packages)
 install_bioc_packages(bioc_packages)
 install_github_packages(github_packages)
 
-###Start the App
+## Start the App
 
-    Open an R session in RStudio.
-    Run the following commands to start the application:
+To launch ScRDAVis, follow one of these methods:
 
+### Option 1: Run Directly from GitHub
+1. Open an R session in **RStudio**.
+2. Execute the following lines of code:
+
+```R
 library(shiny)
 shiny::runGitHub('ScRDAVis', 'GudaLab')
+
 
 Alternatively, download the source code from GitHub and run:
 
