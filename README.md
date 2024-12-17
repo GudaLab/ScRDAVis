@@ -116,11 +116,12 @@ library(shiny)
 shiny::runGitHub('ScRDAVis', 'GudaLab')
 ```
 
-Alternatively, download the source code from GitHub and run:
+Option 2: Download the source code from GitHub and run:
 ```
 library(shiny)
 runApp('/path/to/the/ScRDAVis-master', launch.browser = TRUE)
 ```
+Replace /path/to/the/ScRDAVis-master with the actual path to the downloaded folder
 ###Usage
 
 A detailed user manual is available under the "Manual" tab at:
