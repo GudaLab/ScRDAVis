@@ -102,7 +102,7 @@ github_packages <- list(
 install_cran_packages(cran_packages)
 install_bioc_packages(bioc_packages)
 install_github_packages(github_packages)
-
+```
 ## Start the App
 
 To launch ScRDAVis, follow one of these methods:
