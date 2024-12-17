@@ -107,7 +107,7 @@ install_github_packages(github_packages)
 
 To launch ScRDAVis, follow one of these methods:
 
-### Option 1: Run Directly from GitHub
+#### Option 1: Run Directly from GitHub
 1. Open an R session in **RStudio**.
 2. Execute the following lines of code:
 
@@ -116,7 +116,7 @@ library(shiny)
 shiny::runGitHub('ScRDAVis', 'GudaLab')
 ```
 
-Option 2: Download the source code from GitHub and run:
+#### Option 2: Download the source code from GitHub and run:
 ```
 library(shiny)
 runApp('/path/to/the/ScRDAVis-master', launch.browser = TRUE)
