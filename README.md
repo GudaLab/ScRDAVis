@@ -114,13 +114,13 @@ To launch ScRDAVis, follow one of these methods:
 ```R
 library(shiny)
 shiny::runGitHub('ScRDAVis', 'GudaLab')
-
+```
 
 Alternatively, download the source code from GitHub and run:
-
+```
 library(shiny)
 runApp('/path/to/the/ScRDAVis-master', launch.browser = TRUE)
-
+```
 ###Usage
 
 A detailed user manual is available under the "Manual" tab at:
