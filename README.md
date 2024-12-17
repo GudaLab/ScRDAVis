@@ -122,13 +122,10 @@ library(shiny)
 runApp('/path/to/the/ScRDAVis-master', launch.browser = TRUE)
 ```
 Replace /path/to/the/ScRDAVis-master with the actual path to the downloaded folder
-###Usage
+### Usage
 
-A detailed user manual is available under the "Manual" tab at: **[https://www.gudalab-rtools.net/ScRDAVis](https://www.gudalab-rtools.net/ScRDAVis)**
+A detailed user manual is available under the "Manual" tab at: [https://www.gudalab-rtools.net/ScRDAVis](https://www.gudalab-rtools.net/ScRDAVis)
 
-###Tested Platforms
+### Tested Platforms
 
-This application was tested on:
-
-    Linux (Red Hat and Ubuntu)
-    Windows (10 and 11)
+This application was tested on: Linux (Red Hat and Ubuntu) and Windows (10 and 11)
