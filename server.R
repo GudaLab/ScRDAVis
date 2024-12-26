@@ -1884,9 +1884,9 @@ server <- function(input, output, session) {
   
   observeEvent(input$download_m_celltype1_plot, {
     showModal(modalDialog(
-      title = strong("Download Heatmap"),
+      title = strong("Download Celltype"),
       numericInput("m_celltype1_plot_height", label = h5("Figure height (upto 49 inces)"), value = 8, width = "300px"),
-      numericInput("m_celltype1_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
+      numericInput("m_celltype1_plot_width", label = h5("Figure width (upto 49 inces)"), value = 16, width = "300px"),
       numericInput("m_celltype1_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
       selectInput("m_celltype1_plot_type", label = "Image format", choices = list("JPG" = ".jpg", "TIFF" =".tiff", "PDF" = ".pdf",  "SVG" = ".svg", "BMP" = ".bmp", "EPS" = ".eps", "PS" = ".ps"), selected = ".jpg"),
       downloadBttn("m_celltype1_plot_downloadoutput", "Download"),
@@ -2180,7 +2180,8 @@ server <- function(input, output, session) {
                                                                  options = list(
                                                                    scrollX = TRUE,
                                                                    pageLength = 10,
-                                                                   bFilter=0
+                                                                   dom = "Blfrtip"
+                                                                   #bFilter=0
                                                                  ),rownames= FALSE, selection = "none"))
   
   output$download_m_conditionbased1_table <- downloadHandler(
@@ -3280,7 +3281,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$download_m_subclustering_celltype1_plot, {
     showModal(modalDialog(
-      title = strong("Download Heatmap"),
+      title = strong("Download Celltype"),
       numericInput("m_subclustering_celltype1_plot_height", label = h5("Figure height (upto 49 inces)"), value = 8, width = "300px"),
       numericInput("m_subclustering_celltype1_plot_width", label = h5("Figure width (upto 49 inces)"), value = 16, width = "300px"),
       numericInput("m_subclustering_celltype1_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
@@ -3576,7 +3577,8 @@ server <- function(input, output, session) {
                                                                                options = list(
                                                                                  scrollX = TRUE,
                                                                                  pageLength = 10,
-                                                                                 bFilter=0
+                                                                                 dom = "Blfrtip"
+                                                                                 #bFilter=0
                                                                                ),rownames= FALSE, selection = "none"))
   
   output$download_m_subclustering_conditionbased1_table <- downloadHandler(
@@ -3640,27 +3642,27 @@ server <- function(input, output, session) {
     datainput_single_multiple_sample_cccn_level()[1]
   })
   
-  observeEvent(input$download_s_cccn1_plot, {
-    showModal(modalDialog(
-      title = strong("Download plot"),
-      numericInput("s_cccn1_plot_height", label = h5("Figure height (upto 49 inces)"), value = 8, width = "300px"),
-      numericInput("s_cccn1_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
-      numericInput("s_cccn1_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
-      selectInput("s_cccn1_plot_type", label = "Image format", choices = list("JPG" = ".jpg", "TIFF" =".tiff", "PDF" = ".pdf",  "SVG" = ".svg", "BMP" = ".bmp", "EPS" = ".eps", "PS" = ".ps"), selected = ".jpg"),
-      downloadBttn("s_cccn1_plot_downloadoutput", "Download"),
-      size = "s",
-      easyClose = TRUE,
-      #footer = NULL
-    ))
-  })
-  output$s_cccn1_plot_downloadoutput<- downloadHandler(
-    filename = function(){
-      paste("Cluster_based_correlation_matrix_plot",  input$s_cccn1_plot_type, sep="")
-    },
-    content = function(file){
-      ggsave(file,plot = datainput_single_multiple_sample_cccn_level()[[1]], width = input$s_cccn1_plot_width, height = input$s_cccn1_plot_height, dpi = input$s_cccn1_plot_dpi, units = "in")
-    }
-  )
+  # observeEvent(input$download_s_cccn1_plot, {
+  #   showModal(modalDialog(
+  #     title = strong("Download plot"),
+  #     numericInput("s_cccn1_plot_height", label = h5("Figure height (upto 49 inces)"), value = 8, width = "300px"),
+  #     numericInput("s_cccn1_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
+  #     numericInput("s_cccn1_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
+  #     selectInput("s_cccn1_plot_type", label = "Image format", choices = list("JPG" = ".jpg", "TIFF" =".tiff", "PDF" = ".pdf",  "SVG" = ".svg", "BMP" = ".bmp", "EPS" = ".eps", "PS" = ".ps"), selected = ".jpg"),
+  #     downloadBttn("s_cccn1_plot_downloadoutput", "Download"),
+  #     size = "s",
+  #     easyClose = TRUE,
+  #     #footer = NULL
+  #   ))
+  # })
+  # output$s_cccn1_plot_downloadoutput<- downloadHandler(
+  #   filename = function(){
+  #     paste("Cluster_based_correlation_matrix_plot",  input$s_cccn1_plot_type, sep="")
+  #   },
+  #   content = function(file){
+  #     ggsave(file,plot = datainput_single_multiple_sample_cccn_level()[[1]], width = input$s_cccn1_plot_width, height = input$s_cccn1_plot_height, dpi = input$s_cccn1_plot_dpi, units = "in")
+  #   }
+  # )
   
   
   output$s_cccn2_plot<-renderPlot({

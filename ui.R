@@ -84,7 +84,7 @@ shinyUI(
         <hr>
         <h3> Launch ScRDAVis using R and GitHub: </h3>
         <p> ScRDAVis were deposited under the GitHub repository: <a href='https://www.gudalab-rtools.net/ScRDAVis'>https://www.gudalab-rtools.net/ScRDAVis</a><br>
-        Before running the app, users must have the following versions installed: R (>= 4.4.1), RStudio (>= 2024.09.0), Bioconductor (>= 3.19) and Shiny (>= 1.9.1) (Tested with this version).<br>
+        Before running the app, users must have the following versions installed: R (>= 4.4.2), RStudio (>= 2024.12.0), Bioconductor (>= 3.20) and Shiny (>= 1.10.0) (Tested with this version).<br>
         Note: ScRDAVis has been tested with these versions. If users are running an older version of R, they may encounter errors during package installation. Therefore, it is recommended to update R to the latest version first.<br>
        Once R is open in the command line or in RStudio, users should run the following command in R to install the shiny package.<br><br></p>
           
@@ -1393,7 +1393,7 @@ tabPanel(
     box(id = "s_cccn_box2",status = "warning", width=12,
         
         h3("Cluster-based correlation matrix plot"),
-        actionBttn("download_s_cccn1_plot", "Download plot", style = "unite",color = "primary", icon = icon("download")), 
+        # actionBttn("download_s_cccn1_plot", "Download plot", style = "unite",color = "primary", icon = icon("download")), 
         withSpinner(plotOutput("s_cccn1_plot", height = "600px")),
         h3("Cluster-based Correlation Network plot"),
         actionBttn("download_s_cccn2_plot", "Download plot", style = "unite",color = "primary", icon = icon("download")), 
