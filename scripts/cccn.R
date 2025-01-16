@@ -65,6 +65,7 @@ datainput_single_multiple_sample_cccn<- function(index_multiple_sample_cccn_inpu
   pc <-  genesorteR::plotCorrelationHeat(sg, markers = hvg, corMethod=index_s_cccn3, outs = TRUE)$corr
   pc1 <-  as.data.frame(pc)
   plots901 <- pheatmap(pc, main = "Correlation Heatmap", display_numbers = TRUE, number_color = "black", fontsize_number = 8)
+  plots903 <- as.ggplot(plots901)
   #set diagonal entries to 0 (network lingo: no self-loops)
   diag(pc) = 0
   #set negative entries to 0 (if two clusters' correlation is below 0.1, they are not connected. You can experiment with different cutoffs.)
@@ -88,7 +89,7 @@ datainput_single_multiple_sample_cccn<- function(index_multiple_sample_cccn_inpu
     geom_node_text(aes(label = name), repel=TRUE) +
     theme(panel.background = element_blank())
   
-  return(list(plot1 = plots901, plot2 = plots902, data1=pc1)) 
+  return(list(plot1 = plots903, plot2 = plots902, data1=pc1)) 
   
 }
   
