@@ -1599,7 +1599,7 @@ server <- function(input, output, session) {
   
   output$download_m_doublet2_table <- downloadHandler(
     filename = function() {
-      paste("Number_of_cell_after_", input$m_doublet2, '.csv', sep='') },
+      paste("Number_of_cell_after_cell_clusters", input$m_doublet2, '.csv', sep='') },
     content = function(file){
       write.csv(datainput_multiple_doublet2_level()[[6]], file)
     }
@@ -1614,7 +1614,7 @@ server <- function(input, output, session) {
   
   output$download_m_doublet3_table <- downloadHandler(
     filename = function() {
-      paste("Number_of_cell_after_", input$m_doublet2, '.csv', sep='') },
+      paste("Number_of_cell_after_clusters_based_on_conditions", input$m_doublet2, '.csv', sep='') },
     content = function(file){
       write.csv(datainput_multiple_doublet2_level()[[7]], file)
     }
@@ -1629,7 +1629,7 @@ server <- function(input, output, session) {
   
   output$download_m_doublet4_table <- downloadHandler(
     filename = function() {
-      paste("Number_of_cell_after_", input$m_doublet2, '.csv', sep='') },
+      paste("Number_of_cell_after_clusters_based_on_samples", input$m_doublet2, '.csv', sep='') },
     content = function(file){
       write.csv(datainput_multiple_doublet2_level()[[8]], file)
     }
@@ -2186,7 +2186,7 @@ server <- function(input, output, session) {
   
   output$download_m_conditionbased1_table <- downloadHandler(
     filename = function() { 
-      paste("Top_or_selected_Cell_counts_proportion", '.csv', sep='') },
+      paste("Differentially_expressed genes_sample_based", '.csv', sep='') },
     content = function(file){
       write.csv(datainput_multiple_conditionbased_level()[[2]], file)
     }
@@ -3583,7 +3583,7 @@ server <- function(input, output, session) {
   
   output$download_m_subclustering_conditionbased1_table <- downloadHandler(
     filename = function() { 
-      paste("Top_or_selected_Cell_counts_proportion", '.csv', sep='') },
+      paste("Differentially_expressed genes_sample_based", '.csv', sep='') },
     content = function(file){
       write.csv(datainput_subclustering_multiple_conditionbased_level()[[2]], file)
     }
@@ -3642,27 +3642,27 @@ server <- function(input, output, session) {
     datainput_single_multiple_sample_cccn_level()[1]
   })
   
-  # observeEvent(input$download_s_cccn1_plot, {
-  #   showModal(modalDialog(
-  #     title = strong("Download plot"),
-  #     numericInput("s_cccn1_plot_height", label = h5("Figure height (upto 49 inces)"), value = 8, width = "300px"),
-  #     numericInput("s_cccn1_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
-  #     numericInput("s_cccn1_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
-  #     selectInput("s_cccn1_plot_type", label = "Image format", choices = list("JPG" = ".jpg", "TIFF" =".tiff", "PDF" = ".pdf",  "SVG" = ".svg", "BMP" = ".bmp", "EPS" = ".eps", "PS" = ".ps"), selected = ".jpg"),
-  #     downloadBttn("s_cccn1_plot_downloadoutput", "Download"),
-  #     size = "s",
-  #     easyClose = TRUE,
-  #     #footer = NULL
-  #   ))
-  # })
-  # output$s_cccn1_plot_downloadoutput<- downloadHandler(
-  #   filename = function(){
-  #     paste("Cluster_based_correlation_matrix_plot",  input$s_cccn1_plot_type, sep="")
-  #   },
-  #   content = function(file){
-  #     ggsave(file,plot = datainput_single_multiple_sample_cccn_level()[[1]], width = input$s_cccn1_plot_width, height = input$s_cccn1_plot_height, dpi = input$s_cccn1_plot_dpi, units = "in")
-  #   }
-  # )
+  observeEvent(input$download_s_cccn1_plot, {
+    showModal(modalDialog(
+      title = strong("Download plot"),
+      numericInput("s_cccn1_plot_height", label = h5("Figure height (upto 49 inces)"), value = 8, width = "300px"),
+      numericInput("s_cccn1_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
+      numericInput("s_cccn1_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
+      selectInput("s_cccn1_plot_type", label = "Image format", choices = list("JPG" = ".jpg", "TIFF" =".tiff", "PDF" = ".pdf",  "SVG" = ".svg", "BMP" = ".bmp", "EPS" = ".eps", "PS" = ".ps"), selected = ".jpg"),
+      downloadBttn("s_cccn1_plot_downloadoutput", "Download"),
+      size = "s",
+      easyClose = TRUE,
+      #footer = NULL
+    ))
+  })
+  output$s_cccn1_plot_downloadoutput<- downloadHandler(
+    filename = function(){
+      paste("Cluster_based_correlation_matrix_plot",  input$s_cccn1_plot_type, sep="")
+    },
+    content = function(file){
+      ggsave(file,plot = datainput_single_multiple_sample_cccn_level()[[1]], width = input$s_cccn1_plot_width, height = input$s_cccn1_plot_height, dpi = input$s_cccn1_plot_dpi, units = "in")
+    }
+  )
   
   
   output$s_cccn2_plot<-renderPlot({

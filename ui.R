@@ -1393,7 +1393,7 @@ tabPanel(
     box(id = "s_cccn_box2",status = "warning", width=12,
         
         h3("Cluster-based correlation matrix plot"),
-        # actionBttn("download_s_cccn1_plot", "Download plot", style = "unite",color = "primary", icon = icon("download")), 
+        actionBttn("download_s_cccn1_plot", "Download plot", style = "unite",color = "primary", icon = icon("download")), 
         withSpinner(plotOutput("s_cccn1_plot", height = "600px")),
         h3("Cluster-based Correlation Network plot"),
         actionBttn("download_s_cccn2_plot", "Download plot", style = "unite",color = "primary", icon = icon("download")), 
