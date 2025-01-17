@@ -61,6 +61,16 @@ else if (index_multiple_sample_format == "matrix_count")
   multiple_list <- SplitObject(multiple_list_merged, split.by = "orig.ident")
 }
 
+else if (index_multiple_sample_format == "exampledata")
+{
+  index_multiple_sample_file<- "www/example_data/example_data.RDS"
+  index_multiple_sample_file_names <- "Example data to test the tool (C1_vs_P1 from GSE266873)"
+  multiple_list_merged <- readRDS(index_multiple_sample_file)
+  table1 <- table(multiple_list_merged$orig.ident) %>% as.data.frame 
+  colnames(table1) <- c("Sample names", "Cell counts")
+  multiple_list <- SplitObject(multiple_list_merged, split.by = "orig.ident")
+}
+
 multiple_list_merged[["percent.mt"]] <- PercentageFeatureSet(multiple_list_merged, pattern = "^MT-")
 
 plots1 <- VlnPlot(multiple_list_merged, features = "nFeature_RNA", ncol = 1)
