@@ -89,6 +89,12 @@ server <- function(input, output, session) {
       shinyjs::hide("multiple_sample_file_rds")
       shinyjs::show("multiple_sample_file_txt")
     }
+    else if (input$multiple_sample_format == "exampledata") {
+      shinyjs::hide("multiple_sample_file")
+      shinyjs::hide("multiple_sample_file_mfb")
+      shinyjs::hide("multiple_sample_file_rds")
+      shinyjs::hide("multiple_sample_file_txt")
+    }
     
   })
   
@@ -559,7 +565,15 @@ server <- function(input, output, session) {
       ext <- tools::file_ext(input$multiple_sample_file_txt)
       req(input$multiple_sample_file_txt)
       }
-    
+    # else if (input$multiple_sample_format == "exampledata") {
+    #   # Load example data
+    #   upload_multiple_sample_file <- "www/example_data/example_data.RDS"
+    #   upload_multiple_sample_file <- input$multiple_sample_file_rds
+    #   upload_multiple_sample_file_names <- input$multiple_sample_file_rds$name
+    #   type=input$multiple_sample_format
+    #   ext <- tools::file_ext(input$multiple_sample_file_rds)
+    #   req(input$multiple_sample_file_rds)
+    # }
     
     
     source("scripts/multiple_file_upload.R")
@@ -656,7 +670,7 @@ server <- function(input, output, session) {
       paste("seuart_object_before_qc.RDS")
     },
     content = function(file){
-      saveRDS(datainput_multiple_sample_level()[[5]], file= file)
+      saveRDS(datainput_multiple_sample_level()[[5]], file= file, compress = TRUE)
     }
   )
   
@@ -928,7 +942,7 @@ server <- function(input, output, session) {
       paste("multiple_sample_seuart_object_after_qc.RDS")
     },
     content = function(file){
-      saveRDS(datainput_multiple_qc_filter_level()[[7]], file= file)
+      saveRDS(datainput_multiple_qc_filter_level()[[7]], file= file, compress = TRUE)
     }
   )
   
@@ -1070,7 +1084,7 @@ server <- function(input, output, session) {
       paste("multiple_sample_seuart_object_after_normalization.RDS")
     },
     content = function(file){
-      saveRDS(datainput_multiple_normalization_pca_level()[[5]], file= file)
+      saveRDS(datainput_multiple_normalization_pca_level()[[5]], file= file, compress = TRUE)
     }
   )
   
@@ -1295,7 +1309,7 @@ server <- function(input, output, session) {
       paste("multiple_sample_seuart_object_after_clustering.RDS")
     },
     content = function(file){
-      saveRDS(datainput_multiple_clustering_level()[[10]], file= file)
+      saveRDS(datainput_multiple_clustering_level()[[10]], file= file, compress = TRUE)
     }
   )
   
@@ -1682,7 +1696,7 @@ server <- function(input, output, session) {
       paste("multiple_sample_seuart_object_after_doublet_removal.RDS")
     },
     content = function(file){
-      saveRDS(datainput_multiple_doublet2_level()[[10]], file= file)
+      saveRDS(datainput_multiple_doublet2_level()[[10]], file= file, compress = TRUE)
     }
   )
   
@@ -1817,7 +1831,7 @@ server <- function(input, output, session) {
       paste("multiple_sample_seuart_object_after_marker_identification.RDS")
     },
     content = function(file){
-      saveRDS(datainput_multiple_marker_level()[[2]], file= file)
+      saveRDS(datainput_multiple_marker_level()[[2]], file= file, compress = TRUE)
     }
   )
   
@@ -1981,7 +1995,7 @@ server <- function(input, output, session) {
       paste("multiple_sample_seuart_object_after_celltypes.RDS")
     },
     content = function(file){
-      saveRDS(datainput_multiple_celltype_level()[[1]], file= file)
+      saveRDS(datainput_multiple_celltype_level()[[1]], file= file, compress = TRUE)
     }
   )
   #####################################link to next tab###########################     
@@ -1994,43 +2008,89 @@ server <- function(input, output, session) {
   ###################################Tab1.8###############################  
   ###########################Cluster-based plots####################### 
   observe({
-    if(input$m_clusterbased1 == "gene_name_list"){
+    if (input$m_clusterbased1 == "gene_name_list") {
       shinyjs::show("m_clusterbased2")
-    }
-    else {
+    } else {
       shinyjs::hide("m_clusterbased2")
-    }
-  })  
-  
-  observeEvent(input$multiple_sample_clusterbased, {
-    if(input$m_clusterbased4 ==  "seurat_clusters"){
-      shinyjs::show("m_clusterbased_box3")
-    }
-    else {
-      shinyjs::hide("m_clusterbased_box3")
-    }
-  })  
-  
-  observe({
-    if(input$m_clusterbased3 ==  "RidgePlot"){
-      shinyjs::hide("m_clusterbased5")
-    }
-    else {
-      shinyjs::show("m_clusterbased5")
     }
   })
   
-  observeEvent(input$multiple_sample_clusterbased,{
+  observeEvent(input$multiple_sample_clusterbased, {
+    if (input$m_clusterbased4 == "seurat_clusters") {
+      shinyjs::show("m_clusterbased_box3")
+    } else {
+      shinyjs::hide("m_clusterbased_box3")
+    }
+  })
+  
+  observeEvent(input$multiple_sample_clusterbased, {
     shinyjs::show("m_clusterbased_box2")
-    #shinyjs::show("m_clusterbased_box3")
     shinyjs::show("m_clusterbased_box4")
   })
   
+  observe({
+    plot_type <- input$m_clusterbased3
+    grouping <- input$m_clusterbased4
+    
+    if (plot_type == "FeaturePlot") {
+      shinyjs::hide("m_clusterbased_6")
+      shinyjs::hide("m_clusterbased6")
+      shinyjs::show("m_clusterbased5")
+    } else if (plot_type %in% c("Dot Plot", "VlnPlot")) {
+      if (grouping == "seurat_clusters") {
+        shinyjs::show("m_clusterbased_6")
+        shinyjs::show("m_clusterbased6")
+      } else {
+        shinyjs::hide("m_clusterbased_6")
+        shinyjs::hide("m_clusterbased6")
+      }
+      shinyjs::show("m_clusterbased5")
+    } else if (plot_type == "RidgePlot") {
+      if (grouping == "seurat_clusters") {
+        shinyjs::show("m_clusterbased_6")
+        shinyjs::show("m_clusterbased6")
+      } else {
+        shinyjs::hide("m_clusterbased_6")
+        shinyjs::hide("m_clusterbased6")
+      }
+      shinyjs::hide("m_clusterbased5")
+    }
+  })
+  
+  observe({
+    if (input$m_clusterbased4 == "seurat_clusters") {
+      output$m_clusterbased_6 <- renderUI({
+        clusters <- req(datainput_multiple_celltype_level()[[2]])
+        shinyWidgets::pickerInput(
+          inputId = "m_clusterbased6",
+          label = "Select one or multiple cluster(s) for plotting",
+          choices = sort(clusters),
+          selected = sort(clusters),
+          multiple = TRUE,
+          options = list(`actions-box` = TRUE)
+        )
+      })
+    }
+    # Uncomment and modify the block below if "predicted" behavior is required:
+    # else if (input$m_clusterbased4 == "predicted") {
+    #   output$m_clusterbased_6 <- renderUI({
+    #     clusters <- req(datainput_multiple_celltype_level()[[3]])
+    #     shinyWidgets::pickerInput(
+    #       inputId = "m_clusterbased6",
+    #       label = "Select one or multiple cluster(s) for analysis",
+    #       choices = sort(clusters),
+    #       selected = sort(clusters),
+    #       multiple = TRUE,
+    #       options = list(`actions-box` = TRUE)
+    #     )
+    #   })
+    # }
+  })
   
   
   datainput_multiple_clusterbased_level <- eventReactive(input$multiple_sample_clusterbased,{
     source("scripts/multiple_clusterbased.R")
-    datainput_multiple_clusterbased(index_multiple_clusterbased_input = datainput_multiple_celltype_level()[[1]], index_multiple_clusterbased_features = datainput_multiple_marker_level()[[1]], index_m_celltype_method = datainput_multiple_celltype_level()[[4]], index_m_clusterbased1 = input$m_clusterbased1, index_m_clusterbased2 = input$m_clusterbased2, index_m_clusterbased3 = input$m_clusterbased3, index_m_clusterbased4 = input$m_clusterbased4, index_m_clusterbased5 = input$m_clusterbased5)
+    datainput_multiple_clusterbased(index_multiple_clusterbased_input = datainput_multiple_celltype_level()[[1]], index_multiple_clusterbased_features = datainput_multiple_marker_level()[[1]], index_m_celltype_method = datainput_multiple_celltype_level()[[4]], index_m_clusterbased1 = input$m_clusterbased1, index_m_clusterbased2 = input$m_clusterbased2, index_m_clusterbased3 = input$m_clusterbased3, index_m_clusterbased4 = input$m_clusterbased4, index_m_clusterbased5 = input$m_clusterbased5, index_m_clusterbased6 = input$m_clusterbased6)
   })  
   
   output$m_clusterbased1_plot<-renderPlot({
@@ -2084,7 +2144,7 @@ server <- function(input, output, session) {
       paste("multiple_sample_seuart_object_after_plots.RDS")
     },
     content = function(file){
-      saveRDS(datainput_multiple_clusterbased_level()[[2]], file= file)
+      saveRDS(datainput_multiple_clusterbased_level()[[2]], file= file, compress = TRUE)
     }
   )
   
@@ -2097,6 +2157,15 @@ server <- function(input, output, session) {
   
   ##########################Tab1.9###############################      
   ##############Condition-based analysis###################    
+  observe({
+    if(input$m_conditionbased9 == "gene_name_list"){
+      shinyjs::show("m_conditionbased10")
+    }
+    else {
+      shinyjs::hide("m_conditionbased10")
+    }
+  })  
+  
   observe({
     if(input$m_conditionbased7 == "VolcanoPlot"){
       shinyjs::hide("m_conditionbased8")
@@ -2145,7 +2214,7 @@ server <- function(input, output, session) {
   
   datainput_multiple_conditionbased_level <- eventReactive(input$multiple_sample_conditionbased,{
     source("scripts/multiple_conditionbased.R")
-    datainput_multiple_conditionbased(index_multiple_conditionbased_input = datainput_multiple_celltype_level()[[1]], index_multiple_sample_normalization_method = input$multiple_sample_normalization_method, index_m_conditionbased1 = input$m_conditionbased1, index_m_conditionbased2 = input$m_conditionbased2, index_m_conditionbased3 = input$m_conditionbased3, index_m_conditionbased4 = input$m_conditionbased4, index_m_conditionbased5 = input$m_conditionbased5, index_m_conditionbased6 = input$m_conditionbased6, index_m_conditionbased7 = input$m_conditionbased7, index_m_conditionbased8 = input$m_conditionbased8, index_m_conditionbased9 = input$m_conditionbased9)
+    datainput_multiple_conditionbased(index_multiple_conditionbased_input = datainput_multiple_celltype_level()[[1]], index_multiple_sample_normalization_method = input$multiple_sample_normalization_method, index_m_conditionbased1 = input$m_conditionbased1, index_m_conditionbased2 = input$m_conditionbased2, index_m_conditionbased3 = input$m_conditionbased3, index_m_conditionbased4 = input$m_conditionbased4, index_m_conditionbased5 = input$m_conditionbased5, index_m_conditionbased6 = input$m_conditionbased6, index_m_conditionbased7 = input$m_conditionbased7, index_m_conditionbased8 = input$m_conditionbased8, index_m_conditionbased9 = input$m_conditionbased9, index_m_conditionbased10 = input$m_conditionbased10)
   })  
   
   output$m_conditionbased1_plot<-renderPlot({
@@ -2199,7 +2268,7 @@ server <- function(input, output, session) {
       paste("multiple_sample_seuart_object_after_plots.RDS")
     },
     content = function(file){
-      saveRDS(datainput_multiple_conditionbased_level()[[3]], file= file)
+      saveRDS(datainput_multiple_conditionbased_level()[[3]], file= file, compress = TRUE)
     }
   )
   
@@ -2676,7 +2745,7 @@ server <- function(input, output, session) {
       paste("multiple_sample_subclustering_seuart_object.RDS")
     },
     content = function(file){
-      saveRDS(datainput_subclustering_multiple_sample_level()[[3]], file= file)
+      saveRDS(datainput_subclustering_multiple_sample_level()[[3]], file= file, compress = TRUE)
     }
   )
   ###############link to next tab###########################      
@@ -2818,7 +2887,7 @@ server <- function(input, output, session) {
       paste("subclustering_multiple_sample_seuart_object_after_normalization.RDS")
     },
     content = function(file){
-      saveRDS(datainput_subclustering_multiple_normalization_pca_level()[[5]], file= file)
+      saveRDS(datainput_subclustering_multiple_normalization_pca_level()[[5]], file= file, compress = TRUE)
     }
   )
   
@@ -3076,7 +3145,7 @@ server <- function(input, output, session) {
       paste("subclustering_multiple_sample_seuart_object_after_clustering.RDS")
     },
     content = function(file){
-      saveRDS(datainput_subclustering_multiple_clustering_level()[[10]], file= file)
+      saveRDS(datainput_subclustering_multiple_clustering_level()[[10]], file= file, compress = TRUE)
     }
   )
   
@@ -3212,7 +3281,7 @@ server <- function(input, output, session) {
       paste("subclustering_multiple_sample_seuart_object_after_marker_identification.RDS")
     },
     content = function(file){
-      saveRDS(datainput_subclustering_multiple_marker_level()[[2]], file= file)
+      saveRDS(datainput_subclustering_multiple_marker_level()[[2]], file= file, compress = TRUE)
     }
   )
   
@@ -3378,7 +3447,7 @@ server <- function(input, output, session) {
       paste("subclustering_multiple_sample_seuart_object_after_celltypes.RDS")
     },
     content = function(file){
-      saveRDS(datainput_subclustering_multiple_celltype_level()[[1]], file= file)
+      saveRDS(datainput_subclustering_multiple_celltype_level()[[1]], file= file, compress = TRUE)
     }
   )
   #####################################link to next tab###########################     
@@ -3423,11 +3492,67 @@ server <- function(input, output, session) {
     shinyjs::show("m_subclustering_clusterbased_box4")
   })
   
+  observe({
+    plot_type <- input$m_subclustering_clusterbased3
+    grouping <- input$m_subclustering_clusterbased4
+    
+    if (plot_type == "FeaturePlot") {
+      shinyjs::hide("m_subclustering_clusterbased_6")
+      shinyjs::hide("m_subclustering_clusterbased6")
+      shinyjs::show("m_subclustering_clusterbased5")
+    } else if (plot_type %in% c("Dot Plot", "VlnPlot")) {
+      if (grouping == "seurat_clusters") {
+        shinyjs::show("m_subclustering_clusterbased_6")
+        shinyjs::show("m_subclustering_clusterbased6")
+      } else {
+        shinyjs::hide("m_subclustering_clusterbased_6")
+        shinyjs::hide("m_subclustering_clusterbased6")
+      }
+      shinyjs::show("m_subclustering_clusterbased5")
+    } else if (plot_type == "RidgePlot") {
+      if (grouping == "seurat_clusters") {
+        shinyjs::show("m_subclustering_clusterbased_6")
+        shinyjs::show("m_subclustering_clusterbased6")
+      } else {
+        shinyjs::hide("m_subclustering_clusterbased_6")
+        shinyjs::hide("m_subclustering_clusterbased6")
+      }
+      shinyjs::hide("m_subclustering_clusterbased5")
+    }
+  })
+  
+  observe({
+    
+    if (input$m_subclustering_clusterbased4 == "seurat_clusters"){
+      output$m_clusterbased_6 <- renderUI ({
+        clusters <- req(datainput_subclustering_multiple_celltype_level()[[2]])
+        shinyWidgets::pickerInput(
+          inputId = "m_subclustering_clusterbased6",
+          label = "Select one or multiple cluster(s) for ploting",
+          choices = sort(clusters),
+          selected = sort(clusters),
+          multiple = T,
+          options = list(`actions-box` = TRUE))
+      })
+    }
+    # else if (input$m_subclustering_clusterbased4 == "predicted"){
+    #   output$m_clusterbased_6 <- renderUI ({
+    #     clusters <- req(datainput_subclustering_multiple_celltype_level()[[3]])
+    #     shinyWidgets::pickerInput(
+    #       inputId = "m_subclustering_clusterbased6",
+    #       label = "Select one or multiple cluster(s) for analsysis",
+    #       choices = sort(clusters),
+    #       selected = sort(clusters),
+    #       multiple = T,
+    #       options = list(`actions-box` = TRUE))
+    #   })
+    # }  
+  })
   
   
   datainput_subclustering_multiple_clusterbased_level <- eventReactive(input$subclustering_multiple_sample_clusterbased,{
     source("scripts/subclustering_multiple_clusterbased.R")
-    datainput_subclustering_multiple_clusterbased(index_subclustering_multiple_clusterbased_input = datainput_subclustering_multiple_celltype_level()[[1]], index_subclustering_multiple_clusterbased_features = datainput_subclustering_multiple_marker_level()[[1]], index_m_subclustering_celltype_method = datainput_subclustering_multiple_celltype_level()[[4]], index_m_subclustering_clusterbased1 = input$m_subclustering_clusterbased1, index_m_subclustering_clusterbased2 = input$m_subclustering_clusterbased2, index_m_subclustering_clusterbased3 = input$m_subclustering_clusterbased3, index_m_subclustering_clusterbased4 = input$m_subclustering_clusterbased4, index_m_subclustering_clusterbased5 = input$m_subclustering_clusterbased5)
+    datainput_subclustering_multiple_clusterbased(index_subclustering_multiple_clusterbased_input = datainput_subclustering_multiple_celltype_level()[[1]], index_subclustering_multiple_clusterbased_features = datainput_subclustering_multiple_marker_level()[[1]], index_m_subclustering_celltype_method = datainput_subclustering_multiple_celltype_level()[[4]], index_m_subclustering_clusterbased1 = input$m_subclustering_clusterbased1, index_m_subclustering_clusterbased2 = input$m_subclustering_clusterbased2, index_m_subclustering_clusterbased3 = input$m_subclustering_clusterbased3, index_m_subclustering_clusterbased4 = input$m_subclustering_clusterbased4, index_m_subclustering_clusterbased5 = input$m_subclustering_clusterbased5, index_m_subclustering_clusterbased6 = input$m_subclustering_clusterbased6)
   })  
   
   output$m_subclustering_clusterbased1_plot<-renderPlot({
@@ -3481,7 +3606,7 @@ server <- function(input, output, session) {
       paste("subclustering_multiple_sample_seuart_object_after_plots.RDS")
     },
     content = function(file){
-      saveRDS(datainput_subclustering_multiple_clusterbased_level()[[2]], file= file)
+      saveRDS(datainput_subclustering_multiple_clusterbased_level()[[2]], file= file, compress = TRUE)
     }
   )
   
@@ -3538,11 +3663,18 @@ server <- function(input, output, session) {
       options = list(`actions-box` = TRUE))
   })  
   
-  
+  observe({
+    if(input$m_subclustering_conditionbased9 == "gene_name_list"){
+      shinyjs::show("m_subclustering_conditionbased10")
+    }
+    else {
+      shinyjs::hide("m_subclustering_conditionbased10")
+    }
+  }) 
   
   datainput_subclustering_multiple_conditionbased_level <- eventReactive(input$subclustering_multiple_sample_conditionbased,{
     source("scripts/subclustering_multiple_conditionbased.R")
-    datainput_subclustering_multiple_conditionbased(index_subclustering_multiple_conditionbased_input = datainput_subclustering_multiple_celltype_level()[[1]], index_subclustering_multiple_sample_normalization_method = input$subclustering_multiple_sample_normalization_method, index_m_subclustering_conditionbased1 = input$m_subclustering_conditionbased1, index_m_subclustering_conditionbased2 = input$m_subclustering_conditionbased2, index_m_subclustering_conditionbased3 = input$m_subclustering_conditionbased3, index_m_subclustering_conditionbased4 = input$m_subclustering_conditionbased4, index_m_subclustering_conditionbased5 = input$m_subclustering_conditionbased5, index_m_subclustering_conditionbased6 = input$m_subclustering_conditionbased6, index_m_subclustering_conditionbased7 = input$m_subclustering_conditionbased7, index_m_subclustering_conditionbased8 = input$m_subclustering_conditionbased8, index_m_subclustering_conditionbased9 = input$m_subclustering_conditionbased9)
+    datainput_subclustering_multiple_conditionbased(index_subclustering_multiple_conditionbased_input = datainput_subclustering_multiple_celltype_level()[[1]], index_subclustering_multiple_sample_normalization_method = input$subclustering_multiple_sample_normalization_method, index_m_subclustering_conditionbased1 = input$m_subclustering_conditionbased1, index_m_subclustering_conditionbased2 = input$m_subclustering_conditionbased2, index_m_subclustering_conditionbased3 = input$m_subclustering_conditionbased3, index_m_subclustering_conditionbased4 = input$m_subclustering_conditionbased4, index_m_subclustering_conditionbased5 = input$m_subclustering_conditionbased5, index_m_subclustering_conditionbased6 = input$m_subclustering_conditionbased6, index_m_subclustering_conditionbased7 = input$m_subclustering_conditionbased7, index_m_subclustering_conditionbased8 = input$m_subclustering_conditionbased8, index_m_subclustering_conditionbased9 = input$m_subclustering_conditionbased9, index_m_subclustering_conditionbased10 = input$m_subclustering_conditionbased10)
   })  
   
   output$m_subclustering_conditionbased1_plot<-renderPlot({
@@ -3596,7 +3728,7 @@ server <- function(input, output, session) {
       paste("subclustering_multiple_sample_seuart_object_after_plots.RDS")
     },
     content = function(file){
-      saveRDS(datainput_subclustering_multiple_conditionbased_level()[[3]], file= file)
+      saveRDS(datainput_subclustering_multiple_conditionbased_level()[[3]], file= file, compress = TRUE)
     }
   )
   
@@ -5297,7 +5429,7 @@ observe({
       paste("Co_expression_network_analysis.RDS")
     },
     content = function(file){
-      saveRDS(datainput_single_multiple_sample_hdwgcna_level()[10], file= file)
+      saveRDS(datainput_single_multiple_sample_hdwgcna_level()[10], file= file, compress = TRUE)
     }
   )
 
@@ -5588,7 +5720,7 @@ observe({
       paste("TF_analysis.RDS")
     },
     content = function(file){
-      saveRDS(datainput_single_multiple_sample_tfrn2_level()[6], file= file)
+      saveRDS(datainput_single_multiple_sample_tfrn2_level()[6], file= file, compress = TRUE)
     }
   ) 
   

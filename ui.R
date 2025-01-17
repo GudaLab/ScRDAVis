@@ -119,15 +119,15 @@ runApp('/path/to/the/ScRDAVis-master', launch.browser=TRUE)</pre>
 
  sidebarLayout(
    sidebarPanel(id="multiple_sidebar",
-     selectInput("multiple_sample_format", label = "Select Input format", choices = list("Cell ranger h5 format" = "h5", "Cellranger Matrix, Feauture, Barcodes files" ="MFB", "Seurat object" = "seurat_object", "Matrix count file" = "matrix_count" ), selected = "h5"),
+     selectInput("multiple_sample_format", label = "Select Input format", choices = list("Cell ranger h5 format" = "h5", "Cellranger Matrix, Feauture, Barcodes files" ="MFB", "Seurat object" = "seurat_object", "Matrix count file" = "matrix_count", "Example data to test the tool (C1_vs_P1 from GSE266873)"="exampledata" ), selected = "h5"),
      
      #h3("Upload files"),
      fileInput("multiple_sample_file", label = "Upload multiple file(s) at once (eg: FILENAME1.h5 or FILENAME_1.h5)", multiple = T, accept =".h5"),
      fileInput("multiple_sample_file_mfb", label = "Upload multiple files at once (eg: FILENAME_matrix.mtx.gz, FILENAME_features.tsv, FILENAME_barcodes.tsv.gz)", multiple = T, accept =".gz"),
      fileInput("multiple_sample_file_rds", label = "Upload single seurat object file with single or multiple samples", multiple = F, accept=c(".rds", "RDS")),
      fileInput("multiple_sample_file_txt", label = "Upload single matrix file with single or multiple samples (eg: FILENAME1.txt or FILENAME1.tsv)", multiple = F, accept=".txt"),
-     numericInput("multiple_sample_cell", label="Include minimum number of cells expressing in gene", min = 0, max = 1000000, value = "3"),
-     numericInput("multiple_sample_genes", label="Include minimum number of genes a cell must express", min = 0, max = 1000000, value = "200"),
+     numericInput("multiple_sample_cell", label="Include minimum number of cells expressing in gene", min = 0, max = 1000000, value = "0"),
+     numericInput("multiple_sample_genes", label="Include minimum number of genes a cell must express", min = 0, max = 1000000, value = "0"),
     actionBttn("multiple_sample_submit", "Submit",  style = "unite",color = "primary" ),
      width = 3),
    mainPanel(id="multiple_main_menu",
@@ -778,6 +778,7 @@ tabPanel(
         column(6, textAreaInput("m_clusterbased2", label ="Enter your genes for ploting (eg: gene names separated by , )", value = "", placeholder = "KLK2,KLK3,CTSG,MS4A3,CLEC4OP,KDR", height = '400px')),
         column(3, selectInput("m_clusterbased3", label = "Plot type", choices = c("Dot Plot" = "Dot Plot", "Violin Plot" = "VlnPlot", "Ridge Plot"= "RidgePlot", "Feature Plot" = "FeaturePlot"), selected = "Dot Plot")),
         column(3, selectInput("m_clusterbased4", label = "group.by", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted"), selected = "seurat_clusters")),
+        column(6, uiOutput("m_clusterbased_6")),
         column(3, selectInput("m_clusterbased5", label = "split.by", choices = c("None" = "NULL", "Condition" = "condition", "Samples" = "orig.ident"), selected = "NULL")),
         br(),
         br(),
@@ -834,7 +835,9 @@ tabPanel(
         h3("Parameters for ploting"),
         column(3, selectInput("m_conditionbased7", label = "Plot type", choices = c("Dot Plot" = "Dot Plot", "Violin Plot" = "VlnPlot", "Ridge Plot"= "RidgePlot", "Feature Plot" = "FeaturePlot", "Volcano Plot" = "VolcanoPlot"), selected = "Dot Plot")),
         column(3, selectInput("m_conditionbased8", label = "group.by", choices = c("Condition" = "condition", "Samples" = "orig.ident"), selected = "condition")),
-        column(6, numericInput("m_conditionbased9", label = "No. of features to display",  min = 1, max = 50, value = 15)),
+        column(6, selectInput("m_conditionbased9", label = "No. of features to display", choices = c("1" = 1, "2" = 2, "3"= 3, "4" = 4, "5" = 5, "6" = 6, "7" = 7, "8" = 8, "9" = 9, "10" = 10,"11" = 11, "12" = 12, "13"= 13, "14" = 14, "15" = 15, "16" = 16, "17" = 17, "18" = 18, "19" = 19, "20" = 20, "21" = 1, "22" = 22, "23"= 23, "24" = 24, "25" = 25, "List of gene names" = "gene_name_list"), selected = 3)),
+        column(6, textAreaInput("m_conditionbased10", label ="Enter your genes for ploting (eg: gene names separated by , )", value = "", placeholder = "KLK2,KLK3,CTSG,MS4A3,CLEC4OP,KDR", height = '400px')),
+        #column(6, numericInput("m_conditionbased9", label = "No. of features to display",  min = 1, max = 50, value = 15)),
         br(),
         column(3, actionBttn("multiple_sample_conditionbased", "Submit",  style = "unite",color = "primary", icon = icon("download"))),
     ),
@@ -862,8 +865,7 @@ tabPanel(
       hr(),
       br(),
       downloadBttn(outputId = "m_conditionbased", label = "Download Seurat Object"),
-      #actionLink("link_m_conditionbased", actionBttn("MCONDITIONButtonLoad", "NEXT STEP (Cell Type Prediction)", style = "unite",color = "primary",icon = icon("arrow-right"), size = "md")),
-  ),
+       ),
 ),
 
 
@@ -1271,6 +1273,7 @@ tabPanel(
                         column(6, textAreaInput("m_subclustering_clusterbased2", label ="Enter your genes for ploting (eg: gene names separated by , )", value = "", placeholder = "KLK2,KLK3,CTSG,MS4A3,CLEC4OP,KDR", height = '400px')),
                         column(3, selectInput("m_subclustering_clusterbased3", label = "Plot type", choices = c("Dot Plot" = "Dot Plot", "Violin Plot" = "VlnPlot", "Ridge Plot"= "RidgePlot", "Feature Plot" = "FeaturePlot"), selected = "Dot Plot")),
                         column(3, selectInput("m_subclustering_clusterbased4", label = "group.by", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted"), selected = "seurat_clusters")),
+                        column(6, uiOutput("m_subclustering_clusterbased_6")),
                         column(3, selectInput("m_subclustering_clusterbased5", label = "split.by", choices = c("None" = "NULL", "Condition" = "condition", "Samples" = "orig.ident"), selected = "NULL")),
                         br(),
                         br(),
@@ -1328,7 +1331,8 @@ tabPanel(
                         h3("Parameters for ploting"),
                         column(3, selectInput("m_subclustering_conditionbased7", label = "Plot type", choices = c("Dot Plot" = "Dot Plot", "Violin Plot" = "VlnPlot", "Ridge Plot"= "RidgePlot", "Feature Plot" = "FeaturePlot", "Volcano Plot" = "VolcanoPlot"), selected = "Dot Plot")),
                         column(3, selectInput("m_subclustering_conditionbased8", label = "group.by", choices = c("Condition" = "condition", "Samples" = "orig.ident"), selected = "condition")),
-                        column(6, numericInput("m_subclustering_conditionbased9", label = "No. of features to display",  min = 1, max = 50, value = 15)),
+                        column(6, selectInput("m_subclustering_conditionbased9", label = "No. of features to display", choices = c("1" = 1, "2" = 2, "3"= 3, "4" = 4, "5" = 5, "6" = 6, "7" = 7, "8" = 8, "9" = 9, "10" = 10,"11" = 11, "12" = 12, "13"= 13, "14" = 14, "15" = 15, "16" = 16, "17" = 17, "18" = 18, "19" = 19, "20" = 20, "21" = 1, "22" = 22, "23"= 23, "24" = 24, "25" = 25, "List of gene names" = "gene_name_list"), selected = 3)),
+                        column(6, textAreaInput("m_subclustering_conditionbased10", label ="Enter your genes for ploting (eg: gene names separated by , )", value = "", placeholder = "KLK2,KLK3,CTSG,MS4A3,CLEC4OP,KDR", height = '400px')),
                         br(),
                         column(3, actionBttn("subclustering_multiple_sample_conditionbased", "Submit",  style = "unite",color = "primary", icon = icon("download"))),
                     ),
@@ -2288,7 +2292,7 @@ tabPanel(
     </li>
     <li><strong>Plot Types:</strong>
 		<ul>
-    <li>Multiple visualization formats are available, including: Dot Plot, Violin Plot, Ridge Plot, Feature Plot.</li>
+    <li>Multiple visualization formats are available, including Dot Plot, Violin Plot, Ridge Plot, and Feature Plot. For Dot Plot, Violin Plot, and Ridge Plot, users can adjust parameters to visualize the plots for either all Seurat clusters or selected specific clusters.</li>
 		</ul>
   </li>
 <li><strong>Grouping and Splitting:</strong>
@@ -2332,7 +2336,7 @@ tabPanel(
 	</li>
     <li><strong>Grouping:</strong><ul>
 	<li>Group By: Users can group data by Seurat clusters or predicted cell type labels.</li>
-	<li>Number of Features: Allows display of a specific number of up- and down-regulated genes (e.g., 15).</li>
+	<li>Number of Features: Allows display of a specific number of up- and down-regulated genes (e.g., 15).Users may also input custom gene names by selecting them from a drop-down menu (list of genes). </li>
 	</ul>
 	</li>
 	<li><strong>Execution:</strong>
