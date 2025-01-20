@@ -2029,35 +2029,6 @@ server <- function(input, output, session) {
   })
   
   observe({
-    plot_type <- input$m_clusterbased3
-    grouping <- input$m_clusterbased4
-    
-    if (plot_type == "FeaturePlot") {
-      shinyjs::hide("m_clusterbased_6")
-      shinyjs::hide("m_clusterbased6")
-      shinyjs::show("m_clusterbased5")
-    } else if (plot_type %in% c("Dot Plot", "VlnPlot")) {
-      if (grouping == "seurat_clusters") {
-        shinyjs::show("m_clusterbased_6")
-        shinyjs::show("m_clusterbased6")
-      } else {
-        shinyjs::hide("m_clusterbased_6")
-        shinyjs::hide("m_clusterbased6")
-      }
-      shinyjs::show("m_clusterbased5")
-    } else if (plot_type == "RidgePlot") {
-      if (grouping == "seurat_clusters") {
-        shinyjs::show("m_clusterbased_6")
-        shinyjs::show("m_clusterbased6")
-      } else {
-        shinyjs::hide("m_clusterbased_6")
-        shinyjs::hide("m_clusterbased6")
-      }
-      shinyjs::hide("m_clusterbased5")
-    }
-  })
-  
-  observe({
     if (input$m_clusterbased4 == "seurat_clusters") {
       output$m_clusterbased_6 <- renderUI({
         clusters <- req(datainput_multiple_celltype_level()[[2]])
@@ -2071,6 +2042,33 @@ server <- function(input, output, session) {
         )
       })
     }
+    
+    plot_type <- input$m_clusterbased3
+    grouping <- input$m_clusterbased4
+    
+    if (plot_type %in% c("Dot Plot", "VlnPlot", "RidgePlot")) {
+      if (grouping == "seurat_clusters") {
+        shinyjs::show("m_clusterbased_6")
+        shinyjs::show("m_clusterbased6")
+      } else {
+        shinyjs::hide("m_clusterbased_6")
+        shinyjs::hide("m_clusterbased6")
+      }
+      
+      if (plot_type == "FeaturePlot") {
+        shinyjs::hide("m_clusterbased5")
+      } else {
+        shinyjs::show("m_clusterbased5")
+      }
+    } else if (plot_type == "FeaturePlot") {
+      shinyjs::hide("m_clusterbased_6")
+      shinyjs::hide("m_clusterbased6")
+      shinyjs::show("m_clusterbased5")
+    }
+  })
+  
+  
+  
     # Uncomment and modify the block below if "predicted" behavior is required:
     # else if (input$m_clusterbased4 == "predicted") {
     #   output$m_clusterbased_6 <- renderUI({
@@ -2085,7 +2083,7 @@ server <- function(input, output, session) {
     #     )
     #   })
     # }
-  })
+    # })
   
   
   datainput_multiple_clusterbased_level <- eventReactive(input$multiple_sample_clusterbased,{
@@ -3493,60 +3491,42 @@ server <- function(input, output, session) {
   })
   
   observe({
+    if (input$m_subclustering_clusterbased4 == "seurat_clusters") {
+      output$m_subclustering_clusterbased_6 <- renderUI({
+        clusters <- req(datainput_multiple_celltype_level()[[2]])
+        shinyWidgets::pickerInput(
+          inputId = "m_subclustering_clusterbased6",
+          label = "Select one or multiple cluster(s) for plotting",
+          choices = sort(clusters),
+          selected = sort(clusters),
+          multiple = TRUE,
+          options = list(`actions-box` = TRUE)
+        )
+      })
+    }
+    
     plot_type <- input$m_subclustering_clusterbased3
     grouping <- input$m_subclustering_clusterbased4
     
-    if (plot_type == "FeaturePlot") {
+    if (plot_type %in% c("Dot Plot", "VlnPlot", "RidgePlot")) {
+      if (grouping == "seurat_clusters") {
+        shinyjs::show("m_subclustering_clusterbased_6")
+        shinyjs::show("m_subclustering_clusterbased6")
+      } else {
+        shinyjs::hide("m_subclustering_clusterbased_6")
+        shinyjs::hide("m_subclustering_clusterbased6")
+      }
+      
+      if (plot_type == "FeaturePlot") {
+        shinyjs::hide("m_subclustering_clusterbased5")
+      } else {
+        shinyjs::show("m_subclustering_clusterbased5")
+      }
+    } else if (plot_type == "FeaturePlot") {
       shinyjs::hide("m_subclustering_clusterbased_6")
       shinyjs::hide("m_subclustering_clusterbased6")
       shinyjs::show("m_subclustering_clusterbased5")
-    } else if (plot_type %in% c("Dot Plot", "VlnPlot")) {
-      if (grouping == "seurat_clusters") {
-        shinyjs::show("m_subclustering_clusterbased_6")
-        shinyjs::show("m_subclustering_clusterbased6")
-      } else {
-        shinyjs::hide("m_subclustering_clusterbased_6")
-        shinyjs::hide("m_subclustering_clusterbased6")
-      }
-      shinyjs::show("m_subclustering_clusterbased5")
-    } else if (plot_type == "RidgePlot") {
-      if (grouping == "seurat_clusters") {
-        shinyjs::show("m_subclustering_clusterbased_6")
-        shinyjs::show("m_subclustering_clusterbased6")
-      } else {
-        shinyjs::hide("m_subclustering_clusterbased_6")
-        shinyjs::hide("m_subclustering_clusterbased6")
-      }
-      shinyjs::hide("m_subclustering_clusterbased5")
     }
-  })
-  
-  observe({
-    
-    if (input$m_subclustering_clusterbased4 == "seurat_clusters"){
-      output$m_clusterbased_6 <- renderUI ({
-        clusters <- req(datainput_subclustering_multiple_celltype_level()[[2]])
-        shinyWidgets::pickerInput(
-          inputId = "m_subclustering_clusterbased6",
-          label = "Select one or multiple cluster(s) for ploting",
-          choices = sort(clusters),
-          selected = sort(clusters),
-          multiple = T,
-          options = list(`actions-box` = TRUE))
-      })
-    }
-    # else if (input$m_subclustering_clusterbased4 == "predicted"){
-    #   output$m_clusterbased_6 <- renderUI ({
-    #     clusters <- req(datainput_subclustering_multiple_celltype_level()[[3]])
-    #     shinyWidgets::pickerInput(
-    #       inputId = "m_subclustering_clusterbased6",
-    #       label = "Select one or multiple cluster(s) for analsysis",
-    #       choices = sort(clusters),
-    #       selected = sort(clusters),
-    #       multiple = T,
-    #       options = list(`actions-box` = TRUE))
-    #   })
-    # }  
   })
   
   
