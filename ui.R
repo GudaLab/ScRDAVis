@@ -119,7 +119,7 @@ runApp('/path/to/the/ScRDAVis-master', launch.browser=TRUE)</pre>
 
  sidebarLayout(
    sidebarPanel(id="multiple_sidebar",
-     selectInput("multiple_sample_format", label = "Select Input format", choices = list("Cell ranger h5 format" = "h5", "Cellranger Matrix, Feauture, Barcodes files" ="MFB", "Seurat object" = "seurat_object", "Matrix count file" = "matrix_count", "Example data to test the tool (C1_vs_P1 from GSE277476)"="exampledata" ), selected = "h5"),
+     selectInput("multiple_sample_format", label = "Select Input format", choices = list("Cell ranger h5 format" = "h5", "Cellranger Matrix, Feauture, Barcodes files" ="MFB", "Seurat object" = "seurat_object", "Matrix count file" = "matrix_count", "Example data to test the tool (C2_vs_P2 from GSE277476)"="exampledata" ), selected = "h5"),
      
      #h3("Upload files"),
      fileInput("multiple_sample_file", label = "Upload multiple file(s) at once (eg: FILENAME1.h5 or FILENAME_1.h5)", multiple = T, accept =".h5"),
