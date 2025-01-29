@@ -83,7 +83,7 @@ shinyUI(
         <p>ScRDAVis is deployed at: <a href='https://www.gudalab-rtools.net/ScRDAVis'>https://www.gudalab-rtools.net/ScRDAVis</a></p>
         <hr>
         <h3> Launch ScRDAVis using R and GitHub: </h3>
-        <p> ScRDAVis were deposited under the GitHub repository: <a href='https://www.gudalab-rtools.net/ScRDAVis'>https://www.gudalab-rtools.net/ScRDAVis</a><br>
+        <p> ScRDAVis were deposited under the GitHub repository: <a href='https://github.com/GudaLab/ScRDAVis'>https://github.com/GudaLab/ScRDAVis</a><br>
         Before running the app, users must have the following versions installed: R (>= 4.4.2), RStudio (>= 2024.12.0), Bioconductor (>= 3.20) and Shiny (>= 1.10.0) (Tested with this version).<br>
         Note: ScRDAVis has been tested with these versions. If users are running an older version of R, they may encounter errors during package installation. Therefore, it is recommended to update R to the latest version first.<br>
        Once R is open in the command line or in RStudio, users should run the following command in R to install the shiny package.<br><br></p>
