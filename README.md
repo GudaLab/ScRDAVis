@@ -34,7 +34,7 @@ ScRDAVis is deployed online and accessible at:
 
 ### Prerequisites
 Ensure the following software is installed:
-- **R** (>= 4.4.2): [Download R](https://www.r-project.org/)
+- **R** (>= 4.4.3): [Download R](https://www.r-project.org/)
 - **RStudio** (>= 2024.12.0): [Download RStudio](https://posit.co/download/rstudio-desktop/)
 - **Bioconductor** (>= 3.20)
 - **Shiny** (>= 1.10.0)
@@ -92,7 +92,7 @@ github_packages <- list(
   "SeuratWrappers" = "satijalab/seurat-wrappers",
   "SeuratDisk" = "mojaveazure/seurat-disk",
   "patchwork" = "thomasp85/patchwork",
-  "CellChat" = "sqjin/CellChat",
+  "CellChat" = "jinworks/CellChat",
   "genesorteR" = "mahmoudibrahim/genesorteR",
   "enrichR" = "wjawaid/enrichR",
   "hdWGCNA" = "smorabit/hdWGCNA"
