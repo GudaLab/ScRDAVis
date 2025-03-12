@@ -60,10 +60,10 @@ datainput_single_multiple_sample_cellchat1<- function(index_multiple_sample_cell
   cellchat <- identifyOverExpressedInteractions(cellchat)
   # Project the data onto the PPI network
   if(index_s_cellchat3 == "PPI.human"){
-  cellchat <- projectData(cellchat, PPI.human)  # for human, or PPI.mouse for mouse
+  cellchat <- smoothData(cellchat, adj = PPI.human)  # for human, or PPI.mouse for mouse
   }
   else if(index_s_cellchat3 == "PPI.mouse"){
-    cellchat <- projectData(cellchat, PPI.mouse)  
+  cellchat <- smoothData(cellchat, adj = PPI.mouse)  
   }
   
   

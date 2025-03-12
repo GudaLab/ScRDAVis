@@ -155,7 +155,7 @@ datainput_single_multiple_sample_hdwgcna<- function(index_multiple_sample_hdwgcn
   output_file <- "PlotDendrogram.pdf"          # File name for the PDF
   pdf_path <- file.path(output_dir, output_file)
   pdf(pdf_path, width = 8, height = 6)  # Specify width and height if needed
-  PlotDendrogram(single_multiple_sample_clustering, main='0 hdWGCNA Dendrogram')
+  PlotDendrogram(single_multiple_sample_clustering, main='hdWGCNA Dendrogram')
   dev.off()
   #Optional: inspect the topoligcal overlap matrix (TOM)
   TOM <- GetTOM(single_multiple_sample_clustering)

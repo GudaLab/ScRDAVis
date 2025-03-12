@@ -74,7 +74,7 @@ datainput_subclustering_multiple_celltype <- function(index_subclustering_multip
   else if(index_m_subclustering_celltype1 == 3){
     #GPTCelltype
     # IMPORTANT! Assign your OpenAI API key. See Vignette for details
-    Sys.setenv(OPENAI_API_KEY = 'sk-proj-jZHhTlXxYYTpf6GApgEDT3BlbkFJTRHIhHeciCOyHWx0OcwA')
+    #
     res <- gptcelltype(subclustering_multiple_sample_clustering_markers, model = index_m_subclustering_celltype5, topgenenumber = index_m_subclustering_celltype6)
     
     # Assign cell type annotation back to Seurat object

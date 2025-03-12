@@ -30,11 +30,11 @@ datainput_multiple_qc_filter <- function(index_multiple_qc_input, index_multiple
     
     
     sample_count <- inner_join(groups_table1, groups_table3)
-    sample_count_bar <- melt(sample_count,id.vars = 1)
+    sample_count_bar <- reshape2::melt(sample_count,id.vars = 1)
     colnames(sample_count_bar) <- c("Samples", "variable", "Cell_counts")
     
     group_count <- inner_join(groups_table2, groups_table4) 
-    group_count_bar <- melt(group_count,id.vars = 1)
+    group_count_bar <- reshape2::melt(group_count,id.vars = 1)
     colnames(group_count_bar) <- c("Groups", "variable", "Cell_counts")  
   }
   
@@ -59,11 +59,11 @@ datainput_multiple_qc_filter <- function(index_multiple_qc_input, index_multiple
     
     
     sample_count <- inner_join(groups_table1, groups_table3)
-    sample_count_bar <- melt(sample_count,id.vars = 1)
+    sample_count_bar <- reshape2::melt(sample_count,id.vars = 1)
     colnames(sample_count_bar) <- c("Samples", "variable", "Cell_counts")
     
     group_count <- inner_join(groups_table2, groups_table4) 
-    group_count_bar <- melt(group_count,id.vars = 1)
+    group_count_bar <- reshape2::melt(group_count,id.vars = 1)
     colnames(group_count_bar) <- c("Groups", "variable", "Cell_counts")  
   }
   
@@ -101,11 +101,11 @@ datainput_multiple_qc_filter <- function(index_multiple_qc_input, index_multiple
     
     
     sample_count <- inner_join(groups_table1, groups_table3)
-    sample_count_bar <- melt(sample_count,id.vars = 1)
+    sample_count_bar <- reshape2::melt(sample_count,id.vars = 1)
     colnames(sample_count_bar) <- c("Samples", "variable", "Cell_counts")
     
     group_count <- inner_join(groups_table2, groups_table4) 
-    group_count_bar <- melt(group_count,id.vars = 1)
+    group_count_bar <- reshape2::melt(group_count,id.vars = 1)
     colnames(group_count_bar) <- c("Groups", "variable", "Cell_counts")  
   }
   else if (index_multiple_group_count == 4)
@@ -147,11 +147,11 @@ datainput_multiple_qc_filter <- function(index_multiple_qc_input, index_multiple
     
     
     sample_count <- inner_join(groups_table1, groups_table3)
-    sample_count_bar <- melt(sample_count,id.vars = 1)
+    sample_count_bar <- reshape2::melt(sample_count,id.vars = 1)
     colnames(sample_count_bar) <- c("Samples", "variable", "Cell_counts")
     
     group_count <- inner_join(groups_table2, groups_table4) 
-    group_count_bar <- melt(group_count,id.vars = 1)
+    group_count_bar <- reshape2::melt(group_count,id.vars = 1)
     colnames(group_count_bar) <- c("Groups", "variable", "Cell_counts")  
   }
    
@@ -200,11 +200,11 @@ datainput_multiple_qc_filter <- function(index_multiple_qc_input, index_multiple
      
      
      sample_count <- inner_join(groups_table1, groups_table3)
-     sample_count_bar <- melt(sample_count,id.vars = 1)
+     sample_count_bar <- reshape2::melt(sample_count,id.vars = 1)
      colnames(sample_count_bar) <- c("Samples", "variable", "Cell_counts")
      
      group_count <- inner_join(groups_table2, groups_table4) 
-     group_count_bar <- melt(group_count,id.vars = 1)
+     group_count_bar <- reshape2::melt(group_count,id.vars = 1)
      colnames(group_count_bar) <- c("Groups", "variable", "Cell_counts")  
    }
    
@@ -257,11 +257,11 @@ datainput_multiple_qc_filter <- function(index_multiple_qc_input, index_multiple
      
      
      sample_count <- inner_join(groups_table1, groups_table3)
-     sample_count_bar <- melt(sample_count,id.vars = 1)
+     sample_count_bar <- reshape2::melt(sample_count,id.vars = 1)
      colnames(sample_count_bar) <- c("Samples", "variable", "Cell_counts")
      
      group_count <- inner_join(groups_table2, groups_table4) 
-     group_count_bar <- melt(group_count,id.vars = 1)
+     group_count_bar <- reshape2::melt(group_count,id.vars = 1)
      colnames(group_count_bar) <- c("Groups", "variable", "Cell_counts")  
    }
    

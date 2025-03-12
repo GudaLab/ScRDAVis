@@ -21,7 +21,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
       plots17 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_m_subclustering_clustering12, raster=FALSE, group.by = "condition")
       plots18 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_m_subclustering_clustering12, raster=FALSE, group.by = "orig.ident")
       plots22 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_m_subclustering_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "condition", ncol = 6)
-      plots23 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_subclustering_multiple_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "orig.ident", ncol = 6)
+      plots23 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_m_subclustering_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "orig.ident", ncol = 6)
     }
     #cell_couts_in_custer
     subclustering_multiple_sample_clustering_cell_couts_in_custer <- table(subclustering_multiple_sample_clustering@meta.data$seurat_clusters) %>% as.data.table
@@ -86,11 +86,11 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     else if (index_subclustering_multiple_clustering6 == "tsne")
     {
       subclustering_multiple_sample_clustering<- RunTSNE(subclustering_multiple_sample_clustering, dims = 1:index_subclustering_multiple_clustering11, reduction = "harmony", reduction.name = "tsne")
-      plots16 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'harmony_clusters', raster=FALSE, label = index_subclustering_multiple_clustering12)
-      plots17 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'condition', raster=FALSE, label = index_subclustering_multiple_clustering12)
-      plots18 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'orig.ident', raster=FALSE, label = index_subclustering_multiple_clustering12)
-      plots22 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_subclustering_multiple_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "condition", ncol = 6)
-      plots23 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_subclustering_multiple_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "orig.ident", ncol = 6)
+      plots16 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'harmony_clusters', raster=FALSE, label = index_m_subclustering_clustering12)
+      plots17 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'condition', raster=FALSE, label = index_m_subclustering_clustering12)
+      plots18 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'orig.ident', raster=FALSE, label = index_m_subclustering_clustering12)
+      plots22 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_m_subclustering_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "condition", ncol = 6)
+      plots23 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_m_subclustering_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "orig.ident", ncol = 6)
     }
     #cell_couts_in_custer
     subclustering_multiple_sample_clustering_cell_couts_in_custer <- table(subclustering_multiple_sample_clustering@meta.data$harmony_clusters) %>% as.data.table
@@ -153,11 +153,11 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     else if (index_subclustering_multiple_clustering6 == "tsne")
     {
       subclustering_multiple_sample_clustering<- RunTSNE(subclustering_multiple_sample_clustering, dims = 1:index_subclustering_multiple_clustering11, reduction = "cca", reduction.name = "tsne")
-      plots16 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'cca_clusters', raster=FALSE, label = index_subclustering_multiple_clustering12)
-      plots17 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'condition', raster=FALSE, label = index_subclustering_multiple_clustering12)
-      plots18 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'orig.ident', raster=FALSE, label = index_subclustering_multiple_clustering12)
-      plots22 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_subclustering_multiple_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "condition", ncol = 6)
-      plots23 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_subclustering_multiple_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "orig.ident", ncol = 6)
+      plots16 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'cca_clusters', raster=FALSE, label = index_m_subclustering_clustering12)
+      plots17 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'condition', raster=FALSE, label = index_m_subclustering_clustering12)
+      plots18 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'orig.ident', raster=FALSE, label = index_m_subclustering_clustering12)
+      plots22 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_m_subclustering_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "condition", ncol = 6)
+      plots23 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_m_subclustering_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "orig.ident", ncol = 6)
     }
     #cell_couts_in_custer
     subclustering_multiple_sample_clustering_cell_couts_in_custer <- table(subclustering_multiple_sample_clustering@meta.data$cca_clusters) %>% as.data.table
@@ -218,11 +218,11 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     else if (index_subclustering_multiple_clustering6 == "tsne")
     {
       subclustering_multiple_sample_clustering<- RunTSNE(subclustering_multiple_sample_clustering, dims = 1:index_subclustering_multiple_clustering11, reduction = "rpca", reduction.name = "tsne")
-      plots16 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'rpca_clusters', raster=FALSE, label = index_subclustering_multiple_clustering12)
-      plots17 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'condition', raster=FALSE, label = index_subclustering_multiple_clustering12)
-      plots18 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'orig.ident', raster=FALSE, label = index_subclustering_multiple_clustering12)
-      plots22 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_subclustering_multiple_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "condition", ncol = 6)
-      plots23 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_subclustering_multiple_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "orig.ident", ncol = 6)
+      plots16 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'rpca_clusters', raster=FALSE, label = index_m_subclustering_clustering12)
+      plots17 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'condition', raster=FALSE, label = index_m_subclustering_clustering12)
+      plots18 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'orig.ident', raster=FALSE, label = index_m_subclustering_clustering12)
+      plots22 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_m_subclustering_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "condition", ncol = 6)
+      plots23 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_m_subclustering_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "orig.ident", ncol = 6)
     }
     #cell_couts_in_custer
     subclustering_multiple_sample_clustering_cell_couts_in_custer <- table(subclustering_multiple_sample_clustering@meta.data$rpca_clusters) %>% as.data.table
@@ -283,11 +283,11 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     else if (index_subclustering_multiple_clustering6 == "tsne")
     {
       subclustering_multiple_sample_clustering<- RunTSNE(subclustering_multiple_sample_clustering, dims = 1:index_subclustering_multiple_clustering11, reduction = "jointpca", reduction.name = "tsne")
-      plots16 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'jointpca_clusters', raster=FALSE, label = index_subclustering_multiple_clustering12)
-      plots17 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'condition', raster=FALSE, label = index_subclustering_multiple_clustering12)
-      plots18 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'orig.ident', raster=FALSE, label = index_subclustering_multiple_clustering12)
-      plots22 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_subclustering_multiple_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "condition", ncol = 6)
-      plots23 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_subclustering_multiple_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "orig.ident", ncol = 6)
+      plots16 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'jointpca_clusters', raster=FALSE, label = index_m_subclustering_clustering12)
+      plots17 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'condition', raster=FALSE, label = index_m_subclustering_clustering12)
+      plots18 <-DimPlot(subclustering_multiple_sample_clustering, reduction = 'tsne', group.by = 'orig.ident', raster=FALSE, label = index_m_subclustering_clustering12)
+      plots22 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_m_subclustering_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "condition", ncol = 6)
+      plots23 <-DimPlot(subclustering_multiple_sample_clustering, reduction = "tsne", label = index_m_subclustering_clustering12, raster=FALSE, group.by = "seurat_clusters", split.by= "orig.ident", ncol = 6)
     }
     #cell_couts_in_custer
     subclustering_multiple_sample_clustering_cell_couts_in_custer <- table(subclustering_multiple_sample_clustering@meta.data$jointpca_clusters) %>% as.data.table
