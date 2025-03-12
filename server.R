@@ -3493,7 +3493,7 @@ server <- function(input, output, session) {
   observe({
     if (input$m_subclustering_clusterbased4 == "seurat_clusters") {
       output$m_subclustering_clusterbased_6 <- renderUI({
-        clusters <- req(datainput_multiple_celltype_level()[[2]])
+        clusters <- req(datainput_subclustering_multiple_celltype_level()[[2]])
         shinyWidgets::pickerInput(
           inputId = "m_subclustering_clusterbased6",
           label = "Select one or multiple cluster(s) for plotting",
