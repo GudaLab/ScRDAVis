@@ -103,7 +103,7 @@ datainput_single_multiple_sample_gsea<- function(index_multiple_sample_gsea_inpu
   gene_ranking <- sort(gene_ranking, decreasing = TRUE)
   
   # Get the gene sets from MSigDB (e.g., Hallmark gene sets)
-  msigdb_gene_sets <- msigdbr(species = index_s_gsea5, category = index_s_gsea6)
+  msigdb_gene_sets <- msigdbr(species = index_s_gsea5, collection = index_s_gsea6)
   gene_sets <- split(msigdb_gene_sets$gene_symbol, msigdb_gene_sets$gs_name)
   
   fgsea_results <- fgsea(pathways = gene_sets, stats = gene_ranking, scoreType = index_s_gsea7, minSize = index_s_gsea8, maxSize = index_s_gsea9, nPermSimple = index_s_gsea10)
