@@ -55,7 +55,7 @@ else if (index_multiple_sample_format == "seurat_object")
 else if (index_multiple_sample_format == "matrix_count")
 {
   multiple_list_merged <- read.table(index_multiple_sample_file, header = TRUE, row.names = 1, sep = "\t")
-  multiple_list_merged <- CreateSeuratObject(counts = multiple_list_merged)
+  multiple_list_merged <- CreateSeuratObject(counts = multiple_list_merged, min.cells = index_multiple_sample_cell, min.features = index_multiple_sample_genes)
   table1 <- table(multiple_list_merged$orig.ident) %>% as.data.frame 
   colnames(table1) <- c("Sample names", "Cell counts")
   multiple_list <- SplitObject(multiple_list_merged, split.by = "orig.ident")
