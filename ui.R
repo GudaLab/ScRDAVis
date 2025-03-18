@@ -84,7 +84,7 @@ shinyUI(
         <hr>
         <h3> Launch ScRDAVis using R and GitHub: </h3>
         <p> ScRDAVis were deposited under the GitHub repository: <a href='https://github.com/GudaLab/ScRDAVis'>https://github.com/GudaLab/ScRDAVis</a><br>
-        Before running the app, users must have the following versions installed: R (>= 4.4.2), RStudio (>= 2024.12.0), Bioconductor (>= 3.20) and Shiny (>= 1.10.0) (Tested with this version).<br>
+        Before running the app, users must have the following versions installed: R (>= 4.4.3), RStudio (>= 2024.12.0), Bioconductor (>= 3.20) and Shiny (>= 1.10.0) (Tested with this version).<br>
         Note: ScRDAVis has been tested with these versions. If users are running an older version of R, they may encounter errors during package installation. Therefore, it is recommended to update R to the latest version first.<br>
        Once R is open in the command line or in RStudio, users should run the following command in R to install the shiny package.<br><br></p>
           
@@ -1525,7 +1525,7 @@ tabPanel(
   
   fluidRow(   
     box(id = "s_gsea_box1",
-        h5("Run the single or multiple samples analysis before start this analysis"),
+        #h5("Run the single or multiple samples analysis before start this analysis"),
         h3("Select the input data and cluster(s) for analysis"),
         column(6, selectInput("s_gsea1", label = "Input data", choices = c("Output from single or multiple samples" = "multiple_sample", "Output from subclustering" = "multiple_sample_subclustering"), selected = "multiple_sample")),
         #column(6, textAreaInput("s_gsea13", label ="Enter your genes (eg: gene names separated by , )", value = "", placeholder = "KLK2,KLK3,CTSG,MS4A3,CLEC4OP,KDR", height = '400px')),
@@ -2066,15 +2066,15 @@ tabPanel(
     </li>
 	<li><strong>Execution:</strong>
 <ul>
-<li>Click the Submit button to run the analysis based on selected parameters.</li>
+<li>Click the Submit button to run the analysis based on selected parameters <strong>(Fig. 1.1a)</strong>.</li>
 </ul>
 </li>
     <li><strong>Output:</strong>
         <ul>
-            <li>QC plots: Quality metrics before filtering <strong>(Fig. 1.1a)</strong>.</li>
-            <li>Feature-Feature Relationships Plot <strong>(Fig. 1.1b)</strong> </li>
-          <li>Sample(s) cell counts table <strong>(Fig. 1.1c)</strong></li>
-            <img src='images/1.1.jpg' width='800' height='500' alt=''/>
+            <li>QC plots: Quality metrics before filtering <strong>(Fig. 1.1b)</strong>.</li>
+            <li>Feature-Feature Relationships Plot <strong>(Fig. 1.1c)</strong> </li>
+          <li>Sample(s) cell counts table <strong>(Fig. 1.1d)</strong></li>
+            <img src='images/1.1.jpg' width='800' height='650' alt=''/>
         </ul>
     </li>
 </ul>
@@ -2097,16 +2097,16 @@ tabPanel(
 	</li>
 			<li><strong>Execution:</strong>
 <ul>
-	<li>Update Filtered Data: Click to apply filters and update the dataset.</li>
+	<li>Update Filtered Data: Click to apply filters and update the dataset <strong>(Fig. 1.2a)</strong>.</li>
 </ul>
 </li>
             
         
     <li><strong>Outputs after Filtering:</strong>
         <ul>
-            <li>QC matrics and Bar Plot <strong>(Fig. 1.2a-d)</strong></li>
-            <li>Summary Table: Filtered cell count data <strong>(Fig. 1.2e,f)</strong></li>
-			<img src='images/1.2.jpg' width='800' height='650' alt=''/>
+            <li>QC matrics and Bar Plot <strong>(Fig. 1.2b-e)</strong></li>
+            <li>Summary Table: Filtered cell count data <strong>(Fig. 1.2f,g)</strong></li>
+			<img src='images/1.2.jpg' width='800' height='750' alt=''/>
         </ul>
     </li>
 </ul>
@@ -2130,15 +2130,15 @@ tabPanel(
     </li>
 	<li><strong>Execution:</strong>
 <ul>
-	<li>Click  Submit button to start the analysis.</li>
+	<li>Click  Submit button to start the analysis <strong>(Fig. 1.3a)</strong>.</li>
 </ul>
 </li>
     <li><strong>Outputs:</strong>
         <ul>
-            <li>PCA Heatmap <strong>(Fig. 1.3a)</strong></li>
-            <li>Elbow Plot <strong>(Fig. 1.3b)</strong></li>
-            <li>PCA Plot (sample-wise or group-wise) <strong>(Fig. 1.3c,d)</strong></li>
-			<img src='images/1.3.jpg' width='800' height='600' alt=''/>
+            <li>PCA Heatmap <strong>(Fig. 1.3b)</strong></li>
+            <li>Elbow Plot <strong>(Fig. 1.3c)</strong></li>
+            <li>PCA Plot (sample-wise or group-wise) <strong>(Fig. 1.3d,e)</strong></li>
+			<img src='images/1.3.jpg' width='800' height='650' alt=''/>
         </ul>
     </li>
 </ul>
@@ -2169,14 +2169,14 @@ tabPanel(
   </li>
 	<li><strong>Execution:</strong>
 <ul>
-	<li>Click  Submit button to start the analysis.</li>
+	<li>Click  Submit button to start the analysis <strong>(Fig. 1.4a)</strong>.</li>
 </ul>
 </li>
 <li><strong>Visualize and Compare:</strong>
       <ul>
-          <li>Display UMAP or t-SNE plots with clustering labels and sample/condition overlays <strong>(Fig. 1.4a,c,e)</strong>.</li>
-          <li>Bar charts (Fig. 4b,d,f) and tables show cell counts per cluster and per sample/condition <strong>(Fig. 1.4g-i)</strong>.</li>
-		  <img src='images/1.4.jpg' width='800' height='700' alt=''/>
+          <li>Display UMAP or t-SNE plots with clustering labels and sample/condition overlays <strong>(Fig. 1.4b,d,f)</strong>.</li>
+          <li>Bar charts (Fig. 4c,e,g) and tables show cell counts per cluster and per sample/condition <strong>(Fig. 1.4h-j)</strong>.</li>
+		  <img src='images/1.4.jpg' width='800' height='900' alt=''/>
       </ul>
   </li>
 </ul>
@@ -2191,19 +2191,19 @@ tabPanel(
     </li>
 	<li><strong>Execution:</strong>
 <ul>
-	<li>Click Detect Doublet button to start the analysis.</li>
+	<li>Click Detect Doublet button to start the analysis <strong>(Fig. 1.5a)</strong>.</li>
 </ul>
 </li>
     <li><strong>Outputs:</strong>
         <ul>
-            <li>UMAP or t-SNE Plot: Shows singlet and doublet cells, color-coded by cluster, sample, or group <strong>(Fig. 1.5a-d)</strong>.</li>
-            <li>Summary Table: Counts of singlet and doublet cells <strong>(Fig. 1.5e)</strong>.</li>
+            <li>UMAP or t-SNE Plot: Shows singlet and doublet cells, color-coded by cluster, sample, or group <strong>(Fig. 1.5b-e)</strong>.</li>
+            <li>Summary Table: Counts of singlet and doublet cells <strong>(Fig. 1.5f)</strong>.</li>
         </ul>
     </li>
   <li><strong>Remove or keep doublets:</strong>
 	  <ul>
-    <li>Users can choose to Keep or Remove Doublets. Updated plots and tables reflect the selection <strong>(Fig. 1.5f-o)</strong>.</li>
-		<img src='images/1.5.jpg' width='800' height='700' alt=''/>
+    <li>Users can choose to Keep or Remove Doublets <strong>(Fig. 1.5g)</strong>. Updated plots and tables reflect the selection <strong>(Fig. 1.5h-q)</strong>.</li>
+		<img src='images/1.5.jpg' width='800' height='900' alt=''/>
 	</ul>
   </li>
 </ul>
@@ -2212,7 +2212,7 @@ tabPanel(
 <ul>
     <li><strong>Identify markers in all clusters (FindAllMarkers):</strong>
         <ul>
-            <li>Customizable parameters:
+            <li>Customizable parameters: <strong>(Fig. 1.6a)</strong>
 				<ul>
           <li>Minimum cell percentage (min.pct) to specify the minimum fraction of cells in which a gene is expressed.</li>
           <li>Log fold-change threshold (logfc.threshold) to filter markers based on expression magnitude.</li>
@@ -2221,8 +2221,8 @@ tabPanel(
             <li>When using SCTransform for normalization, out tool uses PrepSCTFindMarkers preps the data for accurate differential testing by adjusting the SCT assay, making results more reliable for FindMarkers and FindAllMarkers.</li>
 				</ul>
 			</li>
-<li>Output: Heatmap of the top 5 genes per cluster <strong>(Fig. 1.6a)</strong>, helping users visualize the distinguishing genes for each cluster and Summary table of markers or expressed genes <strong>(Fig. 1.6b)</strong>.</li>
-	<img src='images/1.6.jpg' width='800' height='750' alt=''/>
+<li>Output: Heatmap of the top 5 genes per cluster <strong>(Fig. 1.6b)</strong>, helping users visualize the distinguishing genes for each cluster and Summary table of markers or expressed genes <strong>(Fig. 1.6c)</strong>.</li>
+	<img src='images/1.6.jpg' width='800' height='900' alt=''/>
         </ul>
     </li>
     <li><strong>Marker identification in one specific cluster or between two clusters (FindMarkers):</strong> 
@@ -2272,14 +2272,14 @@ tabPanel(
 	</li>
 	<li><strong>Execution:</strong>
 <ul>
-	<li>Click Detect cell type button to start the analysis.</li>
+	<li>Click Detect cell type button to start the analysis <strong>(Fig. 1.7a)</strong>.</li>
 </ul>
 </li>
    <li><strong>Output:</strong></li>
       <ul>
-         <li>Plot: Generates an image plot showing the predicted cell types <strong>(Fig. 1.7a,b)</strong>.</li>
-         <li>Summary Table: Provides a summary table with the predicted cell types and associated scores <strong>(Fig. 1.7c)</strong>.</li>
-		  <img src='images/1.7.jpg' width='800' height='650' alt=''/>
+         <li>Plot: Generates an image plot showing the predicted cell types <strong>(Fig. 1.7b,c)</strong>.</li>
+         <li>Summary Table: Provides a summary table with the predicted cell types and associated scores <strong>(Fig. 1.7d)</strong>.</li>
+		  <img src='images/1.7.jpg' width='800' height='500' alt=''/>
       </ul>
 </ul>
 
@@ -2304,13 +2304,13 @@ tabPanel(
   </li>
 	<li><strong>Execution:</strong>
 <ul>
-	<li>Click Generate plots button to start the analysis.</li>
+	<li>Click Generate plots button to start the analysis <strong>(Fig. 1.8a)</strong>.</li>
 </ul>
 </li>
     <li><strong>Output:</strong>
 	<ul>
-	<li>Plot: The user receives one of the chosen plot formats (violin plot, dot plot, feature plot or ridge plot) <strong>(Fig. 1.8a-d)</strong>.</li>
-	<li>Summary Tables: The tool generates tables showing marker gene cell counts and cell proportions, providing an additional layer of quantitative insight <strong>(Fig. 1.8e)</strong>.</li>
+	<li>Plot: The user receives one of the chosen plot formats (violin plot, dot plot, feature plot or ridge plot) <strong>(Fig. 1.8b-e)</strong>.</li>
+	<li>Summary Tables: The tool generates tables showing marker gene cell counts and cell proportions, providing an additional layer of quantitative insight <strong>(Fig. 1.8f)</strong>.</li>
 	  <img src='images/1.8.jpg' width='800' height='600' alt=''/>
 		</ul>
 	</li>
@@ -2342,12 +2342,12 @@ tabPanel(
 	</li>
 	<li><strong>Execution:</strong>
 <ul>
-	<li>Click Submit button to start the analysis.</li>
+	<li>Click Submit button to start the analysis <strong>(Fig. 1.9a)</strong>.</li>
 </ul>
 </li>
     <li><strong>Output:</strong><ul>
-	<li>Plot: The users receives the chosen plot type, providing visual comparison <strong>(Fig. 1.9a-e)</strong>.</li>
-	<li>Summary Tables: Table contains the differentially expressed genes between the slected groups <strong>(Fig. 1.9f)</strong>.</li>
+	<li>Plot: The users receives the chosen plot type, providing visual comparison <strong>(Fig. 1.9b-f)</strong>.</li>
+	<li>Summary Tables: Table contains the differentially expressed genes between the slected groups <strong>(Fig. 1.9g)</strong>.</li>
 	<li>This setup enables users to conduct detailed comparisons between conditions, facilitating insights into differential gene expression and cellular responses.</li>
 	<img src='images/1.9.jpg' width='800' height='700' alt=''/>
     </ul>
@@ -2396,14 +2396,14 @@ ScRDAVis includes Cluster-Based Correlation Analysis using the genesorteR packag
 </li>
 <li><strong>Execution:</strong>
 <ul>
-<li>Click the Cluster correlation network button to run the analysis based on selected parameters.</li>
+<li>Click the Cluster correlation network button to run the analysis based on selected parameters <strong>(Fig. 3a)</strong>.</li>
 </ul>
 </li>
 <li><strong>Output:</strong>
 <ul>
-<li>Correlation Heatmap: Displays the correlation values between genes within clusters in a matrix format <strong>(Fig. 3a)</strong>.</li>
-<li>Correlation Network Plot: Depicts the relationships between genes as a network, highlighting strongly correlated pairs <strong>(Fig. 3b)</strong>.</li>
-<li>Summary Table: With the complete correlation matrix for detailed analysis <strong>(Fig. 3c)</strong></li>
+<li>Correlation Heatmap: Displays the correlation values between genes within clusters in a matrix format <strong>(Fig. 3b)</strong>.</li>
+<li>Correlation Network Plot: Depicts the relationships between genes as a network, highlighting strongly correlated pairs <strong>(Fig. 3c)</strong>.</li>
+<li>Summary Table: With the complete correlation matrix for detailed analysis <strong>(Fig. 3d)</strong></li>
 	<img src='images/3.1.jpg' width='800' height='600' alt=''/>
 </ul>
 </li>
@@ -2460,14 +2460,14 @@ Ontology Method: Users can choose to focus on specific biological aspects or all
 </li>
 <li><strong>Execution:</strong>
 <ul>
-<li>Click the GO Term button to run the analysis based on selected parameters.</li>
+<li>Click the GO Term button to run the analysis based on selected parameters <strong>(Fig. 4a)</strong>.</li>
 </ul>
 </li>
 <li><strong>Output</strong>
 <ul>
 The GO Term analysis provides:
-<li>Plots: Dot plot, Bar plot, UpSet plot and Network plot for the selected ontology categories <strong>(Fig. 4a-d)</strong>.</li>
-<li>Summary Table: A downloadable table summarizing the GO terms, adjusted p-values, and other relevant metrics, allowing users to interpret and visualize biological insights <strong>(Fig. 4e)</strong>.</li>
+<li>Plots: Dot plot, Bar plot, UpSet plot and Network plot for the selected ontology categories <strong>(Fig. 4b-e)</strong>.</li>
+<li>Summary Table: A downloadable table summarizing the GO terms, adjusted p-values, and other relevant metrics, allowing users to interpret and visualize biological insights <strong>(Fig. 4f)</strong>.</li>
 	<img src='images/4.1.jpg' width='800' height='600' alt=''/>
 </ul>
 </li>
@@ -2510,14 +2510,14 @@ ScRDAVis enables pathway mapping for multiple organisms:
 </li>
 <li><strong>Execution:</strong>
 <ul>
-<li>Click the Pathway Analysis button to run the analysis with the selected parameters.</li>
+<li>Click the Pathway Analysis button to run the analysis with the selected parameters <strong>(Fig. 5a)</strong>.</li>
 </ul>
 </li>
 <li><strong>Output</strong><br>
 Pathway analysis results include:
 <ul>
-<li>Visualizations: Dot plot, Bar plot, UpSet plot and Network plot, showcasing significant pathways <strong>(Fig. 5a-d)</strong>.</li>
-<li>Summary Table: A downloadable table with pathway details, adjusted p-values, and other metrics for further exploration and interpretation <strong>(Fig. 5e)</strong>.</li>
+<li>Visualizations: Dot plot, Bar plot, UpSet plot and Network plot, showcasing significant pathways <strong>(Fig. 5b-e)</strong>.</li>
+<li>Summary Table: A downloadable table with pathway details, adjusted p-values, and other metrics for further exploration and interpretation <strong>(Fig. 5f)</strong>.</li>
 	<img src='images/5.1.jpg' width='800' height='600' alt=''/>
 </ul>
 </li>
@@ -2569,7 +2569,7 @@ GSEA analysis can be performed on:
 </li>
 <li><strong>Execution:</strong>
 <ul>
-<li>Click the GSEA Analysis button to run the analysis with the selected parameters.</li>
+<li>Click the GSEA Analysis button to run the analysis with the selected parameters <strong>(Fig. 6a)</strong>.</li>
 </ul>
 </li>
 <li><strong>Output</strong><br>
@@ -2577,13 +2577,13 @@ The GSEA analysis provides:
 <ul>
 <li>Visualizations:
 <ul>
-<li>GSEA Plot: Displays the enrichment score curve <strong>(Fig. 6a)</strong>.</li>
-<li>PlotGseaTable: Shows enriched pathways and their enrichment scores <strong>(Fig. 6b)</strong>.</li>
-<li>Bar Plot: Highlights top significant pathways <strong>(Fig. 6c)</strong>.</li>
+<li>GSEA Plot: Displays the enrichment score curve <strong>(Fig. 6b)</strong>.</li>
+<li>PlotGseaTable: Shows enriched pathways and their enrichment scores <strong>(Fig. 6c)</strong>.</li>
+<li>Bar Plot: Highlights top significant pathways <strong>(Fig. 6d)</strong>.</li>
 </ul>
 </li>
-<li>Summary Table: A downloadable table of enriched pathways, adjusted p-values, and scores. If the users selects the top 10 significant pathways, the tool displays the top 5 upregulated and top 5 downregulated pathways <strong>(Fig. 6d)</strong>.</li>
-	<img src='images/6.1.jpg' width='800' height='550' alt=''/>
+<li>Summary Table: A downloadable table of enriched pathways, adjusted p-values, and scores. If the users selects the top 10 significant pathways, the tool displays the top 5 upregulated and top 5 downregulated pathways <strong>(Fig. 6e)</strong>.</li>
+	<img src='images/6.1.jpg' width='800' height='650' alt=''/>
 </ul>
 </li>
 </ul>
@@ -2630,7 +2630,7 @@ ScRDAVis integrates CellChat to enable users to analyze cell-cell communication 
 </li>
 <li><strong>Execution:</strong>
 <ul>
-	<li>Click to Cell-Cell communication analysis button to start the analysis.</li>
+	<li>Click to Cell-Cell communication analysis button to start the analysis <strong>(Fig. 7.1a)</strong>.</li>
 </ul>
 </li>
 <li><strong>Output for Cell-Cell Communication Analysis</strong><br>
@@ -2638,29 +2638,29 @@ The analysis generates the following visual outputs:
 <ul>
 <li>Interaction Plots:
 <ul>
-<li>Counts and Weights/Strength: Displays the frequency and intensity of interactions among cell groups <strong>(Fig. 7.1a,b)</strong>.</li>
-<li>Interaction Heatmap: Shows interaction strengths across all clusters or cell types <strong>(Fig. 7.1c)</strong>.</li>
-<li>Incoming and Outgoing Signaling Patterns: Visualizes communication patterns for target and secreting cells <strong>(Fig. 7.1d,e)</strong>.</li>
+<li>Counts and Weights/Strength: Displays the frequency and intensity of interactions among cell groups <strong>(Fig. 7.1b,c)</strong>.</li>
+<li>Interaction Heatmap: Shows interaction strengths across all clusters or cell types <strong>(Fig. 7.1d)</strong>.</li>
+<li>Incoming and Outgoing Signaling Patterns: Visualizes communication patterns for target and secreting cells <strong>(Fig. 7.1e,f)</strong>.</li>
 </ul>
 </li>
-<li>Interaction Table: Includes source and target cell types, ligand-receptor pairs, and interaction scores <strong>(Fig. 7.1f)</strong>.</li>
+<li>Interaction Table: Includes source and target cell types, ligand-receptor pairs, and interaction scores <strong>(Fig. 7.1g)</strong>.</li>
 </ul>
 </li>
 <img src='images/7.1.jpg' width='800' height='700' alt=''/>
 </ul>
 <h3>7.2. Analyzing Specific Signaling Pathways</h3>
-For a more focused analysis, users can select a specific signaling pathway from a drop-down menu, enabling detailed visualization of the chosen pathway.
+For a more focused analysis, users can select a specific signaling pathway from a drop-down menu, enabling detailed visualization of the chosen pathway <strong>(Fig. 7.2a)</strong>.
 <ul>
 <li><strong>Outputs for Specific Signaling Pathway:</strong>
 <ul>
-<li>Circle Plot: Visualizes interactions among cell groups by counts <strong>(Fig. 7.2a)</strong>.</li>
-<li>Chord Plot: Depicts connections between cell types via ligand-receptor pairs <strong>(Fig. 7.2b)</strong>.</li>
-<li>Interaction Heatmap: Interaction strengths among clusters for the specific pathway <strong>(Fig. 7.2c)</strong>.</li>
-<li>Bubble Plot and Bar Plot: Display interaction intensity for the selected pathway <strong>(Fig. 7.2d)</strong>.</li>
-<li>Hierarchy Plot: Shows the hierarchical organization of cell types and their interactions <strong>(Fig. 7.2e)</strong>.</li>
-<li>Bar Plot: Shows the network analysis contribution in bar plot <strong>(Fig. 7.2f)</strong>.</li>	
-<li>Violin Plot: Shows expression of pathway-associated genes <strong>(Fig. 7.2g)</strong>.</li>
-<li>Signaling Pathway Table: Contains source, target, ligand, receptor, and interaction details for the specific pathway <strong>(Fig. 7.2h)</strong>.</li>
+<li>Circle Plot: Visualizes interactions among cell groups by counts <strong>(Fig. 7.2b)</strong>.</li>
+<li>Chord Plot: Depicts connections between cell types via ligand-receptor pairs <strong>(Fig. 7.2c)</strong>.</li>
+<li>Interaction Heatmap: Interaction strengths among clusters for the specific pathway <strong>(Fig. 7.2d)</strong>.</li>
+<li>Bubble Plot and Bar Plot: Display interaction intensity for the selected pathway <strong>(Fig. 7.2e)</strong>.</li>
+<li>Hierarchy Plot: Shows the hierarchical organization of cell types and their interactions <strong>(Fig. 7.2f)</strong>.</li>
+<li>Bar Plot: Shows the network analysis contribution in bar plot <strong>(Fig. 7.2g)</strong>.</li>	
+<li>Violin Plot: Shows expression of pathway-associated genes <strong>(Fig. 7.2h)</strong>.</li>
+<li>Signaling Pathway Table: Contains source, target, ligand, receptor, and interaction details for the specific pathway <strong>(Fig. 7.2i)</strong>.</li>
 <img src='images/7.2.jpg' width='800' height='650' alt=''/>
 </ul>
 </li>
@@ -2690,12 +2690,12 @@ ScRDAVis integrates Monocle3 for trajectory and pseudotime analysis, allowing us
 </li>
 <li><strong>Execution:</strong>
 <ul>
-<li>Once parameters are set, users can click the Learn Trajectory button to generate the trajectory plot.</li>
+<li>Once parameters are set, users can click the Learn Trajectory button to generate the trajectory plot <strong>(Fig. 8a)</strong>.</li>
 </ul>
 </li>
 <li><strong>Output:</strong>
 <ul>
-<li>Trajectory Plot: Displays cell progression in trajectory space, providing insight into the cellular development path <strong>(Fig. 8a)</strong>.</li>
+<li>Trajectory Plot: Displays cell progression in trajectory space, providing insight into the cellular development path <strong>(Fig. 8b)</strong>.</li>
 </ul>
 </li>
 </ul>
@@ -2709,13 +2709,13 @@ ScRDAVis integrates Monocle3 for trajectory and pseudotime analysis, allowing us
 </li>
 	<li><strong>Execution:</strong>
 <ul>
-<li>Click to Submit button to start the analysis.</li>
+<li>Click to Submit button to start the analysis <strong>(Fig. 8c)</strong>.</li>
 </ul>
 </li>
 <li><strong>Output:</strong>
 <ul>
-<li>Pseudotime Plot: Cells are arranged by pseudotime, showing the developmental trajectory <strong>(Fig. 8b)</strong>.</li>
-<li>Bar Chart: Cells are ordered based on both Seurat clusters and Monocle3 pseudotime <strong>(Fig. 8c)</strong>.</li>
+<li>Pseudotime Plot: Cells are arranged by pseudotime, showing the developmental trajectory <strong>(Fig. 8d)</strong>.</li>
+<li>Bar Chart: Cells are ordered based on both Seurat clusters and Monocle3 pseudotime <strong>(Fig. 8e)</strong>.</li>
 </ul>
 </li>
 </ul>
@@ -2729,18 +2729,18 @@ To explore gene expression dynamics along the pseudotime trajectory, users can a
 </li>
 	<li><strong>Execution:</strong>
 <ul>
-<li>Click Find Genes Button: Begins the identification of genes whose functions vary along pseudotime.</li>
+<li>Click Find Genes Button: Begins the identification of genes whose functions vary along pseudotime <strong>(Fig. 8f)</strong>.</li>
 </ul>
 </li>
 <li><strong>Output:</strong>
 <ul>
-<li>Pseudotime Plot of Cells: Visual representation of cells in pseudotime with associated gene expression <strong>(Fig. 8d)</strong>.</li>
-<li>Summary Table: Lists genes with dynamic functional changes along pseudotime <strong>(Fig. 8e)</strong>.</li>
+<li>Pseudotime Plot of Cells: Visual representation of cells in pseudotime with associated gene expression <strong>(Fig. 8g)</strong>.</li>
+<li>Summary Table: Lists genes with dynamic functional changes along pseudotime <strong>(Fig. 8h)</strong>.</li>
 </ul>
 </li>
 </ul>
 <h3>8.4. Plotting Gene Expression in Pseudotime</h3>
-Users can visualize specific genes to observe their expression patterns over pseudotime:
+Users can visualize specific genes to observe their expression patterns over pseudotime: <strong>(Fig. 8i)</strong>
 <ul>
 <li><strong>Gene Selection: </strong>
   <ul>
@@ -2750,7 +2750,7 @@ Users can visualize specific genes to observe their expression patterns over pse
 </li>
     <li><strong>Output: </strong>
       <ul>
-        <li>Creates a feature plot to display gene expression across cells in pseudotime <strong>(Fig. 8f)</strong>.</li>
+        <li>Creates a feature plot to display gene expression across cells in pseudotime <strong>(Fig. 8j)</strong>.</li>
 		 <img src='images/8.1.jpg' width='800' height='650' alt=''/>
       </ul>
   </li>
@@ -2800,22 +2800,22 @@ Builds networks with customizable parameters:
 </li>
 <li><strong>Execution:</strong>
 <ul>
-	<li>Click the WGCNA Analysis button initiates co-expression network analysis.</li>
+	<li>Click the WGCNA Analysis button initiates co-expression network analysis <strong>(Fig. 9a)</strong>.</li>
 </ul>
 </li>
 <li><strong>Outputs:</strong><br>
 Few plots were not available in image files format so we have provided those as pdf files.
 <ul>
-<li>Soft Power Plots: Visualizes the selection of the optimal soft power parameter for network construction <strong>(Fig. 9.1a)</strong>.</li>
-<li>Co-Expression Network Visualization: Displays modules with distinct colors representing gene clusters <strong>(Fig. 9.1b)</strong>.</li>
-<li>Ranked Genes in Modules: Provides a list of genes ranked by module membership (kME) <strong>(Fig. 9.1c)</strong>.</li>
-<li>Feature Plots: Highlights the expression of modules or specific genes <strong>(Fig. 9.1d)</strong>.</li>
-<li>Module Relationships Plots: Correlation between modules based on harmonized module eigengenes (hMEs) <strong>(Fig. 9.1e)</strong>.</li>
-<li>Seurat DotPlot with Modules: Displays module-specific gene expression across clusters <strong>(Fig. 9.1f)</strong>.</li>
-<li>Individual Module Network Plots: Visualizes the gene network for specific modules <strong>(Fig. 9.1g)</strong>.</li>
-<li>Module UMAP Plots: Maps modules onto UMAP visualizations for spatial context <strong>(Fig. 9.1h)</strong>.</li>
-<li>Summary Table: Soft Power Table: Lists optimal soft power values <strong>(Fig. 9.1i)</strong>. Module Assignment Table: Details gene-module relationships with colors <strong>(Fig. 9.1j)</strong>. Hub Genes Table: Identifies top hub genes per module <strong>(Fig. 9.1k)</strong>.</li>
-<img src='images/9.1.jpg' width='800' height='800' alt=''/>
+<li>Soft Power Plots: Visualizes the selection of the optimal soft power parameter for network construction <strong>(Fig. 9.1b)</strong>.</li>
+<li>Co-Expression Network Visualization: Displays modules with distinct colors representing gene clusters <strong>(Fig. 9.1c)</strong>.</li>
+<li>Ranked Genes in Modules: Provides a list of genes ranked by module membership (kME) <strong>(Fig. 9.1d)</strong>.</li>
+<li>Feature Plots: Highlights the expression of modules or specific genes <strong>(Fig. 9.1e)</strong>.</li>
+<li>Module Relationships Plots: Correlation between modules based on harmonized module eigengenes (hMEs) <strong>(Fig. 9.1f)</strong>.</li>
+<li>Seurat DotPlot with Modules: Displays module-specific gene expression across clusters <strong>(Fig. 9.1g)</strong>.</li>
+<li>Individual Module Network Plots: Visualizes the gene network for specific modules <strong>(Fig. 9.1h)</strong>.</li>
+<li>Module UMAP Plots: Maps modules onto UMAP visualizations for spatial context <strong>(Fig. 9.1i)</strong>.</li>
+<li>Summary Table: Soft Power Table: Lists optimal soft power values <strong>(Fig. 9.1j)</strong>. Module Assignment Table: Details gene-module relationships with colors <strong>(Fig. 9.1k)</strong>. Hub Genes Table: Identifies top hub genes per module <strong>(Fig. 9.1l)</strong>.</li>
+<img src='images/9.1.jpg' width='800' height='900' alt=''/>
 </ul>
 </li>
 </ul>
@@ -2863,28 +2863,28 @@ Transcription Factor (TF) Regulatory Network Analysis in ScRDAVis employs the hd
 </li>
 <li><strong>Execution:</strong>
 <ul>
-<li>Click Transcription factor analysis button to start the analysis.</li>
+<li>Click Transcription factor analysis button to start the analysis <strong>(Fig. 9.2.1a)</strong>.</li>
 </ul>
 </li>	
 <li><strong>Output and Visualization:</strong>
 <ul>
-<li>Module Regulatory Network Plots: Positive, negative, and combined regulatory network plots. Visualize TF-to-target relationships categorized by regulatory effects <strong>(Fig. 9.2.1a-d)</strong>.</li>
-<li>Regulated Scores Table: Comprehensive list of TFs and their downstream targets <strong>(Fig. 9.2.1e)</strong>.</li>
-	<img src='images/9.2.1.jpg' width='800' height='800' alt=''/>
+<li>Module Regulatory Network Plots: Positive, negative, and combined regulatory network plots. Visualize TF-to-target relationships categorized by regulatory effects <strong>(Fig. 9.2.1b-e)</strong>.</li>
+<li>Regulated Scores Table: Comprehensive list of TFs and their downstream targets <strong>(Fig. 9.2.1f)</strong>.</li>
+	<img src='images/9.2.1.jpg' width='800' height='900' alt=''/>
 </ul>
 </li>
 <li><strong>TF-Specific Visualizations:</strong><br>
 Unravel regulatory mechanisms governing gene expression in cellular contexts. Identify key transcription factors and their target genes for hypothesis generation and validation. Explore positive and negative regulatory effects within gene modules.
 <ul>
-<li>Select a TF from a dropdown menu to generate specific plots:</li>
+<li>Select a TF from a dropdown menu to generate specific plots: <strong>(Fig. 9.2.2a)</strong></li>
 </ul>
 </li>
 <li><strong>Outputs:</strong>
 <ul>
-<li>UMAP Plots: Spatial distribution of the TF <strong>(Fig. 9.2.2a)</strong>.</li>
-<li>Bar Plots: Contribution of the TF across modules <strong>(Fig. 9.2.2b)</strong>.</li>
-<li>Network Plots: Positive, negative, and combined networks, with primary, secondary and tertiary targets <strong>(Fig. 9.2.2c-e)</strong>.</li>
-<img src='images/9.2.2.jpg' width='800' height='800' alt=''/>
+<li>UMAP Plots: Spatial distribution of the TF <strong>(Fig. 9.2.2b)</strong>.</li>
+<li>Bar Plots: Contribution of the TF across modules <strong>(Fig. 9.2.2c)</strong>.</li>
+<li>Network Plots: Positive, negative, and combined networks, with primary, secondary and tertiary targets <strong>(Fig. 9.2.2d-f)</strong>.</li>
+<img src='images/9.2.2.jpg' width='800' height='900' alt=''/>
 </ul>
 </li>
 </ul>
