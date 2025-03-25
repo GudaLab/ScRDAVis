@@ -369,14 +369,14 @@ tabPanel(
         column(3, numericInput("m_clustering7", label = "Number of dimensions", min = 0, max = 100, value = 30, step = 1)),
         column(3, numericInput("m_clustering8", label = "k-nearest-neighbours", min = 0, max = 50, value = 20, step = 1)),
         column(3, numericInput("m_clustering9", label = "min.dist", min = 0.001, max = 0.5, value = 0.3, step = 0.01)),
-        column(3, selectInput("m_clustering10", label = "Show label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "TRUE")),
+        column(3, selectInput("m_clustering10", label = "Show label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "FALSE")),
     ),
   ),		
   fluidRow(                  
     box(id = "m_tsne_box",                      
         h3("t-SNE parameters"),                 
         column(3, numericInput("m_clustering11", label = "Number of dimensions",  min = 0, max = 100, value = 30, step = 1)),
-        column(3, selectInput("m_clustering12", label = "Show label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "TRUE")),
+        column(3, selectInput("m_clustering12", label = "Show label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "FALSE")),
     ),
   ),   
   fluidRow(
@@ -467,7 +467,7 @@ tabPanel(
     box(id = "m_doublet_box1",                      
         h3("Parameters to detect doublets"), 
         column(5, numericInput("m_doublet1", label = "Estimated percentage of doublets in dataset", min = 0.001, max = 1, value = 0.075)),
-        column(4, selectInput("m_doublet3", label = "Dim plots label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "TRUE")),
+        column(4, selectInput("m_doublet3", label = "Dim plots label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "FALSE")),
         br(),
         column(width =3, actionBttn("multiple_sample_doublet", "Detect doublet",  style = "unite",color = "primary", icon = icon("download"))),
     ),
@@ -712,7 +712,7 @@ tabPanel(
   ),
   fluidRow(   
     box(id = "m_celltype_box6", 
-        column(4, selectInput("m_celltype8", label = "Dim plots label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "TRUE")),
+        column(4, selectInput("m_celltype8", label = "Dim plots label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "FALSE")),
         br(),
         column(3, actionBttn("multiple_sample_celltype", "Detect cell type",  style = "unite",color = "primary", icon = icon("download"))),
     ),
@@ -883,9 +883,11 @@ tabPanel(
   sidebarLayout(
     sidebarPanel(id="subclustering_multiple_sidebar",
                  h3(id = "m_subclustering0", "Please run upto Single or Multiple samples Analysis upto Celltype prediction to begin this analysis"),
-                 selectInput("m_subclustering1", label = "Select the cluster type for sub clustering", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted"), selected = "seurat_clusters"),
+                 selectInput("m_subclustering1", label = "Select the cluster type for sub clustering", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted", "Select the gene of interest to extract the cells"="selected_gene"), selected = "seurat_clusters"),
                  uiOutput("m_subclustering_2"),
                  uiOutput("m_subclustering_3"),
+				 textInput("m_subclustering_4", label ="Type gene name to extract the cells eg: (FCN1) or (FCN1,PSAP)", value = "", width = NULL, placeholder = NULL),
+           
                  # uiOutput("m_subclustering_4"),
                  # uiOutput("m_subclustering_5"),
                  # uiOutput("m_subclustering_6"),
@@ -1007,14 +1009,14 @@ tabPanel(
                         column(3, numericInput("m_subclustering_clustering7", label = "Number of dimensions", min = 0, max = 100, value = 30, step = 1)),
                         column(3, numericInput("m_subclustering_clustering8", label = "k-nearest-neighbours", min = 0, max = 50, value = 20, step = 1)),
                         column(3, numericInput("m_subclustering_clustering9", label = "min.dist", min = 0.001, max = 0.5, value = 0.3, step = 0.01)),
-                        column(3, selectInput("m_subclustering_clustering10", label = "Show label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "TRUE")),
+                        column(3, selectInput("m_subclustering_clustering10", label = "Show label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "FALSE")),
                     ),
                   ),		
                   fluidRow(                  
                     box(id = "m_subclustering_tsne_box",                      
                         h3("t-SNE parameters"),                 
                         column(3, numericInput("m_subclustering_clustering11", label = "Number of dimensions",  min = 0, max = 100, value = 30, step = 1)),
-                        column(3, selectInput("m_subclustering_clustering12", label = "Show label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "TRUE")),
+                        column(3, selectInput("m_subclustering_clustering12", label = "Show label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "FALSE")),
                     ),
                   ),   
                   fluidRow(
@@ -1207,7 +1209,7 @@ tabPanel(
                   ),
                   fluidRow(   
                     box(id = "m_subclustering_celltype_box6", 
-                        column(4, selectInput("m_subclustering_celltype8", label = "Dim plots label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "TRUE")),
+                        column(4, selectInput("m_subclustering_celltype8", label = "Dim plots label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "FALSE")),
                         br(),
                         column(3, actionBttn("subclustering_multiple_sample_celltype", "Detect cell type",  style = "unite",color = "primary", icon = icon("download"))),
                     ),
@@ -2028,6 +2030,7 @@ tabPanel(
 <ul>
 <li>Format: Filename.txt with rows as genes and columns as sample_cellID.</li>
 </ul>
+<img src='images/folder_image.jpg' width='400' height='600' alt=''/>
 </ol>
 <p><strong>Data Size and Handling:</strong></p>
 <ul>
@@ -2074,7 +2077,7 @@ tabPanel(
             <li>QC plots: Quality metrics before filtering <strong>(Fig. 1.1b)</strong>.</li>
             <li>Feature-Feature Relationships Plot <strong>(Fig. 1.1c)</strong> </li>
           <li>Sample(s) cell counts table <strong>(Fig. 1.1d)</strong></li>
-            <img src='images/1.1.jpg' width='800' height='650' alt=''/>
+            <img src='images/1.1.jpg' width='800' height='700' alt=''/>
         </ul>
     </li>
 </ul>
@@ -2106,7 +2109,7 @@ tabPanel(
         <ul>
             <li>QC matrics and Bar Plot <strong>(Fig. 1.2b-e)</strong></li>
             <li>Summary Table: Filtered cell count data <strong>(Fig. 1.2f,g)</strong></li>
-			<img src='images/1.2.jpg' width='800' height='750' alt=''/>
+			<img src='images/1.2.jpg' width='800' height='600' alt=''/>
         </ul>
     </li>
 </ul>
@@ -2138,7 +2141,7 @@ tabPanel(
             <li>PCA Heatmap <strong>(Fig. 1.3b)</strong></li>
             <li>Elbow Plot <strong>(Fig. 1.3c)</strong></li>
             <li>PCA Plot (sample-wise or group-wise) <strong>(Fig. 1.3d,e)</strong></li>
-			<img src='images/1.3.jpg' width='800' height='650' alt=''/>
+			<img src='images/1.3.jpg' width='800' height='700' alt=''/>
         </ul>
     </li>
 </ul>
@@ -2176,7 +2179,7 @@ tabPanel(
       <ul>
           <li>Display UMAP or t-SNE plots with clustering labels and sample/condition overlays <strong>(Fig. 1.4b,d,f)</strong>.</li>
           <li>Bar charts (Fig. 4c,e,g) and tables show cell counts per cluster and per sample/condition <strong>(Fig. 1.4h-j)</strong>.</li>
-		  <img src='images/1.4.jpg' width='800' height='900' alt=''/>
+		  <img src='images/1.4.jpg' width='800' height='1000' alt=''/>
       </ul>
   </li>
 </ul>
@@ -2203,7 +2206,7 @@ tabPanel(
   <li><strong>Remove or keep doublets:</strong>
 	  <ul>
     <li>Users can choose to Keep or Remove Doublets <strong>(Fig. 1.5g)</strong>. Updated plots and tables reflect the selection <strong>(Fig. 1.5h-q)</strong>.</li>
-		<img src='images/1.5.jpg' width='800' height='900' alt=''/>
+		<img src='images/1.5.jpg' width='800' height='800' alt=''/>
 	</ul>
   </li>
 </ul>
@@ -2222,7 +2225,7 @@ tabPanel(
 				</ul>
 			</li>
 <li>Output: Heatmap of the top 5 genes per cluster <strong>(Fig. 1.6b)</strong>, helping users visualize the distinguishing genes for each cluster and Summary table of markers or expressed genes <strong>(Fig. 1.6c)</strong>.</li>
-	<img src='images/1.6.jpg' width='800' height='900' alt=''/>
+	<img src='images/1.6.jpg' width='800' height='800' alt=''/>
         </ul>
     </li>
     <li><strong>Marker identification in one specific cluster or between two clusters (FindMarkers):</strong> 
@@ -2279,7 +2282,7 @@ tabPanel(
       <ul>
          <li>Plot: Generates an image plot showing the predicted cell types <strong>(Fig. 1.7b,c)</strong>.</li>
          <li>Summary Table: Provides a summary table with the predicted cell types and associated scores <strong>(Fig. 1.7d)</strong>.</li>
-		  <img src='images/1.7.jpg' width='800' height='500' alt=''/>
+		  <img src='images/1.7.jpg' width='800' height='450' alt=''/>
       </ul>
 </ul>
 
@@ -2361,6 +2364,8 @@ tabPanel(
 <ul>
 <li>Users can choose one or multiple clusters for subclustering.</li>
 <li>Clusters can be selected based on Seurat clusters or previously predicted annotation labels.</li>
+<li>Users can select genes of interest to extract cells for reclustering; for example, FCN1 or multiple genes like FCN1,PSAP. When specifying multiple genes, separate each gene name with a comma.</li>
+<img src='images/2.1.jpg' width='400' height='250' alt=''/>
 </ul>
 	
 <h3>2.2. Subclustering Analysis Steps:</h3>
@@ -2404,7 +2409,7 @@ ScRDAVis includes Cluster-Based Correlation Analysis using the genesorteR packag
 <li>Correlation Heatmap: Displays the correlation values between genes within clusters in a matrix format <strong>(Fig. 3b)</strong>.</li>
 <li>Correlation Network Plot: Depicts the relationships between genes as a network, highlighting strongly correlated pairs <strong>(Fig. 3c)</strong>.</li>
 <li>Summary Table: With the complete correlation matrix for detailed analysis <strong>(Fig. 3d)</strong></li>
-	<img src='images/3.1.jpg' width='800' height='600' alt=''/>
+	<img src='images/3.1.jpg' width='800' height='550' alt=''/>
 </ul>
 </li>
 </ul>
@@ -2583,7 +2588,7 @@ The GSEA analysis provides:
 </ul>
 </li>
 <li>Summary Table: A downloadable table of enriched pathways, adjusted p-values, and scores. If the users selects the top 10 significant pathways, the tool displays the top 5 upregulated and top 5 downregulated pathways <strong>(Fig. 6e)</strong>.</li>
-	<img src='images/6.1.jpg' width='800' height='650' alt=''/>
+	<img src='images/6.1.jpg' width='800' height='600' alt=''/>
 </ul>
 </li>
 </ul>
@@ -2646,7 +2651,7 @@ The analysis generates the following visual outputs:
 <li>Interaction Table: Includes source and target cell types, ligand-receptor pairs, and interaction scores <strong>(Fig. 7.1g)</strong>.</li>
 </ul>
 </li>
-<img src='images/7.1.jpg' width='800' height='700' alt=''/>
+<img src='images/7.1.jpg' width='800' height='650' alt=''/>
 </ul>
 <h3>7.2. Analyzing Specific Signaling Pathways</h3>
 For a more focused analysis, users can select a specific signaling pathway from a drop-down menu, enabling detailed visualization of the chosen pathway <strong>(Fig. 7.2a)</strong>.
@@ -2884,7 +2889,7 @@ Unravel regulatory mechanisms governing gene expression in cellular contexts. Id
 <li>UMAP Plots: Spatial distribution of the TF <strong>(Fig. 9.2.2b)</strong>.</li>
 <li>Bar Plots: Contribution of the TF across modules <strong>(Fig. 9.2.2c)</strong>.</li>
 <li>Network Plots: Positive, negative, and combined networks, with primary, secondary and tertiary targets <strong>(Fig. 9.2.2d-f)</strong>.</li>
-<img src='images/9.2.2.jpg' width='800' height='900' alt=''/>
+<img src='images/9.2.2.jpg' width='800' height='700' alt=''/>
 </ul>
 </li>
 </ul>
