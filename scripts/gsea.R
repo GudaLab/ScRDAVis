@@ -136,6 +136,7 @@ datainput_single_multiple_sample_gsea<- function(index_multiple_sample_gsea_inpu
   else if (index_s_gsea11 == "plotGseaTable"){
     plots501 <-plotGseaTable(gene_sets[topPathways1], gene_ranking, fgsea_results, gseaParam=0.5)
   }
-    
+  fgsea_results$leadingEdge <- sapply(fgsea_results$leadingEdge, function(x) paste(unlist(x), collapse = ", "))
+  
   return(list(plot1 = plots501, data1 = fgsea_results))
 }
