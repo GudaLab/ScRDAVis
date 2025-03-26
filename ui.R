@@ -701,7 +701,7 @@ tabPanel(
   ),  
   fluidRow(   
     box(id = "m_celltype_box4",                      
-        column(6, selectInput("m_celltype5", label = "Select model", choices = c("gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-4")),  
+        column(6, selectInput("m_celltype5", label = "Select model", choices = c("gpt-4.5-preview" = "gpt-4.5-preview","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-4")),  
         column(6, numericInput("m_celltype6", label = "Top gene numbers to predict cell type",  min = 1, max = 25, value = 10)),  
     ),
   ),
@@ -883,10 +883,11 @@ tabPanel(
   sidebarLayout(
     sidebarPanel(id="subclustering_multiple_sidebar",
                  h3(id = "m_subclustering0", "Please run upto Single or Multiple samples Analysis upto Celltype prediction to begin this analysis"),
-                 selectInput("m_subclustering1", label = "Select the cluster type for sub clustering", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted", "Select the gene of interest to extract the cells"="selected_gene"), selected = "seurat_clusters"),
+                 selectInput("m_subclustering1", label = "Select the cluster type for sub clustering", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted", "Select the gene of interest to extract the cells"="selected_gene", "Exclude cells expressing the selected genes, and retain the remaining cells"="exclude_selected_gene"), selected = "seurat_clusters"),
                  uiOutput("m_subclustering_2"),
                  uiOutput("m_subclustering_3"),
 				 textInput("m_subclustering_4", label ="Type gene name to extract the cells eg: (FCN1) or (FCN1,PSAP)", value = "", width = NULL, placeholder = NULL),
+				 textInput("m_subclustering_5", label ="Type gene name to exclude the cells eg: (FCN1) or (FCN1,PSAP)", value = "", width = NULL, placeholder = NULL),
            
                  # uiOutput("m_subclustering_4"),
                  # uiOutput("m_subclustering_5"),
@@ -1198,7 +1199,7 @@ tabPanel(
                   ),  
                   fluidRow(   
                     box(id = "m_subclustering_celltype_box4",                      
-                        column(6, selectInput("m_subclustering_celltype5", label = "Select model", choices = c("gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-4")),  
+                        column(6, selectInput("m_subclustering_celltype5", label = "Select model", choices = c("gpt-4.5-preview" = "gpt-4.5-preview","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-4")),  
                         column(6, numericInput("m_subclustering_celltype6", label = "Top gene numbers to predict cell type",  min = 1, max = 25, value = 10)),  
                     ),
                   ),
@@ -2365,6 +2366,7 @@ tabPanel(
 <li>Users can choose one or multiple clusters for subclustering.</li>
 <li>Clusters can be selected based on Seurat clusters or previously predicted annotation labels.</li>
 <li>Users can select genes of interest to extract cells for reclustering; for example, FCN1 or multiple genes like FCN1,PSAP. When specifying multiple genes, separate each gene name with a comma.</li>
+<li>Exclude genes expressed in these cells and perform the analysis using the remaining cells; for example, FCN1 or multiple genes like FCN1,PSAP. When specifying multiple genes, separate each gene name with a comma.</li>
 <img src='images/2.1.jpg' width='400' height='250' alt=''/>
 </ul>
 	

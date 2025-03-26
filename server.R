@@ -2667,7 +2667,18 @@ server <- function(input, output, session) {
       shinyjs::hide("m_subclustering5")
       shinyjs::hide("m_subclustering6")
     }  	
-   
+   else if (input$m_subclustering1 == "exclude_selected_gene") {
+      shinyjs::hide("m_subclustering_2")
+      shinyjs::hide("m_subclustering_3")
+      shinyjs::hide("m_subclustering_4")
+      shinyjs::show("m_subclustering_5")
+      shinyjs::hide("m_subclustering_6")
+      shinyjs::hide("m_subclustering2")
+      shinyjs::hide("m_subclustering3")
+      shinyjs::hide("m_subclustering4")
+      shinyjs::hide("m_subclustering5")
+      shinyjs::hide("m_subclustering6")
+    }  	
   })
   
   observeEvent(input$subclustering_multiple_sample_submit,{
@@ -2701,7 +2712,7 @@ server <- function(input, output, session) {
   datainput_subclustering_multiple_sample_level<- eventReactive(input$subclustering_multiple_sample_submit,{
     source("scripts/subclustering_multiple_stats.R")
    #datainput_subclustering_multiple_sample(index_subclustering_multiple_sample_file = datainput_multiple_celltype_level()[[1]], index_m_subclustering1 = input$m_subclustering1, index_m_subclustering2 = input$m_subclustering2, index_m_subclustering3 = input$m_subclustering3, index_m_subclustering4 = input$m_subclustering4, index_m_subclustering5 = input$m_subclustering5, index_m_subclustering6 = input$m_subclustering6)
-    datainput_subclustering_multiple_sample(index_subclustering_multiple_sample_file = datainput_multiple_celltype_level()[[1]], index_subclustering_multiple_sample_celltype = datainput_multiple_celltype_level()[[4]], index_m_subclustering1 = input$m_subclustering1, index_m_subclustering2 = input$m_subclustering2, index_m_subclustering3 = input$m_subclustering3, index_m_subclustering_4 = input$m_subclustering_4)
+    datainput_subclustering_multiple_sample(index_subclustering_multiple_sample_file = datainput_multiple_celltype_level()[[1]], index_subclustering_multiple_sample_celltype = datainput_multiple_celltype_level()[[4]], index_m_subclustering1 = input$m_subclustering1, index_m_subclustering2 = input$m_subclustering2, index_m_subclustering3 = input$m_subclustering3, index_m_subclustering_4 = input$m_subclustering_4, index_m_subclustering_5 = input$m_subclustering_5)
   })
   
   output$m_subclustering_qc <- renderPlot({
@@ -4280,6 +4291,7 @@ server <- function(input, output, session) {
       write.csv(datainput_single_multiple_sample_gsea_level()[[2]], file)
     }
   )
+ 
  
   
 ##############################################Menu7#####################################################################   
