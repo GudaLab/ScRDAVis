@@ -50,7 +50,7 @@ shinyUI(
     <p>Identifies expressed genes between two groups, with visualization options including Dot, Violin, Ridge, Feature, or Volcano plots.</p>
 
     <h3>2. Subclustering</h3>
-    <p>Allows sub-clustering within one or more clusters from single or multiple sample analyses, following similar steps as in the primary analysis.</p>
+    <p>Allows sub-clustering within one or more clusters from single or multiple sample analyses or gene of interst in positive or negative selection, which follows similar steps as in the primary analysis.</p>
 
     <h3>3. Correlation Network Analysis</h3>
     <p>Uses the genesorteR package to identify the correlation between cell clusters. Provides correlation summary tables and visualizations of correlation matrix and network plots.</p>
@@ -883,7 +883,7 @@ tabPanel(
   sidebarLayout(
     sidebarPanel(id="subclustering_multiple_sidebar",
                  h3(id = "m_subclustering0", "Please run upto Single or Multiple samples Analysis upto Celltype prediction to begin this analysis"),
-                 selectInput("m_subclustering1", label = "Select the cluster type for sub clustering", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted", "Select the gene of interest to extract the cells"="selected_gene", "Exclude cells expressing the selected genes, and retain the remaining cells"="exclude_selected_gene"), selected = "seurat_clusters"),
+                 selectInput("m_subclustering1", label = "Select the cluster type for sub clustering", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted", "Select the gene of interest to extract the cells (positive selection)"="selected_gene", "Exclude cells expressing the selected genes, and retain the remaining cells (negative selection)"="exclude_selected_gene"), selected = "seurat_clusters"),
                  uiOutput("m_subclustering_2"),
                  uiOutput("m_subclustering_3"),
 				 textInput("m_subclustering_4", label ="Type gene name to extract the cells eg: (FCN1) or (FCN1,PSAP)", value = "", width = NULL, placeholder = NULL),
@@ -2259,7 +2259,7 @@ tabPanel(
      </ul>
     <li><strong>GPTCelltype:</strong></li>
       <ul>
-         <li>GPT Models: Utilizes various GPT models, including: GPT-4, GPT-4-turbo, GPT-4o-mini, GPT-4o, ChatGPT-4o-latest, GPT-3.5-turbo, GPT-3.5-turbo.</li>
+         <li>GPT Models: Utilizes various GPT models, including: gpt-4.5-preview, GPT-4, GPT-4-turbo, GPT-4o-mini, GPT-4o, ChatGPT-4o-latest, GPT-3.5-turbo, GPT-3.5-turbo.</li>
          <li>Gene Requirements: Requires a minimum number of top genes for accurate prediction.</li>
          <li>Availability: Available via the web platform. To use it locally, users need to update their API key by setting Sys.setenv(OPENAI_API_KEY = 'your_openai_API_key') in the global.R file.</li>
       </ul>
@@ -2365,8 +2365,8 @@ tabPanel(
 <ul>
 <li>Users can choose one or multiple clusters for subclustering.</li>
 <li>Clusters can be selected based on Seurat clusters or previously predicted annotation labels.</li>
-<li>Users can select genes of interest to extract cells for reclustering; for example, FCN1 or multiple genes like FCN1,PSAP. When specifying multiple genes, separate each gene name with a comma.</li>
-<li>Exclude genes expressed in these cells and perform the analysis using the remaining cells; for example, FCN1 or multiple genes like FCN1,PSAP. When specifying multiple genes, separate each gene name with a comma.</li>
+<li>Users can select genes of interest to extract cells for reclustering (positive selection); for example, FCN1 or multiple genes like FCN1,PSAP. When specifying multiple genes, separate each gene name with a comma.</li>
+<li>Exclude genes expressed in cells and perform the analysis using the remaining cells (negative selection); for example, FCN1 or multiple genes like FCN1,PSAP. When specifying multiple genes, separate each gene name with a comma.</li>
 <img src='images/2.1.jpg' width='400' height='250' alt=''/>
 </ul>
 	
