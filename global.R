@@ -30,6 +30,8 @@ if (!require("igraph")) install.packages("igraph")
 if (!require("cowplot"))install.packages("cowplot")
 if (!require("pdftools"))install.packages("pdftools")
 if (!require("xgboost"))install.packages("xgboost")
+if (!require("msigdbr"))install.packages("msigdbr")
+if (!require("msigdbdf"))install.packages("msigdbdf", repos = "https://igordot.r-universe.dev")
 if (!require("BiocManager")) install.packages("BiocManager", update = FALSE)
 if (!require("Seurat")) BiocManager::install("Seurat", update = FALSE)
 if (!require("SeuratObject")) BiocManager::install("SeuratObject", update = FALSE)
@@ -52,15 +54,13 @@ if (!require("ComplexHeatmap")) BiocManager::install("ComplexHeatmap", update = 
 if (!require("patchwork")) BiocManager::install("thomasp85/patchwork", update = FALSE)
 if (!require("clusterProfiler"))BiocManager::install("clusterProfiler", update = FALSE)
 if (!require("org.Hs.eg.db"))BiocManager::install("org.Hs.eg.db", update = FALSE)
-if (!require("org.Mm.eg.db"))BiocManager::install("org.Mm.eg.db", update = FALSE) #Mouse
-if (!require("org.Mmu.eg.db"))BiocManager::install("org.Mmu.eg.db", update = FALSE) # Rhesus
-if (!require("org.Rn.eg.db"))BiocManager::install("org.Rn.eg.db", update = FALSE) #Rat
-if (!require("org.Ss.eg.db"))BiocManager::install("org.Ss.eg.db", update = FALSE) #Pig
+if (!require("org.Mm.eg.db"))BiocManager::install("org.Mm.eg.db", update = FALSE)
+if (!require("org.Mmu.eg.db"))BiocManager::install("org.Mmu.eg.db", update = FALSE)
+if (!require("org.Rn.eg.db"))BiocManager::install("org.Rn.eg.db", update = FALSE)
+if (!require("org.Ss.eg.db"))BiocManager::install("org.Ss.eg.db", update = FALSE)
 if (!require("ReactomePA"))BiocManager::install("ReactomePA", update = FALSE)
-if (!require("msigdbr"))BiocManager::install("msigdbr", update = FALSE)
 if (!require("fgsea"))BiocManager::install("fgsea", update = FALSE)
 if (!require("enrichplot"))BiocManager::install("enrichplot", update = FALSE)
-#if (!require("CellChat"))BiocManager::install("sqjin/CellChat", update = FALSE)
 if (!require("CellChat"))BiocManager::install("jinworks/CellChat", update = FALSE)
 if (!require("multtest"))BiocManager::install("multtest", update = FALSE)
 if (!require("genesorteR"))BiocManager::install("mahmoudibrahim/genesorteR", update = FALSE)
