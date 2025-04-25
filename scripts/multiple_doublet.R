@@ -29,7 +29,7 @@ datainput_multiple_doublet <- function(index_multiple_doublet_input, index_m_dou
     multiple_sample_clustering.sample <- doubletFinder(seu = multiple_sample_clustering.sample,
                                                        PCs = 1:index_multiple_sample_pca_dim,
                                                        pK = 0.09,
-                                                       nExp = nExp.poi.adj, reuse.pANN = FALSE, sct = FALSE)
+                                                       nExp = nExp.poi.adj, sct = FALSE)
     metadata <- multiple_sample_clustering.sample@meta.data
     colnames(metadata)[9] <- "doublet_finder"
     multiple_sample_clustering.sample@meta.data <- metadata
@@ -66,7 +66,7 @@ datainput_multiple_doublet <- function(index_multiple_doublet_input, index_m_dou
        multiple_sample_clustering.sample <- doubletFinder(seu = multiple_sample_clustering.sample,
                                                           PCs = 1:index_multiple_sample_pca_dim,
                                                           pK = 0.09,
-                                                          nExp = nExp.poi.adj, reuse.pANN = FALSE, sct = TRUE)
+                                                          nExp = nExp.poi.adj, sct = TRUE)
        metadata <- multiple_sample_clustering.sample@meta.data
        colnames(metadata)[11] <- "doublet_finder"
        multiple_sample_clustering.sample@meta.data <- metadata
