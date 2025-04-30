@@ -70,6 +70,7 @@ if (!require("hdWGCNA"))BiocManager::install("smorabit/hdWGCNA", update = FALSE)
 # if (!require("motifmatchr"))BiocManager::install("motifmatchr", update = FALSE)
 # if (!require("TFBSTools"))BiocManager::install("TFBSTools", update = FALSE)
 if (!require("JASPAR2020"))BiocManager::install("JASPAR2020", update = FALSE)
+if (!require("JASPAR2024"))BiocManager::install("JASPAR2024", update = FALSE)
 if (!require("EnsDb.Hsapiens.v86"))BiocManager::install("EnsDb.Hsapiens.v86", update = FALSE)
 if (!require("EnsDb.Mmusculus.v79"))BiocManager::install("EnsDb.Mmusculus.v79", update = FALSE)
 if (!require("BSgenome.Hsapiens.UCSC.hg38"))BiocManager::install("BSgenome.Hsapiens.UCSC.hg38", update = FALSE)
@@ -78,4 +79,20 @@ source("scripts/PrctCellExpringGene.R")
 options(shiny.maxRequestSize=8000*1024^2)
 options(future.globals.maxSize= 891289600000)
 Sys.setenv(OPENAI_API_KEY = 'Add your key here')  #Add your key here
+
+if (.Platform$OS.type == "windows") {
+  # For Windows
+  cache_path <- file.path(Sys.getenv("LOCALAPPDATA"), "R", "cache", "R", "BiocFileCache")
+} else {
+  # For Linux/macOS
+  cache_path <- file.path(Sys.getenv("HOME"), ".cache", "R", "BiocFileCache")
+}
+
+# Create directory if it doesn't exist
+if (!dir.exists(cache_path)) {
+  dir.create(cache_path, recursive = TRUE, showWarnings = FALSE)
+}
+
+# Set BiocFileCache directory environment variable
+Sys.setenv("BIOCFILECACHE_DIR" = cache_path)
 
