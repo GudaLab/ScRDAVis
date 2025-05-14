@@ -34,9 +34,9 @@ ScRDAVis is deployed online and accessible at:
 
 ### Prerequisites
 Ensure the following software is installed:
-- **R** (>= 4.4.3): [Download R](https://www.r-project.org/)
-- **RStudio** (>= 2024.12.0): [Download RStudio](https://posit.co/download/rstudio-desktop/)
-- **Bioconductor** (>= 3.20)
+- **R** (>= 4.5.0): [Download R](https://www.r-project.org/)
+- **RStudio** (>= 2024.12.1): [Download RStudio](https://posit.co/download/rstudio-desktop/)
+- **Bioconductor** (>= 3.21)
 - **Shiny** (>= 1.10.0)
 
 **Note:** ScRDAVis has been tested with these versions. Using older versions of R may cause errors during package installation. Updating to the latest R version is recommended.
