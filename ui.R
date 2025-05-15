@@ -4,7 +4,6 @@ library(shinyFiles)
 library(DT)
 library(shinyjs)
 
-
 shinythemes::themeSelector()
 shinyUI(
     navbarPage(id ="menu_tabs",
