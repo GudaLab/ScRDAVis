@@ -81,7 +81,7 @@ shinyUI(
         <h3> use ScRDAVis online</h3>
         <p>ScRDAVis is deployed at: <a href='https://www.gudalab-rtools.net/ScRDAVis'>https://www.gudalab-rtools.net/ScRDAVis</a></p>
         <hr>
-        <h3> Launch ScRDAVis using R and GitHub: </h3>
+        <h3> Launch ScRDAVis using R and GitHub </h3>
         <p> ScRDAVis were deposited under the GitHub repository: <a href='https://github.com/GudaLab/ScRDAVis'>https://github.com/GudaLab/ScRDAVis</a><br>
         Before running the app, users must have the following versions installed: R (>= 4.4.3), RStudio (>= 2024.12.0), Bioconductor (>= 3.20) and Shiny (>= 1.10.0) (Tested with this version).<br>
         Note: ScRDAVis has been tested with these versions. If users are running an older version of R, they may encounter errors during package installation. Therefore, it is recommended to update R to the latest version first.<br>
@@ -99,6 +99,9 @@ Alternatively, download the source code from GitHub and run the following comman
 library(shiny)
 runApp('/path/to/the/ScRDAVis-master', launch.browser=TRUE)</pre>
 <hr>
+ <h3>Usage</h3>
+    <p>Please refer our Manual tab.</p>
+        <hr>
 <h3> Developed and maintained by</h3>
 <p>ScRDAVis was developed by Sankarasubramanian Jagadesan and Babu Guda. We share a passion for developing a user-friendly tool for biologists, particularly those who do not have access to bioinformaticians or programming expertise.
 </p>
