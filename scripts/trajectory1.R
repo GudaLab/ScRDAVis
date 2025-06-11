@@ -26,6 +26,14 @@ datainput_single_multiple_sample_trajectory1<- function(index_multiple_sample_in
   cds <- as.cell_data_set(single_multiple_sample_clustering)
   fData(cds)$gene_short_name <- rownames(fData(cds))
   
+  # data<- GetAssayData(single_multiple_sample_clustering,assay='RNA',layer = "data")
+  # cell_metadata<-data.frame(cell_data=colnames(data))
+  # gene_annotation<- data.frame(gene_short_name=rownames(data))
+  # rownames(gene_annotation)<- rownames(data)
+  # rownames(cell_metadata)<- colnames(data)
+  # cds<- new_cell_data_set(data,cell_metadata = cell_metadata,gene_metadata = gene_annotation)
+  # fData(cds)$gene_short_name <- rownames(fData(cds))
+  
   #Retrieve clustering information from Surat object
   # Assign partitions
   recreate.partitions <- c(rep(1, length(cds@colData@rownames)))
@@ -43,7 +51,7 @@ datainput_single_multiple_sample_trajectory1<- function(index_multiple_sample_in
   
   #Learn Trajectory
   cds <- learn_graph(cds, use_partition = index_s_trajectory3, close_loop = index_s_trajectory4)
-  plots100 <- plot_cells(cds, color_cells_by = "cluster", label_groups_by_cluster = index_s_trajectory5, label_branch_points = index_s_trajectory6, label_roots = index_s_trajectory7, label_leaves = index_s_trajectory8, group_label_size = 5, graph_label_size = 4)
+  plots100 <- plot_cells(cds, color_cells_by = "cluster", label_groups_by_cluster = index_s_trajectory5, label_branch_points = index_s_trajectory6, label_roots = index_s_trajectory7, label_leaves = index_s_trajectory8, group_label_size = 10, graph_label_size = 4)
   
   return(list(data1 = single_multiple_sample_clustering, data2 = cds, plot1 = plots100))
 }
