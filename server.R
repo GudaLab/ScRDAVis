@@ -107,6 +107,7 @@ server <- function(input, output, session) {
   shinyjs::hide("m_bf_box5")
   
   observeEvent(input$multiple_sample_submit,{
+    shinyjs::hide("m_bf_box0")
     shinyjs::show("m_bf_box1")
     shinyjs::show("m_bf_box2")
     shinyjs::show("m_bf_box3")
