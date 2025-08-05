@@ -2,7 +2,7 @@ datainput_single_multiple_sample_trajectory3 <- function(index_trajectory3_input
   single_multiple_sample_clustering <- index_trajectory3_input1
   cds <- index_trajectory3_input2
   
-table_deg <- graph_test(cds, neighbor_graph = index_s_trajectory15, cores=8)
+table_deg <- graph_test(cds, neighbor_graph = index_s_trajectory15, cores=64)
 table_deg <- table_deg %>% arrange(q_value) %>% dplyr::filter(status == "OK")
 #table_deg <- table_deg %>% arrange(q_value) 
 #Add pseudotime values into the seuratobject

@@ -42,7 +42,7 @@ datainput_single_multiple_sample_tfrn1<- function(index_multiple_sample_tfrn1_in
   
   
   # define model params:
-  model_params <- list(objective = 'reg:squarederror',  max_depth = index_s_tfrn2,  eta = index_s_tfrn3,  nthread=16,  alpha=index_s_tfrn4)
+  model_params <- list(objective = 'reg:squarederror',  max_depth = index_s_tfrn2,  eta = index_s_tfrn3,  nthread=64,  alpha=index_s_tfrn4)
   
   # construct the TF network
   single_multiple_sample_clustering <- ConstructTFNetwork(single_multiple_sample_clustering, model_params)
