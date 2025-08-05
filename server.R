@@ -622,7 +622,7 @@ server <- function(input, output, session) {
   
   output$download_multiple_cell_table <- downloadHandler(
     filename = function() { 
-      paste("Number of cells", '.csv', sep='') },
+      paste("Number_of_cells_before_filtering", '.csv', sep='') },
     content = function(file){
       write.csv(datainput_multiple_sample_level()[[2]], file)
     }

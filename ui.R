@@ -141,22 +141,51 @@ runApp('/path/to/the/ScRDAVis-master', launch.browser=TRUE)</pre>
        tabPanel(
          "Stats",
          box(id= 'm_bf_box0', width = 12,
-         h4("Example file format"),
+             h3("Instructions for Uploading Sample Files"), 
+           HTML("<ol>
+               <li><strong>H5 Files (Cell Ranger Output)</strong></li>
+               <ul>
+               <li>Cell Ranger file: filtered_feature_bc_matrix.h5.</li>
+               <li>Rename it to SAMPLE_NAME.h5 for proper identification. </li>
+               </ul>
+               
+               <li><strong>Cell Ranger Matrix Files</strong></li>
+               <ul>
+               <li>Cell Ranger files: matrix.mtx.gz, feature.tsv.gz, barcode.tsv.gz.</li>
+               <li>Rename as SAMPLE_NAME_matrix.mtx.gz, SAMPLE_NAME_features.tsv.gz, and SAMPLE_NAME_barcodes.tsv.gz, and upload together as a set.</li>
+               </ul>
+               <li><strong>Seurat Objects</strong></li>
+               <ul>
+               <li>Format: filename.rds (Seurat object). The orig.ident attribute should match the sample name(s).</li>
+               </ul>
+               <li><strong>Matrix count file</strong></li>
+               <ul>
+               <li>Format: Filename.txt with rows as genes and columns as sample_cellID.</li>
+               </ul>
+               <img src='images/folder_image.jpg' width='400' height='600' alt=''/>
+               </ol>
+                "),
+             
+         h4("Clarification example file format"),
+         h5("Users can download this example dataset to better understand the required structure. Following this reference will help ensure that your files are correctly prepared and fully compatible with our tool"),
          tags$b("H5 File (Cell Ranger Output)"),
          br(),
-         a(href="example_data/GSM8369864_HD2.h5", "H5 File",download=NA, target="_blank"),
+         a(href="example_data/GSM8369864_HD2.h5", "H5 File", style = "color:red;",download=NA, target="_blank"),
          br(),
          tags$b("Cell Ranger Matrix Files"),
          br(),
-         a(href="example_data/GSM8523011_C1_barcodes.tsv.gz", "Barcodes file",download=NA, target="_blank"),
+         a(href="example_data/GSM8523011_C1_barcodes.tsv.gz", "Barcodes file",style = "color:red;",download=NA, target="_blank"),
          br(),
-         a(href="example_data/GSM8523011_C1_features.tsv.gz", "Features File",download=NA, target="_blank"),
+         a(href="example_data/GSM8523011_C1_features.tsv.gz", "Features File",style = "color:red;",download=NA, target="_blank"),
          br(),
-         a(href="example_data/GSM8523011_C1_matrix.mtx.tsv.gz", "Matrix File",download=NA, target="_blank"),
+         a(href="example_data/GSM8523011_C1_matrix.mtx.tsv.gz", "Matrix File",style = "color:red;",download=NA, target="_blank"),
          br(),
-         tags$b("Seurat Object file",download=NA, target="_blank"),
+         tags$b("Seurat Object file"),
          br(),
-         a(href="example_data/example_data.RDS", "Seurat Object Filet",download=NA, target="_blank"),
+         a(href="example_data/example_data.RDS", "Seurat Object Filet",style = "color:red;",download=NA, target="_blank"),
+         br(),
+         tags$b("Matrix count file"),
+         h5(HTML(" <a href='https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE155953&format=file&file=GSE155953%5FADC%2Dintegrated%2Etxt%2Egz' style='color:red;' target='_blank'>Matrix count file</a> Note: Please extract the .gz file and upload the .txt file, which is approximately 715 MB in size. The rows representing genes and columns labeled by sample and cell IDs in the format sample_cellID. If you have multiple samples (e.g., 4 samples), please combine them into a single .txt file.")),
          br(),
          ),
          box(id = "m_bf_box1", width = 12,
