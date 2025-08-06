@@ -41,7 +41,7 @@ if(length(valid_genes) == 0){
 }
 
 # Access normalized data properly using GetAssayData
-expr_data <- GetAssayData(multiple_sample_clustering, assay = "RNA", slot = "data")
+expr_data <- GetAssayData(multiple_sample_clustering, assay = "RNA", layer = "counts")
 
 # Select cells (OR condition: at least one gene above threshold)
 selected_cells_or <- colnames(expr_data)[
@@ -63,7 +63,7 @@ if(length(valid_genes) == 0){
 }
 
 # Access normalized data properly using GetAssayData
-expr_data <- GetAssayData(multiple_sample_clustering, assay = "RNA", slot = "data")
+expr_data <- GetAssayData(multiple_sample_clustering, assay = "RNA", layer = "counts")
 
 # Select cells (OR condition: at least one gene above threshold)
 selected_cells_or <- colnames(expr_data)[
