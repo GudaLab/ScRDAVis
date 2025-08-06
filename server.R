@@ -535,7 +535,7 @@ server <- function(input, output, session) {
   #####################Tab1##############################
   ######################data Input##################
   datainput_multiple_sample_level<- eventReactive(input$multiple_sample_submit,{
-    
+    tryCatch({ 
     if (input$multiple_sample_format == "h5") {
       upload_multiple_sample_file <- input$multiple_sample_file
       upload_multiple_sample_file_names <- input$multiple_sample_file$name
@@ -579,7 +579,18 @@ server <- function(input, output, session) {
     
     source("scripts/multiple_file_upload.R")
     datainput_multiple_sample(index_multiple_sample_file = upload_multiple_sample_file$datapath, index_multiple_sample_file_names = upload_multiple_sample_file_names, index_multiple_sample_file1 = filesdir, index_multiple_sample_format=input$multiple_sample_format, index_multiple_sample_name = input$multiple_sample_name, index_multiple_sample_cell = input$multiple_sample_cell, index_multiple_sample_genes = input$multiple_sample_genes)
-    
+    }, error = function(e) {
+      # Store error message in a reactive value for display
+      shinyjs::show("m_bf_box1")
+      shinyjs::show("m_bf_box0")
+      shinyjs::hide("m_bf_box2")
+      shinyjs::hide("m_bf_box3")
+      shinyjs::hide("m_bf_box4")
+      shinyjs::hide("m_bf_box5")
+      
+      # Return a list with a custom error identifier
+      return(list(error = TRUE, message = "❗ Please check your input file and refer to our example data format to ensure it is prepared correctly."))
+    })
   })
   
   
@@ -660,11 +671,15 @@ server <- function(input, output, session) {
   )
   
   
-  output$text_level<- renderText({
-    paste(datainput_multiple_sample_level()[[4]])
+  # output$text_level<- renderText({
+  #   paste(datainput_multiple_sample_level()[[4]])
+  # })
+  
+  output$text_level <- renderText({
+    data <- datainput_multiple_sample_level()
+    if (!is.null(data$error)) return(data$message)
+    paste(data[[4]])
   })
-  
-  
   
   output$m_so_before_filtering<- downloadHandler(
     filename = function(){
