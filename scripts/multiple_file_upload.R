@@ -1,6 +1,11 @@
 datainput_multiple_sample <- function(index_multiple_sample_file, index_multiple_sample_file1, index_multiple_sample_file_names, index_multiple_sample_format, index_multiple_sample_name, index_multiple_sample_cell, index_multiple_sample_genes){
 index_multiple_sample_format <- as.character(index_multiple_sample_format)
 
+
+# Save and restore working directory
+original_path <- getwd()
+on.exit(setwd(original_path), add = TRUE)
+
 if (index_multiple_sample_format == "h5") {
     #remove extension
     #files <- list.files(pattern="*.h5")
