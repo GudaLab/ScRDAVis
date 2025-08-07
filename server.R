@@ -22,13 +22,13 @@ server <- function(input, output, session) {
   
   ################multiple hide tabs########
   hideTab(inputId = "multiple_tabsets", target = "Sample Groups and QC Filtering")
-  hideTab(inputId = "multiple_tabsets", target = "Normalization and PCA analysis")
+  hideTab(inputId = "multiple_tabsets", target = "Normalization and PCA Analysis")
   hideTab(inputId = "multiple_tabsets", target = "Clustering")
   hideTab(inputId = "multiple_tabsets", target = "Remove Doublets")
   hideTab(inputId = "multiple_tabsets", target = "Markers Identification")
   hideTab(inputId = "multiple_tabsets", target = "Cell Type Prediction")
-  hideTab(inputId = "multiple_tabsets", target = "Cluster-based plots")
-  hideTab(inputId = "multiple_tabsets", target = "Condition based analysis")
+  hideTab(inputId = "multiple_tabsets", target = "Cluster-Based Plots")
+  hideTab(inputId = "multiple_tabsets", target = "Condition Based Analysis")
   
   ################showtabbutton#############     
   observeEvent(input$link_m_qc_filtering, {
@@ -36,7 +36,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$link_m_normalization, {
-    showTab(inputId = "multiple_tabsets", target = "Normalization and PCA analysis")
+    showTab(inputId = "multiple_tabsets", target = "Normalization and PCA Analysis")
   })
   
   observeEvent(input$link_m_clustering, {
@@ -55,11 +55,11 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$link_m_clusterbased, {
-    showTab(inputId = "multiple_tabsets", target = "Cluster-based plots")
+    showTab(inputId = "multiple_tabsets", target = "Cluster-Based Plots")
   })
   
   observeEvent(input$link_m_conditionbased, {
-    showTab(inputId = "multiple_tabsets", target = "Condition based analysis")
+    showTab(inputId = "multiple_tabsets", target = "Condition Based Analysis")
   })
   
   
@@ -152,8 +152,8 @@ server <- function(input, output, session) {
       shinyjs::hide("group4_samples4")
       shinyjs::hide("group5_samples5")
       shinyjs::hide("group6_samples6")
-      hideTab(inputId = "multiple_tabsets", target = "Condition based analysis")
-      hideTab(inputId = "subclustering_multiple_tabsets", target = "Condition based analysis")
+      hideTab(inputId = "multiple_tabsets", target = "Condition Based Analysis")
+      hideTab(inputId = "subclustering_multiple_tabsets", target = "Condition Based Analysis")
       shinyjs::hide("link_m_conditionbased")
       shinyjs::hide("link_m_subclustering_conditionbased")
     }
@@ -175,8 +175,8 @@ server <- function(input, output, session) {
       shinyjs::hide("group4_samples4")
       shinyjs::hide("group5_samples5")
       shinyjs::hide("group6_samples6")
-      #showTab(inputId = "multiple_tabsets", target = "Condition based analysis")
-      #showTab(inputId = "subclustering_multiple_tabsets", target = "Condition based analysis")
+      #showTab(inputId = "multiple_tabsets", target = "Condition Based Analysis")
+      #showTab(inputId = "subclustering_multiple_tabsets", target = "Condition Based Analysis")
       shinyjs::show("link_m_conditionbased")
       shinyjs::show("link_m_subclustering_conditionbased")
     }
@@ -589,7 +589,7 @@ server <- function(input, output, session) {
       shinyjs::hide("m_bf_box5")
       
       # Return a list with a custom error identifier
-      return(list(error = TRUE, message = "❗ Please check your input file and refer to our example data format to ensure it is prepared correctly."))
+      return(list(error = TRUE, message = "❗ Please check your input file and refer to our example data format to ensure it is prepared correctly.❗ "))
     })
   })
   
@@ -964,7 +964,7 @@ server <- function(input, output, session) {
   
   ###############link to next tab###########################      
   observeEvent(input$link_m_normalization, {
-    newvalue <- "Normalization and PCA analysis"
+    newvalue <- "Normalization and PCA Analysis"
     updateTabsetPanel(session, "multiple_tabsets", newvalue)
   })       
   
@@ -2016,7 +2016,7 @@ server <- function(input, output, session) {
   )
   #####################################link to next tab###########################     
   observeEvent(input$link_m_clusterbased, {
-    newvalue <- "Cluster-based plots"
+    newvalue <- "Cluster-Based Plots"
     updateTabsetPanel(session, "multiple_tabsets", newvalue)
   })  
   
@@ -2164,7 +2164,7 @@ server <- function(input, output, session) {
   
   #####################################link to next tab###########################     
   observeEvent(input$link_m_conditionbased, {
-    newvalue <- "Condition based analysis"
+    newvalue <- "Condition Based Analysis"
     updateTabsetPanel(session, "multiple_tabsets", newvalue)
   })  
   
@@ -2305,12 +2305,12 @@ server <- function(input, output, session) {
   })
   
   ############subclustering multiple hide tabs########
-  hideTab(inputId = "subclustering_multiple_tabsets", target = "Normalization and PCA analysis")
+  hideTab(inputId = "subclustering_multiple_tabsets", target = "Normalization and PCA Analysis")
   hideTab(inputId = "subclustering_multiple_tabsets", target = "Clustering")
   hideTab(inputId = "subclustering_multiple_tabsets", target = "Markers Identification")
   hideTab(inputId = "subclustering_multiple_tabsets", target = "Cell Type Prediction")
-  hideTab(inputId = "subclustering_multiple_tabsets", target = "Cluster-based plots")
-  hideTab(inputId = "subclustering_multiple_tabsets", target = "Condition based analysis")
+  hideTab(inputId = "subclustering_multiple_tabsets", target = "Cluster-Based Plots")
+  hideTab(inputId = "subclustering_multiple_tabsets", target = "Condition Based Analysis")
   
   
   ################hide menu bar######################
@@ -2318,7 +2318,7 @@ server <- function(input, output, session) {
   
   ##########subclustering showtabbutton#############     
   observeEvent(input$link_m_subclustering_normalization, {
-    showTab(inputId = "subclustering_multiple_tabsets", target = "Normalization and PCA analysis")
+    showTab(inputId = "subclustering_multiple_tabsets", target = "Normalization and PCA Analysis")
   })
   
   observeEvent(input$link_m_subclustering_clustering, {
@@ -2334,11 +2334,11 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$link_m_subclustering_clusterbased, {
-    showTab(inputId = "subclustering_multiple_tabsets", target = "Cluster-based plots")
+    showTab(inputId = "subclustering_multiple_tabsets", target = "Cluster-Based Plots")
   })    
   
   observeEvent(input$link_m_subclustering_conditionbased, {
-    showTab(inputId = "subclustering_multiple_tabsets", target = "Condition based analysis")
+    showTab(inputId = "subclustering_multiple_tabsets", target = "Condition Based Analysis")
   })
   
   ################show menu bar######################
@@ -2787,7 +2787,7 @@ server <- function(input, output, session) {
   )
   ###############link to next tab###########################      
   observeEvent(input$link_m_subclustering_normalization, {
-    newvalue <- "Normalization and PCA analysis"
+    newvalue <- "Normalization and PCA Analysis"
     updateTabsetPanel(session, "subclustering_multiple_tabsets", newvalue)
   })       
   
@@ -3489,7 +3489,7 @@ server <- function(input, output, session) {
   )
   #####################################link to next tab###########################     
   observeEvent(input$link_m_subclustering_clusterbased, {
-    newvalue <- "Cluster-based plots"
+    newvalue <- "Cluster-Based Plots"
     updateTabsetPanel(session, "subclustering_multiple_tabsets", newvalue)
   })  
   
@@ -3631,7 +3631,7 @@ server <- function(input, output, session) {
   
   #####################################link to next tab###########################     
   observeEvent(input$link_m_subclustering_conditionbased, {
-    newvalue <- "Condition based analysis"
+    newvalue <- "Condition Based Analysis"
     updateTabsetPanel(session, "subclustering_multiple_tabsets", newvalue)
   })  
   
@@ -4731,14 +4731,14 @@ observe({
   ######################################################Menu8#####################################################################   
   #############################################Trajectory and Pseudotime analysis#################################################
   
-  hideTab(inputId = "Coexpression_tabsets", target = "Transcription factor regulatory network analysis")
+  hideTab(inputId = "Coexpression_tabsets", target = "Transcription Factor Regulatory Network Analysis")
   observeEvent(input$link_s_tfrn, {
-    showTab(inputId = "Coexpression_tabsets", target = "Transcription factor regulatory network analysis")
+    showTab(inputId = "Coexpression_tabsets", target = "Transcription Factor Regulatory Network Analysis")
   })
   
   #####################################link to next tab###########################     
   observeEvent(input$link_s_tfrn, {
-    newvalue <- "Transcription factor regulatory network analysis"
+    newvalue <- "Transcription Factor Regulatory Network Analysis"
     updateTabsetPanel(session, "Coexpression_tabsets", newvalue)
   })  
   

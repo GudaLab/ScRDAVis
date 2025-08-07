@@ -116,7 +116,7 @@ runApp('/path/to/the/ScRDAVis-master', launch.browser=TRUE)</pre>
 ##############################################################multiple samples#######################################################
 #####################################################################################################################################
  tabPanel(
- "Single or Multiple Samples analysis",
+ "Single or Multiple Samples Analysis",
  useShinyjs(),
 
  sidebarLayout(
@@ -337,7 +337,7 @@ runApp('/path/to/the/ScRDAVis-master', launch.browser=TRUE)</pre>
 #####################################################Tab1.3######################################   
 #############################multiple_Normalization and PCA analysis#########################
 tabPanel(
-  "Normalization and PCA analysis",
+  "Normalization and PCA Analysis",
   selectInput("multiple_sample_normalization_method", label = "Normalization method", choices = c("LogNormalize"="LogNormalize", "SCTransform"="SCTransform"), selected = "LogNormalize"),
   fluidRow( 
     #box(id = "boxLogNormalize",
@@ -819,7 +819,7 @@ tabPanel(
 ######################################################Tab1.8########################################################   
 #############################################Cluster-based plots#################################################
 tabPanel(
-  "Cluster-based plots",
+  "Cluster-Based Plots",
   fluidRow(   
     box(id = "m_clusterbased_box1",                      
         h3("Select the plot type to display"), 
@@ -867,7 +867,7 @@ tabPanel(
 ######################################################Tab1.9########################################################   
 #############################################Condition-based analysis#################################################
 tabPanel(
-  "Condition based analysis",
+  "Condition Based Analysis",
   fluidRow(   
     box(id = "m_conditionbased_box1",     
         h3(" Differential expression analysis between two groups"),
@@ -977,7 +977,7 @@ tabPanel(
 #####################################################Tab2.2####################################  
 #############################multiple_Normalization and PCA analysis#########################
                 tabPanel(
-                  "Normalization and PCA analysis",
+                  "Normalization and PCA Analysis",
                   h5("Please use the same normalization method used in single or multiple samples analysis"),
                   selectInput("subclustering_multiple_sample_normalization_method", label = "Normalization method", choices = c("LogNormalize"="LogNormalize", "SCTransform"="SCTransform"), selected = "LogNormalize"),
                   fluidRow( 
@@ -1317,7 +1317,7 @@ tabPanel(
 #####################################################Tab2.6########################################################   
 #############################################Cluster-based plots#################################################
                 tabPanel(
-                  "Cluster-based plots",
+                  "Cluster-Based Plots",
                   fluidRow(   
                     box(id = "m_subclustering_clusterbased_box1",                      
                         h3("Select the plot type to display"), 
@@ -1365,7 +1365,7 @@ tabPanel(
 ######################################################Tab2.7############################################################   
 #############################################Condition-based analysis#################################################
                 tabPanel(
-                  "Condition based analysis",
+                  "Condition Based Analysis",
                   fluidRow(   
                     box(id = "m_subclustering_conditionbased_box1",     
                         h3(" Differential expression analysis between two groups"),
@@ -1427,7 +1427,7 @@ tabPanel(
 ######################################################Menu3#####################################################################   
 #########################################Cell Cluster Correlation Network####################################################################
 tabPanel(
-  "Correlation network",
+  "Correlation Network",
   useShinyjs(),
   fluidRow( 
     box(id = "s_cccn_box0",  width=12,
@@ -1467,7 +1467,7 @@ tabPanel(
 ######################################################Menu4#####################################################################   
 ####################################################GO terms####################################################################
 tabPanel(
-  "GO terms",
+  "GO Terms",
   useShinyjs(),
   fluidRow( 
     box(id = "s_go_box0",  width=12,
@@ -1518,7 +1518,7 @@ tabPanel(
 ######################################################Menu5#####################################################################   
 ####################################################Pathway analysis####################################################################
 tabPanel(
-  "Pathway analysis",
+  "Pathway Analysis",
   useShinyjs(),
   fluidRow( 
     box(id = "s_pathway_box0",  width=12,
@@ -1568,7 +1568,7 @@ tabPanel(
 ######################################################Menu6#####################################################################   
 ####################################################GSEA analysis####################################################################
 tabPanel(
-  "GSEA analysis",
+  "GSEA Analysis",
   useShinyjs(),
   fluidRow( 
     box(id = "s_gsea_box0",  width=12,
@@ -1846,7 +1846,7 @@ tabPanel(
 ######################################################Menu9.1#####################################################################   
 ####################################################hdWGCNA####################################################################
 tabPanel(
-  "Co-expression and TF analysis",
+  "Co-expression and TF Analysis",
   useShinyjs(),
   # sidebarLayout(
   #   sidebarPanel(width=1),
@@ -1950,7 +1950,7 @@ tabPanel(
 ######################################################Menu9.2#####################################################################   
 ####################################################TFs####################################################################
                 tabPanel(
-                  "Transcription factor regulatory network analysis",
+                  "Transcription Factor Regulatory Network Analysis",
                   # fluidRow( 
                   #   box(id = "s_tfrn_box0",  width=12,
                   #       h3("To begin this analysis, please complete Single or Multiple samples or subclustering analysis until Cell Type Prediction step."),
@@ -2337,7 +2337,7 @@ tabPanel(
       </ul>
 </ul>
 
-<h3>1.8. Cluster-based Plots</h3>
+<h3>1.8. Cluster-Based Plots</h3>
 <ul>
     <li><strong>Gene Selection:</strong>
         <ul>
@@ -2370,7 +2370,7 @@ tabPanel(
 	</li>
 </ul>
 
-<h3>1.9. Condition-based Analysis</h3>
+<h3>1.9. Condition-Based Analysis</h3>
 <ul>
     <li><strong>Group Selection:</strong> 
 	<ul>
