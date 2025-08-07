@@ -6,6 +6,7 @@ if (!require("shinyjs")) install.packages("shinyjs")
 if (!require("shinyFiles")) install.packages("shinyFiles")
 if (!require("shinyWidgets")) install.packages("shinyWidgets")
 if (!require("shinycssloaders")) install.packages("shinycssloaders")
+if (!require('devtools')) install.packages("devtools")
 if (!require("ggplot2")) install.packages("ggplot2", dependencies = TRUE)
 if (!require('ggplotify')) install.packages("ggplotify")
 if (!require("data.table")) install.packages("data.table")
@@ -95,4 +96,5 @@ if (!dir.exists(cache_path)) {
 
 # Set BiocFileCache directory environment variable
 Sys.setenv("BIOCFILECACHE_DIR" = cache_path)
+
 
