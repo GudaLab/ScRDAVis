@@ -1,9 +1,9 @@
 datainput_multiple_clustering <- function(index_multiple_clustering_input, index_multiple_sample_normalization_method, index_m_clustering1, index_m_clustering2, index_m_clustering3, index_m_clustering4, index_m_clustering5, index_m_clustering6, index_m_clustering7, index_m_clustering8, index_m_clustering9, index_m_clustering10, index_m_clustering11, index_m_clustering12, index_m_clustering13){
   index_m_clustering5 <- as.numeric(index_m_clustering5)
-  
+  label_size <- ifelse(as.logical(index_m_clustering10) | as.logical(index_m_clustering12), 3.5, 0)
   
   if (index_m_clustering13 == "None"){
-    multiple_sample_clustering<- FindNeighbors(index_multiple_clustering_input, dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3)
+    multiple_sample_clustering<- FindNeighbors(index_multiple_clustering_input, dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3, nn.method="annoy", annoy.metric="euclidean")
     multiple_sample_clustering<- FindClusters(multiple_sample_clustering, resolution = index_m_clustering4, algorithm = index_m_clustering5)
     if (index_m_clustering6 == "umap")
     { 
@@ -25,7 +25,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     
     plots19 <- ggplot(multiple_sample_clustering@meta.data, aes(seurat_clusters, fill = seurat_clusters)) +
       geom_bar(stat="count", position = position_dodge())+
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Cell count"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -36,7 +36,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     
     plots20 <- ggplot(multiple_sample_clustering@meta.data, aes(seurat_clusters, fill = condition)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Condition"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -48,13 +48,13 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     
     plots21 <- ggplot(multiple_sample_clustering@meta.data, aes(seurat_clusters, fill = orig.ident)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Clusters"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
-        
+    
     cluster_type = "seurat_clusters"
-     }
+  }
   
   else if (index_m_clustering13 == "HarmonyIntegration")
   {
@@ -65,7 +65,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
       multiple_sample_clustering<- IntegrateLayers(object = index_multiple_clustering_input, method = HarmonyIntegration, normalization.method = "SCT", orig.reduction = "pca", new.reduction = "harmony", verbose = FALSE)
     }
     #multiple_sample_clustering<- IntegrateLayers(object = index_multiple_clustering_input, method = HarmonyIntegration, orig.reduction = "pca", new.reduction = "harmony", verbose = FALSE)
-    multiple_sample_clustering<- FindNeighbors(multiple_sample_clustering, reduction = "harmony", dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3)
+    multiple_sample_clustering<- FindNeighbors(multiple_sample_clustering, reduction = "harmony", dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3, nn.method="annoy", annoy.metric="cosine")
     multiple_sample_clustering<- FindClusters(multiple_sample_clustering, resolution = index_m_clustering4, algorithm = index_m_clustering5, cluster.name = "harmony_clusters")
     if (index_m_clustering6 == "umap")
     { 
@@ -86,7 +86,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     colnames(multiple_sample_clustering_cell_couts_in_custer) <- c("Clusters", "Counts")
     plots19 <- ggplot(multiple_sample_clustering@meta.data, aes(harmony_clusters, fill = harmony_clusters)) +
       geom_bar(stat="count", position = position_dodge())+
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Cell count"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -97,7 +97,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     
     plots20 <- ggplot(multiple_sample_clustering@meta.data, aes(harmony_clusters, fill = condition)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Condition"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -109,11 +109,11 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     
     plots21 <- ggplot(multiple_sample_clustering@meta.data, aes(harmony_clusters, fill = orig.ident)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Clusters"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
-       
+    
     cluster_type = "harmony_clusters"
   }
   
@@ -125,7 +125,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     else if (index_multiple_sample_normalization_method == "SCTransform"){
       multiple_sample_clustering<- IntegrateLayers(object = index_multiple_clustering_input, method = CCAIntegration, normalization.method = "SCT", orig.reduction = "pca", new.reduction = "cca", verbose = FALSE)
     }
-    multiple_sample_clustering<- FindNeighbors(multiple_sample_clustering, reduction = "cca", dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3)
+    multiple_sample_clustering<- FindNeighbors(multiple_sample_clustering, reduction = "cca", dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3, nn.method="annoy", annoy.metric="euclidean")
     multiple_sample_clustering<- FindClusters(multiple_sample_clustering, resolution = index_m_clustering4, algorithm = index_m_clustering5, cluster.name = "cca_clusters")
     if (index_m_clustering6 == "umap")
     { 
@@ -146,7 +146,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     colnames(multiple_sample_clustering_cell_couts_in_custer) <- c("Clusters", "Counts")
     plots19 <- ggplot(multiple_sample_clustering@meta.data, aes(cca_clusters, fill = cca_clusters)) +
       geom_bar(stat="count", position = position_dodge())+
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Cell count"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -157,7 +157,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     
     plots20 <- ggplot(multiple_sample_clustering@meta.data, aes(cca_clusters, fill = condition)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Condition"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -169,7 +169,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     
     plots21 <- ggplot(multiple_sample_clustering@meta.data, aes(cca_clusters, fill = orig.ident)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Clusters"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -181,12 +181,12 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
   else if (index_m_clustering13 == "RPCAIntegration")
   {
     if (index_multiple_sample_normalization_method == "LogNormalize"){
-    multiple_sample_clustering<- IntegrateLayers(object = index_multiple_clustering_input, method = RPCAIntegration, normalization.method = "LogNormalize", orig.reduction = "pca", new.reduction = "rpca", verbose = FALSE)
+      multiple_sample_clustering<- IntegrateLayers(object = index_multiple_clustering_input, method = RPCAIntegration, normalization.method = "LogNormalize", orig.reduction = "pca", new.reduction = "rpca", verbose = FALSE)
     }
     else if (index_multiple_sample_normalization_method == "SCTransform"){
       multiple_sample_clustering<- IntegrateLayers(object = index_multiple_clustering_input, method = RPCAIntegration, normalization.method = "SCT", orig.reduction = "pca", new.reduction = "rpca", verbose = FALSE)
     }
-    multiple_sample_clustering<- FindNeighbors(multiple_sample_clustering, reduction = "rpca", dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3)
+    multiple_sample_clustering<- FindNeighbors(multiple_sample_clustering, reduction = "rpca", dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3, nn.method="annoy", annoy.metric="euclidean")
     multiple_sample_clustering<- FindClusters(multiple_sample_clustering, resolution = index_m_clustering4, algorithm = index_m_clustering5, cluster.name = "rpca_clusters")
     if (index_m_clustering6 == "umap")
     { 
@@ -207,7 +207,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     colnames(multiple_sample_clustering_cell_couts_in_custer) <- c("Clusters", "Counts")
     plots19 <- ggplot(multiple_sample_clustering@meta.data, aes(rpca_clusters, fill = rpca_clusters)) +
       geom_bar(stat="count", position = position_dodge())+
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Cell count"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -218,7 +218,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     
     plots20 <- ggplot(multiple_sample_clustering@meta.data, aes(rpca_clusters, fill = condition)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Condition"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -230,7 +230,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     
     plots21 <- ggplot(multiple_sample_clustering@meta.data, aes(rpca_clusters, fill = orig.ident)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Clusters"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -247,7 +247,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     else if (index_multiple_sample_normalization_method == "SCTransform"){
       multiple_sample_clustering<- IntegrateLayers(object = index_multiple_clustering_input, method = JointPCAIntegration, normalization.method = "SCT", orig.reduction = "pca", new.reduction = "jointpca", verbose = FALSE)
     }
-    multiple_sample_clustering<- FindNeighbors(multiple_sample_clustering, reduction = "jointpca", dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3)
+    multiple_sample_clustering<- FindNeighbors(multiple_sample_clustering, reduction = "jointpca", dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3, nn.method="annoy", annoy.metric="euclidean")
     multiple_sample_clustering<- FindClusters(multiple_sample_clustering, resolution = index_m_clustering4, algorithm = index_m_clustering5, cluster.name = "jointpca_clusters")
     if (index_m_clustering6 == "umap")
     { 
@@ -268,7 +268,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     colnames(multiple_sample_clustering_cell_couts_in_custer) <- c("Clusters", "Counts")
     plots19 <- ggplot(multiple_sample_clustering@meta.data, aes(jointpca_clusters, fill = jointpca_clusters)) +
       geom_bar(stat="count", position = position_dodge())+
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Cell count"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -279,7 +279,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     
     plots20 <- ggplot(multiple_sample_clustering@meta.data, aes(jointpca_clusters, fill = condition)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Condition"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -291,19 +291,19 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     
     plots21 <- ggplot(multiple_sample_clustering@meta.data, aes(jointpca_clusters, fill = orig.ident)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Clusters"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
     
     #multiple_sample_clustering <- JoinLayers(multiple_sample_clustering)
-        cluster_type = "jointpca_clusters"
+    cluster_type = "jointpca_clusters"
   }
   if (index_multiple_sample_normalization_method == "LogNormalize"){
     multiple_sample_clustering <- JoinLayers(multiple_sample_clustering)
   }
   else if (index_multiple_sample_normalization_method == "SCTransform"){
-  multiple_sample_clustering <- PrepSCTFindMarkers(multiple_sample_clustering, assay = "SCT", verbose = TRUE)
+    multiple_sample_clustering <- PrepSCTFindMarkers(multiple_sample_clustering, assay = "SCT", verbose = TRUE)
   }
   return(list(plot1 = plots16, plot2 = plots19, plot3 = plots17, plot4 = plots20, plot5 = plots18, plot6 = plots21, data1 = multiple_sample_clustering_cell_couts_in_custer, data2 = multiple_sample_clustering_total_cell_couts_in_custer_for_each_condition, data3 = multiple_sample_clustering_total_cell_couts_in_custer_for_each_samples, data4 = multiple_sample_clustering, data5 = unique(multiple_sample_clustering@meta.data$seurat_clusters), data6 = max(as.numeric(multiple_sample_clustering@meta.data$seurat_clusters)), data7 = unique(multiple_sample_clustering@meta.data$condition), text_summary=cluster_type))
   

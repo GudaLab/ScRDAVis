@@ -26,10 +26,11 @@ datainput_multiple_doublet2 <- function(index_multiple_doublet1_input, index_m_d
   
   multiple_sample_clustering_cell_couts_in_custer1 <- table(multiple_sample_clustering@meta.data$seurat_clusters) %>% as.data.table
   colnames(multiple_sample_clustering_cell_couts_in_custer1) <- c("Clusters", "Counts")
-  
+   label_size <- ifelse(index_m_doublet3, 3.5, 0)
+   
   plots34 <- ggplot(multiple_sample_clustering@meta.data, aes(seurat_clusters, fill = seurat_clusters)) +
     geom_bar(stat="count", position = position_dodge())+
-    geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=3.5)+
+    geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=label_size)+
     theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
     theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Cell count"))+
     theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -40,7 +41,7 @@ datainput_multiple_doublet2 <- function(index_multiple_doublet1_input, index_m_d
   
   plots35 <- ggplot(multiple_sample_clustering@meta.data, aes(seurat_clusters, fill = condition)) +
     geom_bar(stat="count")+
-    geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+    geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
     theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
     theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Condition"))+
     theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -52,7 +53,7 @@ datainput_multiple_doublet2 <- function(index_multiple_doublet1_input, index_m_d
   
   plots36 <- ggplot(multiple_sample_clustering@meta.data, aes(seurat_clusters, fill = orig.ident)) +
     geom_bar(stat="count")+
-    geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+    geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
     theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
     theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Clusters"))+
     theme(axis.text.x = element_text(angle = 90, vjust = 1))

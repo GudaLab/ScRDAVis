@@ -1,6 +1,6 @@
 datainput_subclustering_multiple_clustering <- function(index_subclustering_multiple_clustering_input, index_subclustering_multiple_sample_normalization_method, index_m_subclustering_clustering1, index_m_subclustering_clustering2, index_m_subclustering_clustering3, index_m_subclustering_clustering4, index_m_subclustering_clustering5, index_m_subclustering_clustering6, index_m_subclustering_clustering7, index_m_subclustering_clustering8, index_m_subclustering_clustering9, index_m_subclustering_clustering10, index_m_subclustering_clustering11, index_m_subclustering_clustering12, index_m_subclustering_clustering13){
   index_m_subclustering_clustering5 <- as.numeric(index_m_subclustering_clustering5)
-  
+  label_size <- ifelse(as.logical(index_m_subclustering_clustering10) | as.logical(index_m_subclustering_clustering12), 3.5, 0)
   
   if (index_m_subclustering_clustering13 == "None"){
     subclustering_multiple_sample_clustering<- FindNeighbors(index_subclustering_multiple_clustering_input, dims = 1:index_m_subclustering_clustering1 , k.param = index_m_subclustering_clustering2, n.trees = index_m_subclustering_clustering3)
@@ -29,7 +29,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     
     plots19 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(seurat_clusters, fill = seurat_clusters)) +
       geom_bar(stat="count", position = position_dodge())+
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Cell count"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -40,7 +40,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     
     plots20 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(seurat_clusters, fill = condition)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Condition"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -52,7 +52,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     
     plots21 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(seurat_clusters, fill = orig.ident)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Clusters"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -97,7 +97,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     colnames(subclustering_multiple_sample_clustering_cell_couts_in_custer) <- c("Clusters", "Counts")
     plots19 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(harmony_clusters, fill = harmony_clusters)) +
       geom_bar(stat="count", position = position_dodge())+
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Cell count"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -108,7 +108,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     
     plots20 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(harmony_clusters, fill = condition)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Condition"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -120,7 +120,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     
     plots21 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(harmony_clusters, fill = orig.ident)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Clusters"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -164,7 +164,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     colnames(subclustering_multiple_sample_clustering_cell_couts_in_custer) <- c("Clusters", "Counts")
     plots19 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(cca_clusters, fill = cca_clusters)) +
       geom_bar(stat="count", position = position_dodge())+
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Cell count"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -175,7 +175,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     
     plots20 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(cca_clusters, fill = condition)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Condition"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -187,7 +187,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     
     plots21 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(cca_clusters, fill = orig.ident)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Clusters"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -229,7 +229,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     colnames(subclustering_multiple_sample_clustering_cell_couts_in_custer) <- c("Clusters", "Counts")
     plots19 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(rpca_clusters, fill = rpca_clusters)) +
       geom_bar(stat="count", position = position_dodge())+
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Cell count"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -240,7 +240,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     
     plots20 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(rpca_clusters, fill = condition)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Condition"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -252,7 +252,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     
     plots21 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(rpca_clusters, fill = orig.ident)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Clusters"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -294,7 +294,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     colnames(subclustering_multiple_sample_clustering_cell_couts_in_custer) <- c("Clusters", "Counts")
     plots19 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(jointpca_clusters, fill = jointpca_clusters)) +
       geom_bar(stat="count", position = position_dodge())+
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-0.5, position = position_dodge(0.9), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Cell count"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -305,7 +305,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     
     plots20 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(jointpca_clusters, fill = condition)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Condition"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))
@@ -317,7 +317,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     
     plots21 <- ggplot(subclustering_multiple_sample_clustering@meta.data, aes(jointpca_clusters, fill = orig.ident)) +
       geom_bar(stat="count")+
-      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=3.5)+
+      geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
       theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
       theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Clusters"))+
       theme(axis.text.x = element_text(angle = 90, vjust = 1))

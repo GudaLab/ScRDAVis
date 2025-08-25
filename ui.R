@@ -121,6 +121,8 @@ runApp('/path/to/the/ScRDAVis-master', launch.browser=TRUE)</pre>
 
  sidebarLayout(
    sidebarPanel(id="multiple_sidebar",
+    actionButton("info_btn1", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "File upload and Stats"),
+                
      selectInput("multiple_sample_format", label = "Select Input format", choices = list("Cell ranger h5 format" = "h5", "Cellranger Matrix, Feauture, Barcodes files" ="MFB", "Seurat object" = "seurat_object", "Matrix count file" = "matrix_count", "Example data to test the tool (C2_vs_P2 from GSE277476)"="exampledata" ), selected = "h5"),
      
      #h3("Upload files"),
@@ -229,6 +231,7 @@ runApp('/path/to/the/ScRDAVis-master', launch.browser=TRUE)</pre>
 #####################multiple_samples QC_after filtering##########################       
        tabPanel(
          "Sample Groups and QC Filtering",
+         actionButton("info_btn2", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Sample Groups and QC Filtering"),
          selectInput("multiple_group_count", label="Select number of sample group(s)", multiple = F, choices = c("1"=1, "2" = 2, "3"=3, "4" = "4",  "5" = 5, "6" = "6" ), selected = 1),
          fluidRow(
            column(width =2, textInput("group1_name",label ="Type Group1 name", value = "Group1", width = NULL, placeholder = NULL)),
@@ -256,7 +259,7 @@ runApp('/path/to/the/ScRDAVis-master', launch.browser=TRUE)</pre>
            
            
            column(width =3, numericInput("multiple_sample_min_count", label = "Keep cells that are expressed at least this number of genes", value = 0)),
-           column(width =3, numericInput("multiple_sample_max_count", label = "Exclude cell that expressed more than this number of genes", value = 10000)),
+           column(width =3, numericInput("multiple_sample_max_count", label = "Exclude cell that expressed more than this number of genes", value = 7500)),
            column(width =3, numericInput("multiple_sample_max_mito_perc", label="Filter cells that have more than this percentage mitochondrial counts",  value = 5)),
            br(),
            br(),
@@ -338,19 +341,50 @@ runApp('/path/to/the/ScRDAVis-master', launch.browser=TRUE)</pre>
 #############################multiple_Normalization and PCA analysis#########################
 tabPanel(
   "Normalization and PCA Analysis",
-  selectInput("multiple_sample_normalization_method", label = "Normalization method", choices = c("LogNormalize"="LogNormalize", "SCTransform"="SCTransform"), selected = "LogNormalize"),
-  fluidRow( 
-    #box(id = "boxLogNormalize",
-    column(width =4, numericInput("multiple_sample_scale_factor", label = "Scale factor", value = 10000)),
-    column(width =4, selectInput("multiple_sample_normalization_variable_genes", label = "variable genes detection", choices = c( "vst"="vst", "mean.var.plot (mvp)"="mean.var.plot", "dispersion (disp)"="dispersion"), selected = "vst")),  
-    column(width =4, numericInput("multiple_sample_var_genes", label = "Number of top variable features", value = 2000)),
-    #),
-    column(width =4, numericInput("multiple_sample_pca_dim", label = "Number of dimensions (PCA)", value = 30)),
-    br(),
-    column(width =4, actionBttn("multiple_sample_normalization", "Submit",  style = "unite",color = "primary", icon = icon("download"))),
+  
+  # --- normalization & HVG controls ---
+  actionButton("info_btn3", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Normalization and PCA Analysis"),
+    selectInput(
+    "multiple_sample_normalization_method", label = "Normalization method",
+    choices = c("LogNormalize" = "LogNormalize", "SCTransform" = "SCTransform"),
+    selected = "LogNormalize"
   ),
+  
+  fluidRow(
+    column(width = 4,
+           numericInput("multiple_sample_scale_factor", label = "Scale factor", value = 10000)),
+    column(width = 4,
+           selectInput("multiple_sample_normalization_variable_genes", label = "variable genes detection",
+                       choices = c("vst" = "vst", "mean.var.plot (mvp)" = "mean.var.plot", "dispersion (disp)" = "dispersion"),
+                       selected = "vst")),
+    column(width = 4,
+           numericInput("multiple_sample_var_genes", label = "Number of top variable features", value = 2000)),
+    
+    # Seurat PCA dims (always visible now)
+    column(width = 4,
+           numericInput("multiple_sample_pca_dim", label = "Number of dimensions (PCA)", value = 50, min = 2, step = 1)),
+    
+    # --- JackStraw options ---
+    box(id = "m_js_opts_box", status = "info",
+        solidHeader = TRUE, width = 12,
+        h3("PC significance (JackStraw)"),
+        column(width = 3,
+               numericInput("js_dims", "Max PCs to test (ScoreJackStraw dims)", value = 20, min = 5, step = 1)),
+        column(width = 3,
+               numericInput("js_numrep", "JackStraw num.replicate", value = 100, min = 20, step = 10)),
+        column(width = 3,
+               numericInput("js_plot_max", "Plot PCs up to (for JackStrawPlot)", value = 20, min = 5, step = 1))
+    ),
+    
+    br(),
+    column(width = 4,
+           actionBttn("multiple_sample_normalization", "Submit",
+                      style = "unite", color = "primary", icon = icon("download")))
+  ),
+  
   hr(),
   
+  # --- PCA heatmap + JackStraw significance ---
   fluidRow(
     box(id = "m_pca_box1", 
         h3("Dimension reduction heatmap  for PCA data"), 
@@ -358,45 +392,59 @@ tabPanel(
         status = "warning", 
         solidHeader = F,
         withSpinner(type = 4, plotOutput("m_pca_plot", height = 600))),
-  
-  box(id = "m_elbow_box", 
-      h3("Elbow plot"), 
-      actionBttn("download_m_elbow_plot", "Download plot", style = "unite",color = "primary", icon = icon("download")), 
-      status = "warning", 
-      solidHeader = F,
-      withSpinner(type = 4, plotOutput("m_elbow_plot", height = 600))),
-  ),
-  
-  fluidRow(
-
-    box(id = "m_pca_box2", 
-        h3("PCA sample(s) based"), 
-        actionBttn("download_m_pca2_plot", "Download plot", style = "unite",color = "primary", icon = icon("download")), 
+    
+    box(id = "m_elbow_box", 
+        h3("Elbow plot"), 
+        actionBttn("download_m_elbow_plot", "Download plot", style = "unite",color = "primary", icon = icon("download")), 
         status = "warning", 
         solidHeader = F,
+        withSpinner(type = 4, plotOutput("m_elbow_plot", height = 600))),
+  ),
+  fluidRow(
+    conditionalPanel(
+      condition = "input.multiple_sample_normalization_method == 'LogNormalize'",
+    box(id = "m_pca_box5",    
+        h3("PC significance (JackStraw)"),
+        actionBttn("download_m_js_plot", "Download plot", style = "unite", color = "primary", icon = icon("download")),
+        status = "warning", solidHeader = FALSE,
+        #withSpinner(type = 4, verbatimTextOutput("m_js_sig_pcs")),
+        withSpinner(type = 4, plotOutput("m_jackstraw_plot", height = 600))),
+  ),
+  ),
+  
+  # --- PCA scatter plots ---
+  fluidRow(
+    box(id = "m_pca_box2",
+        h3("PCA sample(s) based"),
+        actionBttn("download_m_pca2_plot", "Download plot", style = "unite", color = "primary", icon = icon("download")),
+        status = "warning", solidHeader = FALSE,
         withSpinner(type = 4, plotOutput("m_pca2_plot", height = 600))),
     
-    box(id = "m_pca_box3", 
-        h3("PCA group(s) based"), 
-        actionBttn("download_m_pca3_plot", "Download plot", style = "unite",color = "primary", icon = icon("download")), 
-        status = "warning", 
-        solidHeader = F,
-        withSpinner(type = 4, plotOutput("m_pca3_plot", height = 600))),
+    box(id = "m_pca_box3",
+        h3("PCA group(s) based"),
+        actionBttn("download_m_pca3_plot", "Download plot", style = "unite", color = "primary", icon = icon("download")),
+        status = "warning", solidHeader = FALSE,
+        withSpinner(type = 4, plotOutput("m_pca3_plot", height = 600)))
   ),
+  
   box(id = "m_pca_box4", width = 12,
-  hr(),
-  downloadBttn(outputId = "m_normalization", label = "Download Seurat Object"),
-  actionLink("link_m_clustering", actionBttn("MCLUSTERINGButtonLoad", "NEXT STEP (Clustering)", style = "unite",color = "primary",icon = icon("arrow-right"), size = "md")),
-), 
-), 
+      hr(),
+      downloadBttn(outputId = "m_normalization", label = "Download Seurat Object"),
+      actionLink("link_m_clustering",
+                 actionBttn("MCLUSTERINGButtonLoad", "NEXT STEP (Clustering)",
+                            style = "unite", color = "primary", icon = icon("arrow-right"), size = "md"))),
+),
+
 
 ################################Tab1.4######################################   
 #############################multiple_Clustering#########################
 tabPanel(
   "Clustering",
+  
   fluidRow(
+    actionButton("info_btn4", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Clustering"),
     h3("Nearest-neighbour graph construction"),
-    column(4, numericInput("m_clustering1", label = "Number of dimensions", min = 0, max = 100, value = 30, step = 1)),
+    column(4, numericInput("m_clustering1", label = "Number of dimensions", min = 0, max = 100, value = 20, step = 1)),
     column(4, numericInput("m_clustering2", label = "k.param", value = 20, step = 1)),
     column(4, numericInput("m_clustering3", label = "n.trees", value = 50, step = 1)),
   ),    
@@ -407,7 +455,7 @@ tabPanel(
   # ),
   # fluidRow(
   #   h3("Select integration method"),
-    column(4, selectInput("m_clustering13", label = "Integration method (except none, minimum two samples are required)", choices = c("None" = "None", "HarmonyIntegration" = "HarmonyIntegration", "CCAIntegration" = "CCAIntegration", "RPCAIntegration" = "RPCAIntegration", JointPCAIntegration = "JointPCAIntegration" ), selected = "None")),
+    column(4, selectInput("m_clustering13", label = "Integration method (except none, minimum two samples are required)", choices = c("None" = "None", "HarmonyIntegration" = "HarmonyIntegration", "CCAIntegration" = "CCAIntegration", "RPCAIntegration" = "RPCAIntegration", "JointPCAIntegration" = "JointPCAIntegration" ), selected = "None")),
   ),                 
   fluidRow( 
     h3("Dimension reduction"),
@@ -416,7 +464,7 @@ tabPanel(
   fluidRow(   
     box(id = "m_umap_box",                      
         h3("UMAP parameters"), 
-        column(3, numericInput("m_clustering7", label = "Number of dimensions", min = 0, max = 100, value = 30, step = 1)),
+        column(3, numericInput("m_clustering7", label = "Number of dimensions", min = 0, max = 100, value = 20, step = 1)),
         column(3, numericInput("m_clustering8", label = "k-nearest-neighbours", min = 0, max = 50, value = 20, step = 1)),
         column(3, numericInput("m_clustering9", label = "min.dist", min = 0.001, max = 0.5, value = 0.3, step = 0.01)),
         column(3, selectInput("m_clustering10", label = "Show label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "FALSE")),
@@ -513,6 +561,7 @@ tabPanel(
 ####################################################Doublet finder#################################################
 tabPanel(
   "Remove Doublets",
+  actionButton("info_btn5", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Remove Doublets"),
   fluidRow(   
     box(id = "m_doublet_box1",                      
         h3("Parameters to detect doublets"), 
@@ -664,6 +713,7 @@ tabPanel(
 #############################Identification of markers / Differential expression analysis#########################
 tabPanel(
   "Markers Identification",
+  actionButton("info_btn6", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Marker Identification"),
   fluidRow(   
     box(id = "m_marker_box1",
         h3("Markers identification or Differential expression analysis"),
@@ -730,11 +780,12 @@ tabPanel(
 #############################################Cell type Prediction#################################################
 tabPanel(
   "Cell Type Prediction",
-  fluidRow(   
+  actionButton("info_btn7", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Cell Type Prediction"),
+    fluidRow(   
     box(id = "m_celltype_box1",
         h3("Predict Cell Type "),
         h5("Please make sure 'Identify markers in all clusters' were runned in the previous step, if you are using GPTCelltype"),
-        column(6, selectInput("m_celltype1", label = "Cell type prediction method", choices = c("ScType" = 1, "SingleR" = 2, "GPTCelltype" = 3, "Use Own Labels" = 4), selected = 1)),
+        column(6, selectInput("m_celltype1", label = "Cell type prediction method", choices = c("ScType" = 1, "SingleR" = 2, "GPTCelltype" = 3, "Use Own Labels" = 4), selected = 2)),
     ),
   ),
   
@@ -751,7 +802,7 @@ tabPanel(
   ),  
   fluidRow(   
     box(id = "m_celltype_box4",                      
-        column(6, selectInput("m_celltype5", label = "Select model", choices = c("gpt-4.5-preview" = "gpt-4.5-preview","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-4")),  
+        column(6, selectInput("m_celltype5", label = "Select model", choices = c("gpt-5" = "gpt-5","gpt-5-mini" = "gpt-5-mini","gpt-5-nano" = "gpt-5-nano","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-4")),  
         column(6, numericInput("m_celltype6", label = "Top gene numbers to predict cell type",  min = 1, max = 25, value = 10)),  
     ),
   ),
@@ -820,6 +871,7 @@ tabPanel(
 #############################################Cluster-based plots#################################################
 tabPanel(
   "Cluster-Based Plots",
+  actionButton("info_btn8", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Cluster-Based Plots"),
   fluidRow(   
     box(id = "m_clusterbased_box1",                      
         h3("Select the plot type to display"), 
@@ -868,6 +920,7 @@ tabPanel(
 #############################################Condition-based analysis#################################################
 tabPanel(
   "Condition Based Analysis",
+  actionButton("info_btn9", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Condition Based Plots"),
   fluidRow(   
     box(id = "m_conditionbased_box1",     
         h3(" Differential expression analysis between two groups"),
@@ -932,6 +985,7 @@ tabPanel(
   useShinyjs(),
   sidebarLayout(
     sidebarPanel(id="subclustering_multiple_sidebar",
+                 actionButton("info_btn10", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Subclustering"),
                  h3(id = "m_subclustering0", "Please run upto Single or Multiple samples Analysis upto Celltype prediction to begin this analysis"),
                  selectInput("m_subclustering1", label = "Select the cluster type for sub clustering", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted", "Select the gene of interest to extract the cells (positive selection)"="selected_gene", "Exclude cells expressing the selected genes, and retain the remaining cells (negative selection)"="exclude_selected_gene"), selected = "seurat_clusters"),
                  uiOutput("m_subclustering_2"),
@@ -978,6 +1032,7 @@ tabPanel(
 #############################multiple_Normalization and PCA analysis#########################
                 tabPanel(
                   "Normalization and PCA Analysis",
+                  actionButton("info_btn11", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Normalization and PCA Analysis"),
                   h5("Please use the same normalization method used in single or multiple samples analysis"),
                   selectInput("subclustering_multiple_sample_normalization_method", label = "Normalization method", choices = c("LogNormalize"="LogNormalize", "SCTransform"="SCTransform"), selected = "LogNormalize"),
                   fluidRow( 
@@ -986,7 +1041,7 @@ tabPanel(
                     column(width =4, selectInput("subclustering_multiple_sample_normalization_variable_genes", label = "variable genes detection", choices = c( "vst"="vst", "mean.var.plot (mvp)"="mean.var.plot", "dispersion (disp)"="dispersion"), selected = "vst")),  
                     column(width =4, numericInput("subclustering_multiple_sample_var_genes", label = "Number of top variable features", value = 2000)),
                     #),
-                    column(width =4, numericInput("subclustering_multiple_sample_pca_dim", label = "Number of dimensions (PCA)", value = 30)),
+                    column(width =4, numericInput("subclustering_multiple_sample_pca_dim", label = "Number of dimensions (PCA)", value = 50)),
                     br(),
                     column(width =4, actionBttn("subclustering_multiple_sample_normalization", "Submit",  style = "unite",color = "primary", icon = icon("download"))),
                   ),
@@ -1035,6 +1090,7 @@ tabPanel(
 #############################subclustering_multiple_Clustering#########################
                 tabPanel(
                   "Clustering",
+                  actionButton("info_btn12", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Clustering"),
                   fluidRow(
                     h3("Nearest-neighbour graph construction"),
                     column(3, numericInput("m_subclustering_clustering1", label = "Number of dimensions", min = 0, max = 100, value = 30, step = 1)),
@@ -1048,7 +1104,7 @@ tabPanel(
                     # ),
                     # fluidRow(
                     #   h3("Select integration method"),
-                    column(3, selectInput("m_subclustering_clustering13", label = "Integration method (except none, minimum two samples are required)", choices = c("None" = "None", "HarmonyIntegration" = "HarmonyIntegration", "CCAIntegration" = "CCAIntegration", "RPCAIntegration" = "RPCAIntegration", JointPCAIntegration = "JointPCAIntegration" ), selected = "None")),
+                    column(3, selectInput("m_subclustering_clustering13", label = "Integration method (except none, minimum two samples are required)", choices = c("None" = "None", "HarmonyIntegration" = "HarmonyIntegration", "CCAIntegration (Euclidean)" = "CCAIntegration", "RPCAIntegration (Euclidean)" = "RPCAIntegration", "JointPCAIntegration"  = "JointPCAIntegration" ), selected = "None")),
                   ),                 
                   fluidRow( 
                     h3("Dimension reduction"),
@@ -1162,6 +1218,7 @@ tabPanel(
 #############################Identification of markers / Differential expression analysis#########################
                 tabPanel(
                   "Markers Identification",
+                  actionButton("info_btn13", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Markers Identification"),
                   fluidRow(   
                     box(id = "m_subclustering_marker_box1",
                         h3("Markers identification or Differential expression analysis"),
@@ -1228,11 +1285,12 @@ tabPanel(
 #############################################Cell type Prediction#################################################
                 tabPanel(
                   "Cell Type Prediction",
+                  actionButton("info_btn14", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Cell Type Prediction"),
                   fluidRow(   
                     box(id = "m_subclustering_celltype_box1",
                         h3("Predict Cell Type "),
                         h5("Please make sure 'Identify markers in all clusters' were runned in the previous step, if you are using GPTCelltype"),
-                        column(6, selectInput("m_subclustering_celltype1", label = "Cell type prediction method", choices = c("ScType" = 1, "SingleR" = 2, "GPTCelltype" = 3, "Use Own Labels" = 4), selected = 1)),
+                        column(6, selectInput("m_subclustering_celltype1", label = "Cell type prediction method", choices = c("ScType" = 1, "SingleR" = 2, "GPTCelltype" = 3, "Use Own Labels" = 4), selected = 2)),
                     ),
                   ),
                   
@@ -1318,6 +1376,7 @@ tabPanel(
 #############################################Cluster-based plots#################################################
                 tabPanel(
                   "Cluster-Based Plots",
+                  actionButton("info_btn15", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Cluster-Based Plots"),
                   fluidRow(   
                     box(id = "m_subclustering_clusterbased_box1",                      
                         h3("Select the plot type to display"), 
@@ -1366,6 +1425,7 @@ tabPanel(
 #############################################Condition-based analysis#################################################
                 tabPanel(
                   "Condition Based Analysis",
+                  actionButton("info_btn16", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Condition Based Analysis"),
                   fluidRow(   
                     box(id = "m_subclustering_conditionbased_box1",     
                         h3(" Differential expression analysis between two groups"),
@@ -1429,6 +1489,8 @@ tabPanel(
 tabPanel(
   "Correlation Network",
   useShinyjs(),
+  actionButton("info_btn17", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Correlation"),
+  
   fluidRow( 
     box(id = "s_cccn_box0",  width=12,
         h3("To begin this analysis, please complete Single or Multiple samples or subclustering analysis until Cell Type Prediction and Marker Identification step."),
@@ -1469,6 +1531,8 @@ tabPanel(
 tabPanel(
   "GO Terms",
   useShinyjs(),
+  actionButton("info_btn18", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Gene Ontology"),
+  
   fluidRow( 
     box(id = "s_go_box0",  width=12,
         h3("To begin this analysis, please complete Single or Multiple samples or subclustering analysis until Cell Type Prediction and Marker Identification step."),
@@ -1520,6 +1584,8 @@ tabPanel(
 tabPanel(
   "Pathway Analysis",
   useShinyjs(),
+  actionButton("info_btn19", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Pathway Analysis"),
+  
   fluidRow( 
     box(id = "s_pathway_box0",  width=12,
         h3("To begin this analysis, please complete Single or Multiple samples or subclustering analysis until Cell Type Prediction and Marker Identification step."),
@@ -1570,6 +1636,8 @@ tabPanel(
 tabPanel(
   "GSEA Analysis",
   useShinyjs(),
+  actionButton("info_btn20", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "GSEA Analysis"),
+  
   fluidRow( 
     box(id = "s_gsea_box0",  width=12,
         h3("To begin this analysis, please complete Single or Multiple samples or subclustering analysis until Cell Type Prediction and Marker Identification step."),
@@ -1589,7 +1657,7 @@ tabPanel(
     box(id = "s_gsea_box2",
         h3("GSEA parameters"), 
         column(4, selectInput("s_gsea5", label = "Organism", choices = c("Human"="Homo sapiens", "Mouse"="Mus musculus"), selected = "Homo sapiens")),
-        column(4, selectInput("s_gsea6", label = "Category (from MSigDB)", choices = c("Hallmark gene sets (H)"="H", "Positional gene sets (C1)"="C1", "Curated gene sets (C2)"="C2", "Regulatory target gene sets (C3)"="C3", "Computational gene sets (C4)"="C4", "Ontology gene sets (C5)" ="C5", "Oncogenic signature gene sets (C6)"="C6", "Immunologic signature gene sets (C7)"="C7", "Cell type signature gene sets (C8)"="C8"), selected = "H")),
+        column(4, selectInput("s_gsea6", label = "Category (from MSigDB)", choices = c("Hallmark gene sets (H)"="H", "Positional gene sets (C1)"="C1", "Curated gene sets (C2)"="C2", "Regulatory target gene sets (C3)"="C3", "Computational gene sets (C4)"="C4", "Ontology gene sets (C5)" ="C5", "Oncogenic signature gene sets (C6)"="C6", "Immunologic signature gene sets (C7)"="C7", "Cell type signature gene sets (C8)"="C8"), selected = "C2")),
         column(4, selectInput("s_gsea7", label = "ScoreType", choices = c("std"="std", "pos"="pos", "neg"="neg"), selected = "std")),
         column(4, numericInput("s_gsea8", label = "Minimal size of genes", value = 15)),
         column(4, numericInput("s_gsea9", label = "Maximal size of genes", value = 50)),
@@ -1619,6 +1687,8 @@ tabPanel(
 tabPanel(
   "Cell-Cell Communication",
   useShinyjs(),
+  actionButton("info_btn21", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Cell-Cell Communication Analysis (Cell-chat)"),
+  
   fluidRow( 
     box(id = "s_cellchat_box0",  width=12,
         h3("To begin this analysis, please complete Single or Multiple samples or subclustering analysis until Cell Type Prediction and Marker Identification step."),
@@ -1732,6 +1802,8 @@ tabPanel(
 tabPanel(
   "Trajectory and Pseudotime analysis",
   useShinyjs(),
+  actionButton("info_btn22", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Trajectory & Pseudotime Analysis (Monocle3)"),
+  
   fluidRow( 
     box(id = "s_trajectory_box0",  width=12,
         h3("To begin this analysis, please complete Single or Multiple samples or subclustering analysis until Cell Type Prediction and Marker Identification step."),
@@ -1856,6 +1928,8 @@ tabPanel(
                 tabPanel(
                   "Co-expression network analysis",
                   useShinyjs(),
+                  actionButton("info_btn23", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Co-expression & Network Analysis (hdWGCNA)"),
+                  
                   fluidRow( 
                     box(id = "s_hdwgcna_box0",  width=12,
                         h3("To begin this analysis, please complete Single or Multiple samples or subclustering analysis until Cell Type Prediction step."),
@@ -1951,6 +2025,7 @@ tabPanel(
 ####################################################TFs####################################################################
                 tabPanel(
                   "Transcription Factor Regulatory Network Analysis",
+                  actionButton("info_btn24", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Transcription Factor Regulatory Network Analysis (hdWGCNA)"),
                   # fluidRow( 
                   #   box(id = "s_tfrn_box0",  width=12,
                   #       h3("To begin this analysis, please complete Single or Multiple samples or subclustering analysis until Cell Type Prediction step."),
@@ -1963,7 +2038,7 @@ tabPanel(
                         column(6, selectInput("s_tfrn1", label = "Organism", choices = c("Human"="EnsDb.Hsapiens.v86", "Mouse"="EnsDb.Mmusculus.v79"), selected = "EnsDb.Hsapiens.v86")),
                     ),
                     box(id = "s_tfrn_box2",
-                        h3("Identify TFs in promoter regions (uses JASPAR 2020 database, Motif scan and XGBOost)"),
+                        h3("Identify TFs in promoter regions (uses JASPAR 2024 database, Motif scan and XGBOost)"),
                         column(6, numericInput("s_tfrn2", label = "max_depth", value = 1)),
                         column(6, numericInput("s_tfrn3", label = "eta", value = 0.1)),
                         column(6, numericInput("s_tfrn4", label = "alpha", value = 0.5)),
@@ -2100,21 +2175,144 @@ tabPanel(
 <p>To ensure seamless analysis and reproducibility, ScRDAVis includes one reference dataset for each input format, sourced from NCBI, which has been pre-tested with the tool. These datasets allow users to explore the tool's functionalities and understand the analysis workflow effectively.</p>
 <ul>
   <li><strong>H5 File:</strong> <a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE271107'>GSE271107</a></li>
-  <li><strong>Matrix Files:</strong> <a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE277476'>GSE277476</a></li>
+  <li><strong>Matrix Files:</strong> <a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE266873'>GSE266873</a></li>
   <li><strong>Seurat Object:</strong> <a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE250488'>GSE250488</a></li>
   <li><strong>Matrix count file:</strong> <a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE155953'>GSE155953</a></li>
   <li><strong>Example data to test the tool (C2_vs_P2) from :</strong> <a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?GSE277476'>GSE277476</a></li>
 </ul>
-
 <hr>
-<h3>Step-by-Step Approach for User Interaction</h3>
+<h1>Estimated Runtime for Analysis Tabs</h1>
+<table border='1' cellspacing='0' cellpadding='6' style='border-collapse:collapse; width:100%;'>
+  <thead style='background-color:#f2f2f2;'>
+    <tr>
+      <th>Tab Name</th>
+      <th>Estimated Time</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Stats</td>
+      <td>1–2 minutes</td>
+      <td>Upload &amp; initial QC plots. H5 is faster; RDS or raw matrix takes longer.</td>
+    </tr>
+    <tr>
+      <td>Sample Groups &amp; QC Filtering</td>
+      <td>1–2 minutes</td>
+      <td>Depends on number of samples and filtering thresholds.</td>
+    </tr>
+    <tr>
+      <td>Normalization &amp; PCA</td>
+      <td>2–5 minutes</td>
+      <td>SCTransform takes longer than LogNormalize.</td>
+    </tr>
+    <tr>
+      <td>JackStraw Analysis</td>
+      <td>10–30 minutes</td>
+      <td>Depends on number of PCs (e.g., 20–50) and resampling (e.g., 100 reps).</td>
+    </tr>
+    <tr>
+      <td>Clustering &amp; UMAP/tSNE</td>
+      <td>1–3 minutes</td>
+      <td>Slightly longer for large datasets or high resolution.</td>
+    </tr>
+    <tr>
+      <td>Doublet Detection</td>
+      <td>3–30 minutes</td>
+      <td>Depends on dataset size and expected doublet rate.</td>
+    </tr>
+    <tr>
+      <td>Marker Identification</td>
+      <td>1–3 minutes</td>
+      <td>Multiple clusters increase runtime (e.g., 10+ clusters).</td>
+    </tr>
+    <tr>
+      <td>Cell Type Prediction</td>
+      <td>2–15 minutes</td>
+      <td>ScType &amp; SingleR are fast; GPTCelltype depends on OpenAI API latency.</td>
+    </tr>
+    <tr>
+      <td>Cluster-Based Plots</td>
+      <td>&lt;1 minute</td>
+      <td>Faster for fewer genes and features.</td>
+    </tr>
+    <tr>
+      <td>Condition-Based DEG Analysis</td>
+      <td>1–2 minutes</td>
+      <td>Similar to marker detection; volcano plot adds a few seconds.</td>
+    </tr>
+    <tr>
+      <td>Subclustering</td>
+      <td>2–30 minutes</td>
+      <td>Includes filtering + reclustering a subset of cells. (Whole analysis)</td>
+    </tr>
+    <tr>
+      <td>Correlation Network</td>
+      <td>2–4 minutes</td>
+      <td>Larger clusters or using Kendall correlation may take longer.</td>
+    </tr>
+    <tr>
+      <td>GO Term Enrichment</td>
+      <td>1–3 minutes</td>
+      <td>Depends on number of DE genes and ontology selected.</td>
+    </tr>
+    <tr>
+      <td>Pathway Analysis</td>
+      <td>1–3 minutes</td>
+      <td>KEGG &amp; Reactome databases processed similarly.</td>
+    </tr>
+    <tr>
+      <td>GSEA Analysis</td>
+      <td>1–3 minutes</td>
+      <td>MSigDB categories vary in size; more permutations = longer time.</td>
+    </tr>
+    <tr>
+      <td>Cell-Cell Communication</td>
+      <td>5–30 minutes</td>
+      <td>One of the longest steps. Time depends on the number of groups &amp; PPI size.</td>
+    </tr>
+    <tr>
+      <td>Trajectory &amp; Pseudotime</td>
+      <td>3–30 minutes</td>
+      <td>UMAP-based; Monocle3 processing varies with complexity.</td>
+    </tr>
+    <tr>
+      <td>Co-expression Network (hdWGCNA)</td>
+      <td>15 minutes to 1 hour</td>
+      <td>Metacell and soft-thresholding steps are the most time-consuming.</td>
+    </tr>
+    <tr>
+      <td>TF Regulatory Network</td>
+      <td>30 minutes to 2 hour</td>
+      <td>Motif scanning + XGBoost modeling can be moderately slow.</td>
+    </tr>
+  </tbody>
+</table>
+ <strong>Additional Notes:</strong>
+  <ul>
+    <li>Smaller datasets (&lt;5k cells): Most steps complete in under 2–5 minutes.</li>
+    <li>Larger datasets (&gt;100k cells): Some modules may exceed 10–60 minutes.</li>
+    <li>Most time-consuming modules:
+      <ul>
+        <li>JackStraw</li>
+        <li>Doublet Detection</li>
+        <li>SingleR</li>
+        <li>CellChat (Cell-Cell Communication)</li>
+        <li>Trajectory &amp; Pseudotime</li>
+        <li>hdWGCNA</li>
+        <li>TF Regulatory Network</li>
+      </ul>
+    </li>
+  </ul>
+<hr>
+<h3>Step-by-Step Approach for User Interaction using <a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE266873'>GSE266873</a> consisting of 9 samples across three groups Group1 (n=3, 0-6 hours post-ICH, G1), Group2 (n=3, 6-24 hours post-ICH, G2), and Group3 (n=3, 24-48 hours post-ICH, G3)</h3>
 <h3>1. Single or Multiple samples analysis</h3>
 	<h3>1.1 Stats</h3>
 <ul>
     <li><strong>Upload and Adjust Parameters:</strong>
         <ul>
-            <li>Minimum cell expression per gene: Define the minimum number of cells that should express each gene.</li>
-            <li>Minimum gene expression per cell: Set the minimum number of genes each cell should express.</li>
+            <li>Minimum cell expression per gene: Define the minimum number of cells that should express each gene (Default: 0, Min: 0, Max: number of cells).</li>
+            <li>Minimum gene expression per cell: Set the minimum number of genes each cell should express (Default: 0, Min: 0, Max: number of cells).</li>
         </ul>
 		
     </li>
@@ -2146,7 +2344,10 @@ tabPanel(
     </li>
     <li><strong>Define Filtering Parameters:</strong>
         <ul>
-            <li>Set thresholds to remove low-quality cells and genes, and optionally filter out cells with high mitochondrial gene content.</li>
+<li>Min gene count per cell (Default: 0) – Filters out cells with fewer than this number of genes expressed. [Recommended: 200 to 500].</li>
+<li>Max gene count per cell (Default: 7500) – Filters out cells with more than this number of genes expressed. [Recommended: 5000 to 7500].</li>
+<li>Max mitochondrial % (Default: 5) – Removes cells with excessive mitochondrial gene expression, often indicating low-quality or dying cells. [Recommended: <10%].</li>
+
 			 </ul>
 	</li>
 			<li><strong>Execution:</strong>
@@ -2171,7 +2372,11 @@ tabPanel(
         <ul>
             <li>LogNormalize: Adjusts for sequencing depth or read count differences.
                 <ul>
-                    <li>Additional options: Scale Factor, Variable Genes Detection methods (vst, mvp, disp), Top Variable Features to use.</li>
+                    <li>Scale factor (Default: 10000, Min: 1, Max: 1e6) – Scale factor used in LogNormalize method for total expression normalization.</li>
+<li>Variable gene method (Default: vst) – Method for selecting variable features: vst (default), mean.var.plot, or dispersion.</li>
+<li>Number of variable genes (Default: 2000, Min: 100, Max: 10000) – Number of top variable genes to retain for downstream analysis.</li>
+
+
                 </ul>
             </li>
             <li>SCT (SCTransform): Uses regularized negative binomial regression for clustering and differential expression.</li>
@@ -2179,7 +2384,10 @@ tabPanel(
     </li>
     <li><strong>PCA Settings:</strong>
         <ul>
-            <li>Choose the PCA Dimensions (typically between 1-50) for analysis.</li>
+            <li>PCA dimensions (Default: 50, Min: 2, Max: 100) – Number of principal components computed for dimensionality reduction.</li>
+<li>JackStraw max dims (Default: 20, Min: 1, Max: 100) – Maximum number of PCs tested for significance in JackStraw analysis.</li>
+<li>JackStraw num.replicate (Default: 100, Min: 10, Max: 1000) – Number of permutations used in JackStraw resampling.</li>
+<li>JackStraw plot max PCs (Default: 20, Min: 1, Max: 100) – Maximum PCs to display in JackStraw significance plot.</li>
         </ul>
     </li>
 	<li><strong>Execution:</strong>
@@ -2201,8 +2409,10 @@ tabPanel(
 <ul>
     <li><strong>Clustering Step:</strong>
         <ul>
-            <li>Find Neighbors: The users selects the dimensions to use (PCA, integrated dimensions, etc.) and k-nearest neighbors.</li>
+            <li>Find Neighbors: (Default: 20, Min: 2, Max: 50) The users selects the dimensions to use (PCA, integrated dimensions, etc.) and k-nearest neighbors.</li>
             <li>Clustering Algorithm: Select between Louvain, SLM or Leiden algorithms for clustering.</li>
+            
+
             <li>Resolution Control: The users can adjust the resolution (0.1 to 1) parameter to control the granularity of clusters.</li>
         </ul>
     </li>
@@ -2210,8 +2420,8 @@ tabPanel(
         <ul>
             <li>o Choose between UMAP or t-SNE for dimensionality reduction.
                 <ul>
-                    <li>For UMAP: Users can adjust parameters like min.dist, k-nearest-neighbours, and the number of dimensions.</li>
-                    <li>For t-SNE: Users can adjust the number of dimensions</li>
+                    <li>For UMAP: Users can adjust parameters like min.dist, k-nearest-neighbours, and the number of dimensions (Default: 30, Min: 2, Max: 100).</li>
+                    <li>For t-SNE: Users can adjust the number of dimensions (Default: 30, Min: 2, Max: 100)</li>
                 </ul>
             </li>
         </ul>
@@ -2219,6 +2429,11 @@ tabPanel(
     <li><strong>Integration Method:</strong>
 		 <ul>
     <li>Select integration method(s): CCA, RPCA, Harmony, or JointPCA. These methods will allow users to handle dataset complexities and integrate data from multiple samples.</li>
+	  <li>Integration method (Default: None) – Data inte.g.ration method. If 'None', no inte.g.ration is performed.</li>
+<li>HarmonyIntegration (Default: Reduction = harmony; Distance = Cosine) – Batch correction using Harmony with cosine distance.</li>
+<li>CCAIntegration (Default: Reduction = cca; Distance = Euclidean) – Canonical correlation analysis for dataset inte.g.ration.</li>
+<li>RPCAIntegration(Default: Reduction = rpca; Distance = Euclidean) – Faster, scalable variant of CCA.</li>
+<li>JointPCAIntegration (Default: Reduction = jointpca; Distance = Euclidean) – Joint PCA embedding for multi-dataset inte.g.ration.</li>
 	  </ul>
   </li>
 	<li><strong>Execution:</strong>
@@ -2268,8 +2483,8 @@ tabPanel(
         <ul>
             <li>Customizable parameters: <strong>(Fig. 1.6a)</strong>
 				<ul>
-          <li>Minimum cell percentage (min.pct) to specify the minimum fraction of cells in which a gene is expressed.</li>
-          <li>Log fold-change threshold (logfc.threshold) to filter markers based on expression magnitude.</li>
+          <li>Minimum cell percentage (min.pct) to specify the minimum fraction of cells in which a gene is expressed (Default: 0.25, Min: 0.01, Max: 1.0).</li>
+          <li>Log fold-change threshold (logfc.threshold) to filter markers based on expression magnitude (Default: 0.25, Min: 0.01, Max: ∞).</li>
           <li>Statistical test options (test.use), including Wilcoxon rank sum (wilcox), Wilcoxon-Limma hybrid (wilcox_limma), binomial (bimod), ROC, t-test, likelihood ratio test (LR), and MAST.</li>
           <li>Positive markers only (only.pos), with options for yes or no, to focus on upregulated genes in the target cluster.</li>
             <li>When using SCTransform for normalization, out tool uses PrepSCTFindMarkers preps the data for accurate differential testing by adjusting the SCT assay, making results more reliable for FindMarkers and FindAllMarkers.</li>
@@ -2378,8 +2593,8 @@ tabPanel(
 	</ul>
 	</li>
     <li><strong>Customizable Parameters:</strong><ul>
-	<li>Minimum Cell Percentage (min.pct): Sets the minimum fraction of cells in which a gene must be expressed.</li>
-	<li>Log Fold-Change Threshold (logfc.threshold): Filters markers by expression magnitude.</li>
+	<li>Minimum Cell Percentage (min.pct): Sets the minimum fraction of cells in which a gene must be expressed (Default: 0.25, Min: 0.01, Max: 1.0).</li>
+	<li>Log Fold-Change Threshold (logfc.threshold): Filters markers by expression magnitude (Default: 0.25, Min: 0.01, Max: ∞).</li>
 	<li>Statistical Tests (test.use): Users can choose from various methods, including Wilcoxon rank sum, Wilcoxon-Limma hybrid, binomial, ROC, t-test, likelihood ratio test, and MAST.</li>
 	<li>Positive Markers Only (only.pos): Option to display only upregulated genes in the target cluster.</li>
 	</ul>
@@ -2506,13 +2721,13 @@ Ontology Method: Users can choose to focus on specific biological aspects or all
 </li>
 <li><strong>Adjustable Parameters:</strong>
 <ul>
-<li>pAdjustMethod: Select the method to adjust for multiple testing.</li>
-<li>pvalueCutoff: Set a cutoff for p-values.</li>
-<li>qvalueCutoff: Define a q-value threshold for significance.</li>
-<li>Minimum Size of Genes: Minimum number of genes required in a GO term.</li>
-<li>Maximum Size of Genes: Maximum number of genes in a GO term.</li>
+<li>pAdjustMethod: Select the method to adjust for multiple testing (Default: BH).</li>
+<li>pvalueCutoff: Set a cutoff for p-values (Default: 0.05, Min: 0, Max: 1).</li>
+<li>qvalueCutoff: Define a q-value threshold for significance (Default: 0.2, Min: 0, Max: 1).</li>
+<li>Minimum Size of Genes: Minimum number of genes required in a GO term (Default: 10, Min: 1, Max: 500).</li>
+<li>Maximum Size of Genes: Maximum number of genes in a GO term (Default: 500, Min: 10, Max: 5000).</li>
 <li>Plot Type: Choose a visualization format (Dot Plot, Bar Plot, Net and UpSetPlot).</li>
-<li>Number of Categories to Plot: Select the number of categories to display (1 to 50).</li>
+<li>Number of Categories to Plot: Select the number of categories to display  (Default: 10, Min: 1, Max: 50).</li>
 </ul>
 </li>
 <li><strong>Execution:</strong>
@@ -2556,11 +2771,11 @@ ScRDAVis enables pathway mapping for multiple organisms:
 </li>
 <li><strong>Pathway Analysis Parameters:</strong>
 <ul>
-<li>pAdjustMethod: Choose a method for multiple testing correction.</li>
-<li>pvalueCutoff: Set a threshold for p-values.</li>
+<li>pAdjustMethod: Choose a method for multiple testing correction (Default: BH).</li>
+<li>pvalueCutoff: Set a threshold for p-values (Default: 10, Min: 1, Max: 500).</li>
 <li>qvalueCutoff: Define a q-value cutoff for pathway significance.</li>
-<li>Minimum Size of Genes: Minimum gene count per pathway.</li>
-<li>Maximum Size of Genes: Maximum gene count per pathway.</li>
+<li>Minimum Size of Genes: Minimum gene count per pathway (Default: 10, Min: 1, Max: 500).</li>
+<li>Maximum Size of Genes: Maximum gene count per pathway (Default: 500, Min: 10, Max: 5000).</li>
 <li>Plot Type: Choose visualization format (Dot Plot, Bar Plot, Net and UpSetPlot Plot).</li>
 <li>Number of Pathways to Plot: Select the number of pathways to display (1 to 50).</li>
 </ul>
@@ -2616,12 +2831,12 @@ GSEA analysis can be performed on:
 </li>
 <li><strong>GSEA Analysis Parameters:</strong>
 <ul>
-<li>scoreType: Define the scoring method for pathway enrichment.</li>
-<li>Minimal Size of Genes: Minimum number of genes in a gene set.</li>
-<li>Maximal Size of Genes: Maximum number of genes in a gene set.</li>
-<li>Number of Permutations: Control the precision of p-value calculations.</li>
+<li>scoreType: Define the scoring method for pathway enrichment (Default: std).</li>
+<li>Minimal Size of Genes: Minimum number of genes in a gene set (Default: 15, Min: 5, Max: 500).</li>
+<li>Maximal Size of Genes: Maximum number of genes in a gene set (Default: 50, Min: 15, Max: 5000).</li>
+<li>Number of Permutations: Control the precision of p-value calculations (Default: 100, Min: 10, Max: 10000).</li>
 <li>Plot Type: Choose visualization format (GSEA Plot, PlotGseaTable, Bar Plot).</li>
-<li>Number of Significant Pathways to Plot: Select the number of pathways to display (1 to 40).</li>
+<li>Number of Significant Pathways to Plot: Select the number of pathways to display (Default: 10, Min: 1, Max: 50).</li>
 </ul>
 </li>
 <li><strong>Execution:</strong>
@@ -2660,9 +2875,9 @@ ScRDAVis integrates CellChat to enable users to analyze cell-cell communication 
 <ul>
 <li><strong>Identify Over-Expressed Genes:</strong>
 <ul>
-<li>Threshold of Cell Expression Percentage: Minimum percentage of cells expressing the genes.</li>
-<li>Log Fold Change Threshold: Minimum log fold-change required for genes to be considered over-expressed.</li>
-<li>p-Value Threshold: Statistical significance threshold.</li>
+<li>Threshold of Cell Expression Percentage: Minimum percentage of cells expressing the genes  (Default: 0, Min: 0, Max: 100).</li>
+<li>Log Fold Change Threshold: Minimum log fold-change required for genes to be considered over-expressed  (Default: 0, Min: 0, Max: 10).</li>
+<li>p-Value Threshold: Statistical significance threshold  (Default: 0.05, Min: 0.0001, Max: 1).</li>
 </ul>
 </li>
 <li><strong>Compute Communication Probability:</strong>
@@ -2672,12 +2887,12 @@ ScRDAVis integrates CellChat to enable users to analyze cell-cell communication 
 </li>
 <li><strong>Filter Communication:</strong>
 <ul>
-<li>Minimum Cell Requirement: Minimum number of cells needed in each cell group to analyze cell-cell communication.</li>
+<li>Minimum Cell Requirement: Minimum number of cells needed in each cell group to analyze cell-cell communication  (Default: 0.05, Min: 0.0001, Max: 1).</li>
 </ul>
 </li>
 <li><strong>Communication Pattern Identification:</strong>
 <ul>
-<li>Pattern k-Value: Defines the number of communication patterns to identify.</li>
+<li>Pattern k-Value: Defines the number of communication patterns to identify  (Default: 2, Min: 2, Max: 20).</li>
 </ul>
 </li>
 <li><strong>Label Option:</strong>
@@ -2829,10 +3044,10 @@ Aggregates small groups of similar cells from the same biological sample. Uses t
 <ul>
 <li><strong>Parameters:</strong>
 <ul>
-<li>k: Number of nearest neighbors for aggregation.</li>
-<li>min_cells: Minimum number of cells in a group to construct metacells.</li>
-<li>max_shared: Maximum number of cells shared across two metacells.</li>
-<li>target_metacells: Maximum number of target metacells to construct.</li>
+<li>k: Number of nearest neighbors for aggregation (Default: 10, Min: 1, Max: 100).</li>
+<li>min_cells: Minimum number of cells in a group to construct metacells  (Default: 10, Min: 5, Max: 100).</li>
+<li>max_shared: Maximum number of cells shared across two metacells  (Default: 15, Min: 1, Max: 100).</li>
+<li>target_metacells: Maximum number of target metacells to construct  (Default: 1000, Min: 50, Max: 5000).</li>
 </ul>
 </li>
 </ul>
@@ -2852,7 +3067,7 @@ Builds networks with customizable parameters:
 </li>
 <li><strong>Hub Gene Extraction:</strong>
 <ul>
-<li>Extracts the top N hub genes for selected modules, aiding in the identification of key regulators.</li>
+<li>Extracts the top N hub genes for selected modules, aiding in the identification of key regulators  (Default: 5, Min: 1, Max: 50).</li>
 </ul>
 </li>
 <li><strong>Execution:</strong>
@@ -2897,23 +3112,23 @@ Transcription Factor (TF) Regulatory Network Analysis in ScRDAVis employs the hd
 </li>
 <li><strong>Machine Learning Model:</strong>
 <ul>
-<li>XGBoost used to model TF regulation for each gene with:</li>
-<li>max_depth : Maximum depth of a tree</li>
-<li>eta : Step size shrinkage used in update to prevent overfitting</li>
-<li>alpha: L1 regularization term on weights</li>
+<li>XGBoost: used to model TF regulation for each gene with </li>
+<li>max_depth : Maximum depth of a tree (Default: 1, Min: 1, Max: 10) </li>
+<li>eta : Step size shrinkage used in update to prevent overfitting  (Default: 0.1, Min: 0.01, Max: 1)</li>
+<li>alpha: L1 regularization term on weights  (Default: 0.5, Min: 0, Max: 1)</li>
 </ul>
 </li>
 <li><strong>TF Regulon Strategy:</strong>
 <ul>
 <li>Strategy A selects the top TFs for each gene by default</li>
-<li>reg_thresh : Threshold for regulatory score)</li>
-<li>n_tfs : The number of top TFs to keep for each gene</li>
+<li>reg_thresh : Threshold for regulatory score)  (Default: 0.01, Min: 0, Max: 1) </li>
+<li>n_tfs : The number of top TFs to keep for each gene  (Default: 10, Min: 1, Max: 50)</li>
 </ul>
 </li>
 <li><strong>Regulon Expression Signatures:</strong>
 <ul>
-<li>Positive correlation: cor_thresh = 0.05. Threshold for TF-gene correlation for genes to be included in the positive regulon score</li>
-<li>Negative correlation: cor_thresh = -0.05. threshold for TF-gene correlation for genes to be included in the negative regulon score</li>
+<li>Positive correlation: cor_thresh = 0.05 (Default: 0.05, Min: 0, Max: 1). Threshold for TF-gene correlation for genes to be included in the positive regulon score</li>
+<li>Negative correlation: cor_thresh = -0.05 (Default: -0.05, Min: -1, Max: 0). threshold for TF-gene correlation for genes to be included in the negative regulon score</li>
 </ul>
 </li>
 </ul>

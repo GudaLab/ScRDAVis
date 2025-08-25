@@ -273,6 +273,8 @@ server <- function(input, output, session) {
   shinyjs::hide("m_pca_box2")
   shinyjs::hide("m_pca_box3")
   shinyjs::hide("m_pca_box4")
+  shinyjs::hide("m_pca_box5")
+
   
   observeEvent(input$multiple_sample_normalization,{
     shinyjs::show("m_pca_box1")
@@ -280,6 +282,7 @@ server <- function(input, output, session) {
     shinyjs::show("m_pca_box2")
     shinyjs::show("m_pca_box3")
     shinyjs::show("m_pca_box4")
+    shinyjs::show("m_pca_box5")
   })
   
   observe({
@@ -287,11 +290,15 @@ server <- function(input, output, session) {
       shinyjs::show("multiple_sample_scale_factor")
       shinyjs::show("multiple_sample_normalization_variable_genes")
       shinyjs::show("multiple_sample_var_genes")
+      #shinyjs::show("m_pca_box5")
+      shinyjs::show("m_js_opts_box")
     }
     else if (input$multiple_sample_normalization_method  == "SCTransform") {
       shinyjs::hide("multiple_sample_scale_factor")
       shinyjs::hide("multiple_sample_normalization_variable_genes")
       shinyjs::hide("multiple_sample_var_genes")
+      shinyjs::hide("m_js_opts_box")
+      #shinyjs::hide("m_pca_box5")
     }
   })
   
@@ -972,126 +979,194 @@ server <- function(input, output, session) {
   
   ##########################Tab1.3###############################      
   ##############multiple Normalization & PCA###################      
-  datainput_multiple_normalization_pca_level <- eventReactive(input$multiple_sample_normalization,{
+  # === RUN normalization + PCA + JackStraw (all inside the script now) ===
+  datainput_multiple_normalization_pca_level <- eventReactive(input$multiple_sample_normalization, {
     source("scripts/multiple_normalization_pca.R")
-    datainput_multiple_normalization_pca(index_multiple_normalization_pca_input = datainput_multiple_qc_filter_level()[[7]], index_multiple_sample_normalization_method = input$multiple_sample_normalization_method, index_multiple_sample_scale_factor=input$multiple_sample_scale_factor, index_multiple_sample_var_genes = input$multiple_sample_var_genes, index_multiple_sample_normalization_variable_genes=input$multiple_sample_normalization_variable_genes, index_multiple_sample_pca_dim=input$multiple_sample_pca_dim)
+    datainput_multiple_normalization_pca(
+      index_multiple_normalization_pca_input             = datainput_multiple_qc_filter_level()[[7]],
+      index_multiple_sample_normalization_method         = input$multiple_sample_normalization_method,
+      index_multiple_sample_scale_factor                 = input$multiple_sample_scale_factor,
+      index_multiple_sample_var_genes                    = input$multiple_sample_var_genes,
+      index_multiple_sample_normalization_variable_genes = input$multiple_sample_normalization_variable_genes,
+      index_multiple_sample_pca_dim                      = input$multiple_sample_pca_dim,
+      index_js_dims                                      = input$js_dims,
+      index_js_numrep                                    = input$js_numrep,
+      index_js_plot_max                                  = input$js_plot_max
+    )
   })
   
+  # Keep a latest-state reactive for easy access everywhere
+  # .norm_res <- reactiveVal(NULL)
+  # observeEvent(datainput_multiple_normalization_pca_level(), {
+  #   .norm_res(datainput_multiple_normalization_pca_level())
+  # })
   
-  output$m_pca_plot<-renderPlot({
+  # ---- PCA HEATMAP ----
+  output$m_pca_plot <- renderPlot({
     datainput_multiple_normalization_pca_level()[1]
   })
   
   observeEvent(input$download_m_pca_plot, {
     showModal(modalDialog(
-      title = strong("Download PCA Plot"),
-      numericInput("m_pca_plot_height", label = h5("Figure height (upto 49 inces)"), value = 5, width = "300px"),
-      numericInput("m_pca_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
-      numericInput("m_pca_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
-      selectInput("m_pca_plot_type", label = "Image format", choices = list("JPG" = ".jpg", "TIFF" =".tiff", "PDF" = ".pdf",  "SVG" = ".svg", "BMP" = ".bmp", "EPS" = ".eps", "PS" = ".ps"), selected = ".jpg"),
+      title = strong("Download PCA Heatmap"),
+      numericInput("m_pca_plot_height", h5("Figure height (up to 49 inches)"), value = 5, width = "300px"),
+      numericInput("m_pca_plot_width",  h5("Figure width (up to 49 inches)"),  value = 8, width = "300px"),
+      numericInput("m_pca_plot_dpi",    h5("Figure resolution (dpi: 72–300)"), value = 300, width = "300px"),
+      selectInput("m_pca_plot_type", "Image format",
+                  choices = list("JPG"=".jpg","TIFF"=".tiff","PDF"=".pdf","SVG"=".svg","BMP"=".bmp","EPS"=".eps","PS"=".ps"),
+                  selected = ".jpg"),
       downloadBttn("m_pca_plot_downloadoutput", "Download"),
-      size = "s",
-      easyClose = TRUE,
-      #footer = NULL
+      size = "s", easyClose = TRUE
     ))
   })
   
-  
-  output$m_pca_plot_downloadoutput<- downloadHandler(
-    filename = function(){
-      paste("After_normalization_PCA_plot", input$m_pca_plot_type, sep="")
-    },
-    content = function(file){
-      ggsave(file,plot = datainput_multiple_normalization_pca_level()[[1]], width = input$m_pca_plot_width, height = input$m_pca_plot_height, dpi = input$m_pca_plot_dpi, units = "in")
+  output$m_pca_plot_downloadoutput <- downloadHandler(
+    filename = function(){ paste0("After_normalization_PCA_heatmap", input$m_pca_plot_type) },
+    content  = function(file){
+      ggsave(file, plot = datainput_multiple_normalization_pca_level()[[1]], width = input$m_pca_plot_width,
+             height = input$m_pca_plot_height, dpi = input$m_pca_plot_dpi, units = "in")
     }
   )
   
-  output$m_elbow_plot<-renderPlot({
+  # ---- ELBOW ----
+  output$m_elbow_plot <- renderPlot({
     datainput_multiple_normalization_pca_level()[2]
   })
   
   observeEvent(input$download_m_elbow_plot, {
     showModal(modalDialog(
-      title = strong("Download Variable Features Plot"),
-      numericInput("m_elbow_plot_height", label = h5("Figure height (upto 49 inces)"), value = 5, width = "300px"),
-      numericInput("m_elbow_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
-      numericInput("m_elbow_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
-      selectInput("m_elbow_plot_type", label = "Image format", choices = list("JPG" = ".jpg", "TIFF" =".tiff", "PDF" = ".pdf",  "SVG" = ".svg", "BMP" = ".bmp", "EPS" = ".eps", "PS" = ".ps"), selected = ".jpg"),
+      title = strong("Download Elbow Plot"),
+      numericInput("m_elbow_plot_height", h5("Figure height (up to 49 inches)"), value = 5, width = "300px"),
+      numericInput("m_elbow_plot_width",  h5("Figure width (up to 49 inches)"),  value = 8, width = "300px"),
+      numericInput("m_elbow_plot_dpi",    h5("Figure resolution (dpi: 72–300)"), value = 300, width = "300px"),
+      selectInput("m_elbow_plot_type", "Image format",
+                  choices = list("JPG"=".jpg","TIFF"=".tiff","PDF"=".pdf","SVG"=".svg","BMP"=".bmp","EPS"=".eps","PS"=".ps"),
+                  selected = ".jpg"),
       downloadBttn("m_elbow_plot_downloadoutput", "Download"),
-      size = "s",
-      easyClose = TRUE,
-      #footer = NULL
+      size = "s", easyClose = TRUE
     ))
   })
   
-  
-  output$m_elbow_plot_downloadoutput<- downloadHandler(
-    filename = function(){
-      paste("After_normalization_Elbow", input$m_elbow_plot_type, sep="")
-    },
-    content = function(file){
-      ggsave(file,plot = datainput_multiple_normalization_pca_level()[[2]], width = input$m_elbow_plot_width, height = input$m_elbow_plot_height, dpi = input$m_elbow_plot_dpi, units = "in")
+  output$m_elbow_plot_downloadoutput <- downloadHandler(
+    filename = function(){ paste0("After_normalization_Elbow", input$m_elbow_plot_type) },
+    content  = function(file){
+       ggsave(file, plot =   datainput_multiple_normalization_pca_level()[[2]], width = input$m_elbow_plot_width,
+             height = input$m_elbow_plot_height, dpi = input$m_elbow_plot_dpi, units = "in")
     }
   )
   
-  output$m_pca2_plot<-renderPlot({
+  # ---- PCA SCATTERS ----
+  output$m_pca2_plot <- renderPlot({
     datainput_multiple_normalization_pca_level()[3]
   })
   
   observeEvent(input$download_m_pca2_plot, {
     showModal(modalDialog(
-      title = strong("Download PCA Plot"),
-      numericInput("m_pca2_plot_height", label = h5("Figure height (upto 49 inces)"), value = 5, width = "300px"),
-      numericInput("m_pca2_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
-      numericInput("m_pca2_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
-      selectInput("m_pca2_plot_type", label = "Image format", choices = list("JPG" = ".jpg", "TIFF" =".tiff", "PDF" = ".pdf",  "SVG" = ".svg", "BMP" = ".bmp", "EPS" = ".eps", "PS" = ".ps"), selected = ".jpg"),
+      title = strong("Download PCA Plot (samples)"),
+      numericInput("m_pca2_plot_height", h5("Figure height (up to 49 inches)"), value = 5, width = "300px"),
+      numericInput("m_pca2_plot_width",  h5("Figure width (up to 49 inches)"),  value = 8, width = "300px"),
+      numericInput("m_pca2_plot_dpi",    h5("Figure resolution (dpi: 72–300)"), value = 300, width = "300px"),
+      selectInput("m_pca2_plot_type", "Image format",
+                  choices = list("JPG"=".jpg","TIFF"=".tiff","PDF"=".pdf","SVG"=".svg","BMP"=".bmp","EPS"=".eps","PS"=".ps"),
+                  selected = ".jpg"),
       downloadBttn("m_pca2_plot_downloadoutput", "Download"),
-      size = "s",
-      easyClose = TRUE,
-      #footer = NULL
+      size = "s", easyClose = TRUE
     ))
   })
   
-  
-  output$m_pca2_plot_downloadoutput<- downloadHandler(
-    filename = function(){
-      paste("After_normalization_PCA_plot_sample_based", input$m_pca2_plot_type, sep="")
-    },
-    content = function(file){
-      ggsave(file,plot = datainput_multiple_normalization_pca_level()[[3]], width = input$m_pca2_plot_width, height = input$m_pca2_plot_height, dpi = input$m_pca2_plot_dpi, units = "in")
+  output$m_pca2_plot_downloadoutput <- downloadHandler(
+    filename = function(){ paste0("After_normalization_PCA_plot_sample_based", input$m_pca2_plot_type) },
+    content  = function(file){
+      
+      ggsave(file, plot =   datainput_multiple_normalization_pca_level()[[3]], width = input$m_pca2_plot_width,
+             height = input$m_pca2_plot_height, dpi = input$m_pca2_plot_dpi, units = "in")
     }
   )
   
-  
-  output$m_pca3_plot<-renderPlot({
+  output$m_pca3_plot <- renderPlot({
     datainput_multiple_normalization_pca_level()[4]
   })
   
+  observeEvent(input$download_m_pca3_plot, {
+    showModal(modalDialog(
+      title = strong("Download PCA Plot (groups)"),
+      numericInput("m_pca3_plot_height", h5("Figure height (up to 49 inches)"), value = 5, width = "300px"),
+      numericInput("m_pca3_plot_width",  h5("Figure width (up to 49 inches)"),  value = 8, width = "300px"),
+      numericInput("m_pca3_plot_dpi",    h5("Figure resolution (dpi: 72–300)"), value = 300, width = "300px"),
+      selectInput("m_pca3_plot_type", "Image format",
+                  choices = list("JPG"=".jpg","TIFF"=".tiff","PDF"=".pdf","SVG"=".svg","BMP"=".bmp","EPS"=".eps","PS"=".ps"),
+                  selected = ".jpg"),
+      downloadBttn("m_pca3_plot_downloadoutput", "Download"),
+      size = "s", easyClose = TRUE
+    ))
+  })
+  
+  output$m_pca3_plot_downloadoutput <- downloadHandler(
+    filename = function(){ paste0("After_normalization_PCA_plot_group_based", input$m_pca3_plot_type) },
+    content  = function(file){
+      ggsave(file, plot =   datainput_multiple_normalization_pca_level()[[4]], width = input$m_pca3_plot_width,
+             height = input$m_pca3_plot_height, dpi = input$m_pca3_plot_dpi, units = "in")
+    }
+  )
   
   observeEvent(input$download_m_pca3_plot, {
     showModal(modalDialog(
-      title = strong("Download PCA Plot"),
-      numericInput("m_pca3_plot_height", label = h5("Figure height (upto 49 inces)"), value = 5, width = "300px"),
-      numericInput("m_pca3_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
-      numericInput("m_pca3_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
-      selectInput("m_pca3_plot_type", label = "Image format", choices = list("JPG" = ".jpg", "TIFF" =".tiff", "PDF" = ".pdf",  "SVG" = ".svg", "BMP" = ".bmp", "EPS" = ".eps", "PS" = ".ps"), selected = ".jpg"),
+      title = strong("Download PCA Plot (groups)"),
+      numericInput("m_pca3_plot_height", h5("Figure height (up to 49 inches)"), value = 5, width = "300px"),
+      numericInput("m_pca3_plot_width",  h5("Figure width (up to 49 inches)"),  value = 8, width = "300px"),
+      numericInput("m_pca3_plot_dpi",    h5("Figure resolution (dpi: 72–300)"), value = 300, width = "300px"),
+      selectInput("m_pca3_plot_type", "Image format",
+                  choices = list("JPG"=".jpg","TIFF"=".tiff","PDF"=".pdf","SVG"=".svg","BMP"=".bmp","EPS"=".eps","PS"=".ps"),
+                  selected = ".jpg"),
       downloadBttn("m_pca3_plot_downloadoutput", "Download"),
+      size = "s", easyClose = TRUE
+    ))
+  })
+  
+  output$m_pca3_plot_downloadoutput <- downloadHandler(
+    filename = function(){ paste0("After_normalization_PCA_plot_group_based", input$m_pca3_plot_type) },
+    content  = function(file){
+      ggsave(file, plot =   datainput_multiple_normalization_pca_level()[[4]], width = input$m_pca3_plot_width,
+             height = input$m_pca3_plot_height, dpi = input$m_pca3_plot_dpi, units = "in")
+    }
+  )
+  
+  # ---- JACKSTRAW (now comes straight from the script results) ----
+  output$m_jackstraw_plot <- renderPlot({
+    datainput_multiple_normalization_pca_level()[[6]]
+  })
+  
+
+  observeEvent(input$download_m_js_plot, {
+    showModal(modalDialog(
+      title = strong("Download JackStraw Plot"),
+      numericInput("m_js_plot_plot_height", label = h5("Figure height (upto 49 inces)"), value = 8, width = "300px"),
+      numericInput("m_js_plot_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
+      numericInput("m_js_plot_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
+      selectInput("m_js_plot_plot_type", label = "Image format", choices = list("JPG" = ".jpg", "TIFF" =".tiff", "PDF" = ".pdf",  "SVG" = ".svg", "BMP" = ".bmp", "EPS" = ".eps", "PS" = ".ps"), selected = ".jpg"),
+      downloadBttn("m_js_plot_plot_downloadoutput", "Download"),
       size = "s",
       easyClose = TRUE,
       #footer = NULL
     ))
   })
-  
-  
-  output$m_pca3_plot_downloadoutput<- downloadHandler(
+  output$m_js_plot_plot_downloadoutput<- downloadHandler(
     filename = function(){
-      paste("After_normalization_PCA_plot_group_based", input$m_pca3_plot_type, sep="")
+      paste("JackStraw_plot", input$m_js_plot_plot_type, sep="")
     },
     content = function(file){
-      ggsave(file,plot = datainput_multiple_normalization_pca_level()[[4]], width = input$m_pca3_plot_width, height = input$m_pca3_plot_height, dpi = input$m_pca3_plot_dpi, units = "in")
+      ggsave(file,plot = datainput_multiple_normalization_pca_level()[[6]], width = input$m_js_plot_plot_width, height = input$m_js_plot_plot_height, dpi = input$m_js_plot_plot_dpi, units = "in")
     }
   )
   
+  # output$m_findpc_k <- renderText({
+  #   res <- datainput_multiple_normalization_pca_level()
+  #   if (is.null(res)) return("")
+  #   paste0("findPC selected: k = ", res$findpc_k, " PCs", "\nUse dims 1:", res$findpc_k, " for:",
+  #          "\n  • Graph construction (FindNeighbors/FindClusters 'dims')",
+  #          "\n  • Dimensional reduction (RunUMAP/RunTSNE 'dims')")
+  # })
+  # 
   
   
   ###################save seurat object after normalization###################
@@ -1150,7 +1225,7 @@ server <- function(input, output, session) {
   }) 
   observeEvent(input$download_m_umap_tsne_bar1_plot, {
     showModal(modalDialog(
-      title = strong("Download UMAP/ t-SNE Plot"),
+      title = strong("Download Bar Plot"),
       numericInput("m_umap_tsne_bar1_plot_height", label = h5("Figure height (upto 49 inces)"), value = 8, width = "300px"),
       numericInput("m_umap_tsne_bar1_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
       numericInput("m_umap_tsne_bar1_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
@@ -1202,7 +1277,7 @@ server <- function(input, output, session) {
   })
   observeEvent(input$download_m_umap_tsne_bar2_plot, {
     showModal(modalDialog(
-      title = strong("Download UMAP/ t-SNE Plot"),
+      title = strong("Download Bar Plot"),
       numericInput("m_umap_tsne_bar2_plot_height", label = h5("Figure height (upto 49 inces)"), value = 8, width = "300px"),
       numericInput("m_umap_tsne_bar2_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
       numericInput("m_umap_tsne_bar2_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
@@ -1254,7 +1329,7 @@ server <- function(input, output, session) {
   })
   observeEvent(input$download_m_umap_tsne_bar3_plot, {
     showModal(modalDialog(
-      title = strong("Download UMAP/ t-SNE Plot"),
+      title = strong("Download Bar Plot"),
       numericInput("m_umap_tsne_bar3_plot_height", label = h5("Figure height (upto 49 inces)"), value = 8, width = "300px"),
       numericInput("m_umap_tsne_bar3_plot_width", label = h5("Figure width (upto 49 inces)"), value = 8, width = "300px"),
       numericInput("m_umap_tsne_bar3_plot_dpi", label = h5("Figure resolution (dpi:72 to 300)"), value = 300, width = "300px"),
@@ -5744,4 +5819,487 @@ observe({
     }
   ) 
   
+  
+  
+  
+#########################################################################Help text#########################################
+#################                                             Help                                        #################
+#########################################################################Help text#########################################
+  
+  observeEvent(input$info_btn1, {
+    showModal(modalDialog(
+      title = "File upload and Stats",
+      HTML("
+    <ul>
+      <li><b>Upload H5 File (Cell Ranger Output)</b> (Default: H5) – Rename it to SAMPLE_NAME.h5 for proper identification.</li>
+<li><b>Upload Matrix files (mtx, features, barcodes)</b> (Default: Matrix) – Rename as SAMPLE_NAME_matrix.mtx.gz, SAMPLE_NAME_features.tsv.gz, and SAMPLE_NAME_barcodes.tsv.gz, and upload together as a set.</li>
+<li><b>Upload Seurat Object</b> (Default: RDS) – Filename.rds (Seurat object). The orig.ident attribute should match the sample name(s).</li>
+<li><b>Upload Matrix Count File (.txt)</b> (Default: TXT) – Filename.txt with rows as genes and columns as sample_cellID.</li>
+<li><b>Minimum cell expression per gene</b> (Default: 0, Min: 0, Max: number of cells) – Minimum number of cells that must express a given gene to retain it.</li>
+<li><b>Minimum gene expression per cell</b> (Default: 0, Min: 0, Max: number of cells) – Minimum number of genes that must be expressed in a cell to retain it.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn2, {
+    showModal(modalDialog(
+      title = "Sample Groups and QC Filtering",
+      HTML("
+    <ul>
+      <li><b>Number of groups</b> (Default: 1 to 6) – Select up to 6 groups.</li>
+<li><b>Group 1 Name</b> (Default: Group1) – Type the group name.</li>
+<li><b>Group 2 Name</b> (Default: Group2) – Type the group name.</li>
+<li><b>Group 3 Name</b> (Default: Group3) – Type the group name.</li>
+<li><b>Group 4 Name</b> (Default: Group4) – Type the group name.</li>
+<li><b>Group 5 Name</b> (Default: Group5) – Type the group name.</li>
+<li><b>Group 6 Name</b> (Default: Group6) – Type the group name.</li>
+<li><b>Min gene count per cell</b> (Default: 0) – Filters out cells with fewer than this number of genes expressed. [Recommended: 200 to 500].</li>
+<li><b>Max gene count per cell</b> (Default: 7500) – Filters out cells with more than this number of genes expressed. [Recommended: 5000 to 7500].</li>
+<li><b>Max mitochondrial %</b> (Default: 5) – Removes cells with excessive mitochondrial gene expression, often indicating low-quality or dying cells. [Recommended: <10%].</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn3, {
+    showModal(modalDialog(
+      title = "Normalization and PCA Analysis",
+      HTML("
+    <ul>
+      <li><b>Scale factor</b> (Default: 10000, Min: 1, Max: 1e6) – Scale factor used in LogNormalize method for total expression normalization.</li>
+<li><b>Variable gene method</b> (Default: vst) – Method for selecting variable features: vst (default), mean.var.plot, or dispersion.</li>
+<li><b>Number of variable genes</b> (Default: 2000, Min: 100, Max: 10000) – Number of top variable genes to retain for downstream analysis.</li>
+<li><b>PCA dimensions</b> (Default: 50, Min: 2, Max: 100) – Number of principal components computed for dimensionality reduction.</li>
+<li><b>JackStraw max dims</b> (Default: 20, Min: 1, Max: 100) – Maximum number of PCs tested for significance in JackStraw analysis.</li>
+<li><b>JackStraw num.replicate</b> (Default: 100, Min: 10, Max: 1000) – Number of permutations used in JackStraw resampling.</li>
+<li><b>JackStraw plot max PCs</b> (Default: 20, Min: 1, Max: 100) – Maximum PCs to display in JackStraw significance plot.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn4, {
+    showModal(modalDialog(
+      title = "Clustering",
+      HTML("
+    <ul>
+      <li><b>Clustering resolution</b> (Default: 0.5,  Min: 0.1, Max: 1) – Resolution used for cluster granularity. Higher = more clusters.</li>
+<li><b>Clustering algorithm</b> (Default: Louvain) – Graph-based clustering algorithm: Louvain (1), SLM (3), or Leiden (4).</li>
+<li><b>Integration method</b> (Default: None) – Data integration method. If 'None', no integration is performed.</li>
+<li><b>HarmonyIntegration</b> (Default: Reduction = harmony; Distance = Cosine) – Batch correction using Harmony with cosine distance.</li>
+<li><b>CCAIntegration</b> (Default: Reduction = cca; Distance = Euclidean) – Canonical correlation analysis for dataset integration.</li>
+<li><b>RPCAIntegration</b> (Default: Reduction = rpca; Distance = Euclidean) – Faster, scalable variant of CCA.</li>
+<li><b>JointPCAIntegration</b> (Default: Reduction = jointpca; Distance = Euclidean) – Joint PCA embedding for multi-dataset integration.</li>
+<li><b>UMAP k-nearest-neighbours</b> (Default: 20, Min: 2, Max: 50) – Number of nearest neighbors considered for UMAP.</li>
+<li><b>UMAP dims</b> (Default: 30, Min: 2, Max: 100) – Number of PCs used for UMAP dimensionality reduction.</li>
+<li><b>UMAP min.dist</b> (Default: 0.3, Min: 0.001, Max: 0.5) – Controls how tightly UMAP clusters points. Smaller = more tightly packed.</li>
+<li><b>tSNE dims</b> (Default: 30, Min: 2, Max: 100) – Number of PCs used for t-SNE dimensionality reduction.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn5, {
+    showModal(modalDialog(
+      title = "Remove Doublets",
+      HTML("
+    <ul>
+      <li><b>Doublet rate</b> (Default: 0.075, Min: 0.075, Max: 0.1) – Expected proportion of doublets in the sample.</li>
+<li><b>keep or remove doublets</b> (Default: Remove doublets) – To keep or remove doublets</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn6, {
+    showModal(modalDialog(
+      title = "Marker Identification",
+      HTML("
+    <ul>
+<li><b>FindAllMarkers</b> (Default: Select all cluster) – Identifies marker genes for each cluster compared to all other cells.</li>
+<li><b>FindMarkers</b> (Default: Select one cluster against another cluster) – Finds differentially expressed genes between two specific groups of cells.</li>
+<li><b>FindConservedMarkers</b> (Default: Select one cluster to check for conserved in all clusters) – Identifies markers that are conserved across multiple groups (e.g., conditions or batches).</li>
+<li><b>min.pct</b> (Default: 0.25, Min: 0.01, Max: 1.0) – Minimum fraction of cells expressing the gene for it to be tested.</li>
+<li><b>logfc.threshold</b> (Default: 0.25, Min: 0.01, Max: ∞) – Minimum log fold change required to consider gene differentially expressed.</li>
+<li><b>Statistical test</b> (Default: wilcox) – Statistical test used for differentially expressed gene or marker identification.</li>
+<li><b>Return only positive markers</b> (Default: Yes) – Whether to return only genes upregulated in the target group.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn7, {
+    showModal(modalDialog(
+      title = "Cell Type Prediction",
+      HTML("
+    <ul>
+      <li><b>Cell type method</b> (Default: SingleR),Other methods are  (SingleR, GPTCelltype, Use Own Labels) – Methods for cell type prediction.</li>
+
+<li><b>Reference tissue for SingleR</b> (Default: hpca, blueprint_encode, mouse_rnaseq, immgen, dice, novershtern_hematopoietic, monaco_immune) – Reference data sources for SingleR annotation.</li>
+<li><b>DE method for SingleR</b> (Default: classic) – SingleR Differential expression method used for prediction scoring. (classi, wilcox, t test).</li>
+<li><b>Reference data for ScType</b> (Default: Immune system) – Selected cell type reference for matching.</li>
+<li><b>Top genes for prediction for GPTCelltype</b> (Default: 10) – Number of top genes used for GPTCelltype or other predictions.</li>
+<li><b>Modelfor GPTCelltype</b> (Default: gpt-4, gpt-4o, gpt-4-turbo, gpt-3.5-turbo, etc.) – OpenAI models available in GPTCelltype. Available via the web platform. To use it locally, users need to update their API key by setting Sys.setenv(OPENAI_API_KEY = 'your_openai_API_key') in the global.R file</li>
+<li><b>Use Own Labels</b> Default: Cluster 0 to Cluster N) — This option allows users to manually assign custom names to clusters. Users may enter identical names for two or more clusters if they wish to merge them into a single group.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn8, {
+    showModal(modalDialog(
+      title = "Cluster-Based Plots",
+      HTML("
+    <ul>
+      <li><b>No. of features to display</b> (Default: 3) – Show up to 3 genes for every cluster or select the list of gene name from the dropdown and type the specific genes which you are interested in eg: KLk2,KLK3,CTSG,MS4A3.</li>
+<li><b>Select one or multiple cluster(s) for plotting</b> (Default: Default all clusters) – User can adjust the cluster to plot.</li>
+<li><b>Plot type</b> (Default: Dot Plot) – Types of visualizations for gene expression or differentially expressed genes. (Dot Plot, Violin Plot, Ridge Plot, Feature Plot, Volcano Plot).</li>
+<li><b>Dim plot labels</b> (Default: No) – Whether to display labels in dimensionality reduction plots.</li>
+<li><b>Group.by</b> (Default: Seurat cluster) – Grouping variable for DE or plotting, e.g., Seurat cluster or Predicted or Own label.</li>
+<li><b>Split.by</b> (Default: NULL) – Whether to split plots by condition, sample, or not at all.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn9, {
+    showModal(modalDialog(
+      title = "Condition Based Plots",
+      HTML("
+    <ul>
+      <li><b>Select the Condition1</b> (Default: Group1) – User can select any one condition.</li>
+<li><b>Select the Condition2</b> (Default: Group2) – User can select any one condition.</li>
+<li><b>min.pct</b> (Default: 0.25, Min: 0.01, Max: 1.0) – Minimum fraction of cells expressing the gene to be tested in marker analysis.</li>
+<li><b>logfc.threshold</b> (Default: 0.25, Min: 0.01, Max: ∞) – Log fold change threshold for identifying differentially expressed genes.</li>
+<li><b>Statistical test</b> (Default: wilcox) – Test used for differential expression: e.g., wilcox, wilcox_limma, bimod, roc, t, LR, MAST.</li>
+<li><b>Positive markers only</b> (Default: Yes) – If Yes, return only genes upre.g.ulated in the target group.</li>
+<li><b>group.by</b> (Default: condition) – Metadata variable to group cells during marker analysis. (Condition and samples).</li>
+<li><b>Plot type</b> (Default: Dot Plot) – Types of visualizations for gene expression or differentially expressed genes. (Dot Plot, Violin Plot, Ridge Plot, Feature Plot, Volcano Plot.</li>
+<li><b>Number of features to display</b> (Default: 3) – Number of genes to visualize per plot or select the list of gene name from the dropdown and type the specific genes which you are interested in eg: KLk2,KLK3,CTSG,MS4A3.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn10, {
+    showModal(modalDialog(
+      title = "Subclustering",
+      HTML("
+    <ul>
+      <li><b>Cluster Type Selection</b> (Default: Seurat clusters) – Choose source for subclustering (Seurat, predicted, or gene-based selection.</li>
+<li><b>Select cluster(s)</b> (Default: Select the cluster default 0) – Generated based on selected cluster type.</li>
+<li><b>Genes to include (positive selection)</b> (Default: Eg: FCN1 or FCN1,PSAP) – Enter comma-separated gene symbols for subsetting.</li>
+<li><b>Genes to exclude (negative selection)</b> (Default: Eg: FCN1 or FCN1,PSAP) – Enter comma-separated gene symbols to exclude cells.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+
+  observeEvent(input$info_btn11, {
+    showModal(modalDialog(
+      title = "Normalization and PCA Analysis",
+      HTML("<ul>
+      <li><b>Scale factor</b> (Default: 10000, Min: 1, Max: 1e6) – Scale factor used in LogNormalize method for total expression normalization.</li>
+<li><b>Variable gene method</b> (Default: vst) – Method for selecting variable features: vst (default), mean.var.plot, or dispersion.</li>
+<li><b>Number of variable genes</b> (Default: 2000, Min: 100, Max: 10000) – Number of top variable genes to retain for downstream analysis.</li>
+<li><b>PCA dimensions</b> (Default: 50, Min: 2, Max: 100) – Number of principal components computed for dimensionality reduction.</li>
+
+</ul>
+"),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn12, {
+    showModal(modalDialog(
+      title = "Clustering",
+      HTML("<ul>
+  <li><b>Clustering resolution</b> (Default: 0.5, , Min: 0.1, Max: 1) – Resolution used for cluster granularity. Higher = more clusters.</li>
+<li><b>Clustering algorithm</b> (Default: Louvain) – Graph-based clustering algorithm: Louvain (1), SLM (3), or Leiden (4).</li>
+<li><b>Integration method</b> (Default: None) – Data integration method. If 'None', no integration is performed.</li>
+<li><b>HarmonyIntegration</b> (Default: Reduction = harmony; Distance = Cosine) – Batch correction using Harmony with cosine distance.</li>
+<li><b>CCAIntegration</b> (Default: Reduction = cca; Distance = Euclidean) – Canonical correlation analysis for dataset integration.</li>
+<li><b>RPCAIntegration</b> (Default: Reduction = rpca; Distance = Euclidean) – Faster, scalable variant of CCA.</li>
+<li><b>JointPCAIntegration</b> (Default: Reduction = jointpca; Distance = Euclidean) – Joint PCA embedding for multi-dataset integration.</li>
+<li><b>UMAP k-nearest-neighbours</b> (Default: 20, Min: 2, Max: 50) – Number of nearest neighbors considered for UMAP.</li>
+<li><b>UMAP dims</b> (Default: 30, Min: 2, Max: 100) – Number of PCs used for UMAP dimensionality reduction.</li>
+<li><b>UMAP min.dist</b> (Default: 0.3, Min: 0.001, Max: 0.5) – Controls how tightly UMAP clusters points. Smaller = more tightly packed.</li>
+<li><b>tSNE dims</b> (Default: 30, Min: 2, Max: 100) – Number of PCs used for t-SNE dimensionality reduction.</li>
+
+    </ul>"),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn13, {
+    showModal(modalDialog(
+      title = "Markers Identification",
+      HTML("<ul>
+      <li><b>FindAllMarkers</b> (Default: Select all cluster) – Identifies marker genes for each cluster compared to all other cells.</li>
+<li><b>FindMarkers</b> (Default: Select one cluster against another cluster) – Finds differentially expressed genes between two specific groups of cells.</li>
+<li><b>FindConservedMarkers</b> (Default: Select one cluster to check for conserved in all clusters) – Identifies markers that are conserved across multiple groups (e.g., conditions or batches).</li>
+<li><b>min.pct</b> (Default: 0.25, Min: 0.01, Max: 1.0) – Minimum fraction of cells expressing the gene for it to be tested.</li>
+<li><b>logfc.threshold</b> (Default: 0.25, Min: 0.01, Max:  ∞) – Minimum log fold change required to consider gene differentially expressed.</li>
+<li><b>Statistical test</b> (Default: wilcox) – Statistical test used for differentially expressed gene or marker identification.</li>
+<li><b>Return only positive markers</b> (Default: Yes) – Whether to return only genes upregulated in the target group.</li>
+    </ul>"),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn14, {
+    showModal(modalDialog(
+      title = "Cell Type Prediction",
+      HTML("<ul>
+    <li><b>Cell type method</b> (Default: SingleR),Other methods are  (SingleR, GPTCelltype, Use Own Labels) – Methods for cell type prediction.</li>
+
+<li><b>Reference tissue for SingleR</b> (Default: hpca, blueprint_encode, mouse_rnaseq, immgen, dice, novershtern_hematopoietic, monaco_immune) – Reference data sources for SingleR annotation.</li>
+<li><b>DE method for SingleR</b> (Default: classic) – SingleR Differential expression method used for prediction scoring. (classi, wilcox, t test).</li>
+<li><b>Reference data for ScType</b> (Default: Immune system) – Selected cell type reference for matching.</li>
+<li><b>Top genes for prediction for GPTCelltype</b> (Default: 10) – Number of top genes used for GPTCelltype or other predictions.</li>
+<li><b>Modelfor GPTCelltype</b> (Default: gpt-4, gpt-4o, gpt-4-turbo, gpt-3.5-turbo, etc.) – OpenAI models available in GPTCelltype.</li>
+<li><b>Use Own Labels</b> Default: Cluster 0 to Cluster N) — This option allows users to manually assign custom names to clusters. Users may enter identical names for two or more clusters if they wish to merge them into a single group.</li>
+   
+    </ul>"),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn15, {
+    showModal(modalDialog(
+      title = "Cluster-Based Plots",
+      HTML("<ul>
+      <li><b>No. of features to display</b> (Default: 3) – Show up to 3 genes for every cluster or select the list of gene name from the dropdown and type the specific genes which you are interested in eg: KLk2,KLK3,CTSG,MS4A3.</li>
+<li><b>Select one or multiple cluster(s) for plotting</b> (Default: Default all clusters) – User can adjust the cluster to plot.</li>
+<li><b>Plot type</b> (Default: Dot Plot) – Types of visualizations for gene expression or differentially expressed genes. (Dot Plot, Violin Plot, Ridge Plot, Feature Plot, Volcano Plot).</li>
+<li><b>Dim plot labels</b> (Default: No) – Whether to display labels in dimensionality reduction plots.</li>
+<li><b>Group.by</b> (Default: Seurat cluster) – Grouping variable for DE or plotting, e.g., Seurat cluster or Predicted or Own label.</li>
+<li><b>Split.by</b> (Default: NULL) – Whether to split plots by condition, sample, or not at all.</li>
+    </ul>"),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn16, {
+    showModal(modalDialog(
+      title = "Condition Based Analysis",
+      HTML("<ul>
+      <li><b>Select the Condition1</b> (Default: Group1) – User can select any one condition.</li>
+<li><b>Select the Condition2</b> (Default: Group2) – User can select any one condition.</li>
+<li><b>min.pct</b> (Default: 0.25, Min: 0.01, Max: 1.0) – Minimum fraction of cells expressing the gene to be tested in marker analysis.</li>
+<li><b>logfc.threshold</b> (Default: 0.25, Min: 0.01, Max:  ∞) – Log fold change threshold for identifying differentially expressed genes.</li>
+<li><b>Statistical test</b> (Default: wilcox) – Test used for differential expression: e.g., wilcox, wilcox_limma, bimod, roc, t, LR, MAST.</li>
+<li><b>Positive markers only</b> (Default: Yes) – If Yes, return only genes upre.g.ulated in the target group.</li>
+<li><b>group.by</b> (Default: condition) – Metadata variable to group cells during marker analysis. (Condition and samples).</li>
+<li><b>Plot type</b> (Default: Dot Plot) – Types of visualizations for gene expression or differentially expressed genes. (Dot Plot, Violin Plot, Ridge Plot, Feature Plot, Volcano Plot.</li>
+<li><b>Number of features to display</b> (Default: 3) – Number of genes to visualize per plot or select the list of gene name from the dropdown and type the specific genes which you are interested in eg: KLk2,KLK3,CTSG,MS4A3.</li>
+    </ul>"),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })  
+  observeEvent(input$info_btn17, {
+    showModal(modalDialog(
+      title = "Correlation",
+      HTML("
+    <ul>
+      <li><b>Input data</b> (Default: Output of single or multiple samples) – Select the input from full dataset or subclustering.</li>
+<li><b>Celltype method</b> (Default: Seurat clusters) – Select celltype grouping for correlation. (Seurat clusters or predicted).</li>
+<li><b>Correlation method</b> (Default: Spearman) – Method to compute correlation between clusters (Pearson, Spearman, Kendall).</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn18, {
+    showModal(modalDialog(
+      title = "Gene Ontology",
+      HTML("
+    <ul>
+      <li><b>Input data</b> (Default: Output of single or multiple samples) Users can choose to perform analyses on the full dataset, on a subclustered subset, or by providing a custom gene list. In the latter case, users may directly type the list of genes of interest for analysis.</li>
+<li><b>Celltype method</b> (Default: Seurat clusters) – Clustering source for gene selection. (Seurat clusters or predicted).</li>
+<li><b>Organism</b> (Default: Human) – Organism-specific annotation package. (Human, Mouse, Rat, Pig, Rhesus).</li>
+<li><b>Ontology</b> (Default: BP) – GO ontology cate.g.ories: biological process, etc. (BP, MF, CC, ALL).</li>
+<li><b>pAdjustMethod</b> (Default: BH) – Method for p-value adjustment. (holm, bonferroni, BH, BY, fdr, none).</li>
+<li><b>pvalueCutoff</b> (Default: 0.05, Min: 0, Max: 1) – Significance threshold for raw p-value.</li>
+<li><b>qvalueCutoff</b> (Default: 0.2, Min: 0, Max: 1) – Significance threshold for q-value.</li>
+<li><b>Minimal gene size</b> (Default: 10, Min: 1, Max: 500) – Minimum number of genes in a cate.g.ory.</li>
+<li><b>Maximal gene size</b> (Default: 500, Min: 10, Max: 5000) – Maximum number of genes in a cate.g.ory.</li>
+<li><b>Plot type</b> (Default: Dotplot) – Visualization options for enriched GO terms. (dotplot, barplot, cnetplot, upsetplot).</li>
+<li><b>Top categories to plot</b> (Default: 10, Min: 1, Max: 50) – Number of cate.g.ories to include in plots.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn19, {
+    showModal(modalDialog(
+      title = "Pathway Analysis",
+      HTML("
+    <ul>
+      <li><b>Pathway analysis type</b> (Default: KEGG) – Source of pathway database. (KEGG or Reactome).</li>
+<li><b>Input data</b> (Default: Output of single or multiple samples) – Select the input from full dataset or subclustering.</li>
+<li><b>Select one or multiple cluster(s) for analsysis</b> (Default:0) – Select one or multiple clusters.</li>
+<li><b>Celltype method</b> (Default: Seurat clusters) – Clustering source for gene selection. (Seurat clusters or predicted).</li>
+<li><b>Organism</b> (Default: Human) – Organism-specific annotation package. (Human, Mouse, Rat).</li>
+<li><b>pAdjustMethod</b> (Default: BH) – Adjustment for multiple testing.(holm, bonferroni, BH, BY, fdr, none).</li>
+<li><b>pvalueCutoff</b> (Default: 0.05, Min: 0, Max: 1) – Significance threshold for raw p-value.</li>
+<li><b>qvalueCutoff</b> (Default: 0.2, Min: 0, Max: 1) – Significance threshold for q-value.</li>
+<li><b>Minimal gene size</b> (Default: 10, Min: 1, Max: 500) – Minimum number of genes in pathway.</li>
+<li><b>Maximal gene size</b> (Default: 500, Min: 10, Max: 5000) – Maximum number of genes in pathway.</li>
+<li><b>Plot type</b> (Default: Dotplot) – Type of plot for pathway enrichment. (dotplot, barplot, cnetplot, upsetplot).</li>
+<li><b>Top categories to plot (Pathway)</b> (Default: 10, Min: 1, Max: 50) – Number of enriched pathways shown.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn20, {
+    showModal(modalDialog(
+      title = "GSEA Analysis",
+      HTML("
+    <ul>
+      <li><b>Input data</b> (Default: Output of single or multiple samples) – Select the input from full dataset or subclustering.</li>
+<li><b>Celltype method</b> (Default: Seurat clusters) – Clustering source for gene selection. (Seurat clusters or predicted).</li>
+<li><b>Select one or multiple cluster(s) for analsysis</b> (Default:0) – Select one or multiple clusters.</li>
+<li><b>Organism</b> (Default: Homo sapiens) – Species-specific gene set database. (Homo sapiens, Mus musculus).</li>
+<li><b>MSigDB category</b> (Default: Hallmark gene sets (H)) – Gene set collection from MSigDB. (H, C1, C2, C3, C4, C5, C6, C7, C8).</li>
+<li><b>ScoreType</b> (Default: std) – Controls whether to score all, positive or negative enrichment. (std, pos, neg.).</li>
+<li><b>Minimal gene size</b> (Default: 15, Min: 5, Max: 500) – Minimum genes per gene set.</li>
+<li><b>Maximal gene size</b> (Default: 50, Min: 15, Max: 5000) – Maximum genes per gene set.</li>
+<li><b>Permutations</b> (Default: 100, Min: 10, Max: 10000) – Number of random permutations to compute significance.</li>
+<li><b>Plot type</b> (Default: GSEA plot) – Style of plot for GSEA results. (GSEA plot, plotGseaTable, barplot).</li>
+<li><b>Top significant results to plot</b> (Default: 10, Min: 1, Max: 50) – Number of enriched gene sets to plot.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn21, {
+    showModal(modalDialog(
+      title = "Cell-Cell Communication Analysis (Cell-chat)",
+      HTML("
+    <ul>
+      <li><b>Input data</b> (Default: Output of single or multiple samples) – Source of expression data for CellChat.</li>
+<li><b>Celltype method</b> (Default: Seurat clusters) – Cell grouping used in communication analysis. (Seurat clusters or predicted).</li>
+<li><b>Organism</b> (Default: PPI.human) – Organism-specific protein-protein interaction database. (PPI.human, PPI.mouse).</li>
+<li><b>Min % cells expressed</b> (Default: 0, Min: 0, Max: 100) – Minimum percent of cells expressing ligand/receptor.</li>
+<li><b>LogFC threshold</b> (Default: 0, Min: 0, Max: 10) – Minimum log fold change for expression filter.</li>
+<li><b>P-value threshold</b> (Default: 0.05, Min: 0.0001, Max: 1) – Significance cutoff for ligand-receptor pairs.</li>
+<li><b>Averaging method</b> (Default: triMean) – Method for averaging gene expression per group. (triMean, truncatedMean, thresholdedMean, median).</li>
+<li><b>Minimum cell count</b> (Default: 10, Min: 5, Max: 1000) – Minimum number of cells in a group.</li>
+<li><b>Pattern k-value</b> (Default: 2, Min: 2, Max: 20) – Number of communication patterns to infer.</li>
+<li><b>Show label</b> (Default: Yes) – Display labels on communication plots.</li>
+<li><b>Specific Signaling Pathways</b> (Default: The default 1st one is selected) – Display the communication for the selected.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn22, {
+    showModal(modalDialog(
+      title = "Trajectory & Pseudotime Analysis (Monocle3)",
+      HTML("
+    <ul>
+      <li><b>Input data</b> (Default: Output of single or multiple samples) – Select the input from full dataset or subclustering.</li>
+<li><b>Celltype method</b> (Default: Seurat clusters) – Grouping variable for pseudotime.</li>
+<li><b>use_partition</b> (Default: No) – Whether to use partitioned cell sets.</li>
+<li><b>close_loop</b> (Default: Yes) – Allow trajectory graph to close loops.</li>
+<li><b>label_groups_by_cluster</b> (Default: No) – Whether to show cluster labels.</li>
+<li><b>label_branch_points</b> (Default: Yes) – Show pseudotime branch points.</li>
+<li><b>label_roots</b> (Default: Yes) – Show root cells in trajectory.</li>
+<li><b>label_leaves</b> (Default: No) – Show leaf cells in trajectory.</li>
+<li><b>Order cell in Pseudotime</b> (Default: Select one cluster as the root) – Displays all clusters or predicted cell type.</li>
+<li><b>Gene functional change (neighbor_graph)</b> (Default: principal_graph) or select knn; Graph type for trajectory inference.</li>
+<li><b>Top genes to display in feature plot</b> (Default: 5) – Number or list of genes to plot along pseudotime.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn23, {
+    showModal(modalDialog(
+      title = "Co-expression & Network Analysis (hdWGCNA)",
+      HTML("
+    <ul>
+      <li><b>Input data</b> (Default: Output of single or multiple samples) – Select the processed input source.</li>
+<li><b>Celltype method</b> (Default: Seurat clusters) – Seurat cluster or predicted.</li>
+<li><b>Select any one cluster</b> (Default: Default 0) – List all the clusters or names.</li>
+<li><b>Input data</b> (Default: Output of single or multiple samples) – Select the processed input source.</li>
+<li><b>Reduction type</b> (Default: UMAP) – Dimensionality reduction for module visualization. (UMAP or PCA).</li>
+<li><b>Select soft-power Network type</b> (Default: signed) – Type of WGCNA correlation network. (signed, unsigned, signed hybrid).</li>
+<li><b>Module eigengenes and connectivity Scale model</b> (Default: linear) – Statistical model for eigengene computation. (linear, poisson, negbinom).</li>
+<li><b>Harmonized eigengenes</b> (Default: Yes) – Whether to harmonize eigengenes across datasets.</li>
+<li><b>Nearest neighbors (k)</b> (Default: 10, Min: 1, Max: 100) – K for building metacells.</li>
+<li><b>Minimum cell group size</b> (Default: 10, Min: 5, Max: 100) – Minimum cells in a group to build a metacell.</li>
+<li><b>Max shared cells</b> (Default: 15, Min: 1, Max: 100) – Max overlap between metacells.</li>
+<li><b>Target metacells</b> (Default: 1000, Min: 50, Max: 5000) – Max number of metacells to construct.</li>
+<li><b>Hub genes per module</b> (Default: 5, Min: 1, Max: 50) – Number of top hub genes labeled.</li>
+<li><b>Show inter-module edges</b> (Default: No) – Whether to draw edges across modules.</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$info_btn24, {
+    showModal(modalDialog(
+      title = "Transcription Factor Regulatory Network Analysis (hdWGCNA)",
+      HTML("
+    <ul>
+      <li><b>Organism</b> (Default: Human) – Reference genome annotation. (Human or Mouse).</li>
+<li><b>XGBoost max_depth</b> (Default: 1, Min: 1, Max: 10) – Tree depth for motif-based TF prediction.</li>
+<li><b>eta</b> (Default: 0.1, Min: 0.01, Max: 1) – Learning rate in XGBoost.</li>
+<li><b>alpha</b> (Default: 0.5, Min: 0, Max: 1) – Re.g.ularization parameter.</li>
+<li><b>Regulatory score threshold</b> (Default: 0.01, Min: 0, Max: 1) – Minimum score for defining TF-gene edge.</li>
+<li><b>Top TFs per gene</b> (Default: 10, Min: 1, Max: 50) – Top regulators retained per gene.</li>
+<li><b>Positive regulon threshold</b> (Default: 0.05, Min: 0, Max: 1) – Minimum expression for positive regulons.</li>
+<li><b>Negative regulon threshold</b> (Default: -0.05, Min: -1, Max: 0) – Threshold for defining negative regulons.</li>
+<li><b>Color network edge by</b> (Default: Cor) – TF network edge attribute. (Cor, Gain).</li>
+<li><b>Extend TF network layers</b> (Default: Primary and secondary) – Depth of TF-target extension. (Primary or Primary and secondary or Primary, secondary and tertiary).</li>
+    </ul>
+    "),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
 }
