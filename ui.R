@@ -83,7 +83,7 @@ shinyUI(
         <hr>
         <h3> Launch ScRDAVis using R and GitHub </h3>
         <p> ScRDAVis were deposited under the GitHub repository: <a href='https://github.com/GudaLab/ScRDAVis'>https://github.com/GudaLab/ScRDAVis</a><br>
-        Before running the app, users must have the following versions installed: R (>= 4.4.3), RStudio (>= 2024.12.0), Bioconductor (>= 3.20) and Shiny (>= 1.10.0) (Tested with this version).<br>
+        Before running the app, users must have the following versions installed: R (>= 4.5.1), RStudio (>= 2025.05.1), Bioconductor (>= 3.21) and Shiny (>= 1.11.1) (Tested with this version).<br>
         Note: ScRDAVis has been tested with these versions. If users are running an older version of R, they may encounter errors during package installation. Therefore, it is recommended to update R to the latest version first.<br>
        Once R is open in the command line or in RStudio, users should run the following command in R to install the shiny package.<br><br></p>
           
@@ -802,7 +802,7 @@ tabPanel(
   ),  
   fluidRow(   
     box(id = "m_celltype_box4",                      
-        column(6, selectInput("m_celltype5", label = "Select model", choices = c("gpt-5" = "gpt-5","gpt-5-mini" = "gpt-5-mini","gpt-5-nano" = "gpt-5-nano","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-4")),  
+        column(6, selectInput("m_celltype5", label = "Select model", choices = c("gpt-5" = "gpt-5","gpt-5-mini" = "gpt-5-mini","gpt-5-nano" = "gpt-5-nano","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-5")),  
         column(6, numericInput("m_celltype6", label = "Top gene numbers to predict cell type",  min = 1, max = 25, value = 10)),  
     ),
   ),
@@ -1307,7 +1307,7 @@ tabPanel(
                   ),  
                   fluidRow(   
                     box(id = "m_subclustering_celltype_box4",                      
-                        column(6, selectInput("m_subclustering_celltype5", label = "Select model", choices = c("gpt-4.5-preview" = "gpt-4.5-preview","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-4")),  
+                        column(6, selectInput("m_subclustering_celltype5", label = "Select model", choices = c("gpt-5" = "gpt-5","gpt-5-mini" = "gpt-5-mini","gpt-5-nano" = "gpt-5-nano","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-5")),  
                         column(6, numericInput("m_subclustering_celltype6", label = "Top gene numbers to predict cell type",  min = 1, max = 25, value = 10)),  
                     ),
                   ),
@@ -2283,7 +2283,7 @@ tabPanel(
     </tr>
     <tr>
       <td>TF Regulatory Network</td>
-      <td>30 minutes to 2 hour</td>
+      <td>30 minutes to 2 hours</td>
       <td>Motif scanning + XGBoost modeling can be moderately slow.</td>
     </tr>
   </tbody>
@@ -2291,7 +2291,7 @@ tabPanel(
  <strong>Additional Notes:</strong>
   <ul>
     <li>Smaller datasets (&lt;5k cells): Most steps complete in under 2–5 minutes.</li>
-    <li>Larger datasets (&gt;100k cells): Some modules may exceed 10–60 minutes.</li>
+    <li>Larger datasets (&gt;100k cells): Some modules may exceed 10 minutes to 2 hours.</li>
     <li>Most time-consuming modules:
       <ul>
         <li>JackStraw</li>
@@ -2399,7 +2399,8 @@ tabPanel(
         <ul>
             <li>PCA Heatmap <strong>(Fig. 1.3b)</strong></li>
             <li>Elbow Plot <strong>(Fig. 1.3c)</strong></li>
-            <li>PCA Plot (sample-wise or group-wise) <strong>(Fig. 1.3d,e)</strong></li>
+            <li>Jackstraw Plot <strong>(Fig. 1.3d)</strong></li>
+            <li>PCA Plot (sample-wise or group-wise) <strong>(Fig. 1.3e,f)</strong></li>
 			<img src='images/1.3.jpg' width='800' height='700' alt=''/>
         </ul>
     </li>
@@ -2445,7 +2446,7 @@ tabPanel(
       <ul>
           <li>Display UMAP or t-SNE plots with clustering labels and sample/condition overlays <strong>(Fig. 1.4b,d,f)</strong>.</li>
           <li>Bar charts (Fig. 4c,e,g) and tables show cell counts per cluster and per sample/condition <strong>(Fig. 1.4h-j)</strong>.</li>
-		  <img src='images/1.4.jpg' width='800' height='1000' alt=''/>
+		  <img src='images/1.4.jpg' width='800' height='800' alt=''/>
       </ul>
   </li>
 </ul>
@@ -2524,7 +2525,7 @@ tabPanel(
      </ul>
     <li><strong>GPTCelltype:</strong></li>
       <ul>
-         <li>GPT Models: Utilizes various GPT models, including: gpt-4.5-preview, GPT-4, GPT-4-turbo, GPT-4o-mini, GPT-4o, ChatGPT-4o-latest, GPT-3.5-turbo, GPT-3.5-turbo.</li>
+         <li>GPT Models: Utilizes various GPT models, including: gpt-5, gpt-5-mini, gpt-5-nano, GPT-4, GPT-4-turbo, GPT-4o-mini, GPT-4o, ChatGPT-4o-latest, GPT-3.5-turbo, GPT-3.5-turbo.</li>
          <li>Gene Requirements: Requires a minimum number of top genes for accurate prediction.</li>
          <li>Availability: Available via the web platform. To use it locally, users need to update their API key by setting Sys.setenv(OPENAI_API_KEY = 'your_openai_API_key') in the global.R file.</li>
       </ul>
@@ -2548,7 +2549,7 @@ tabPanel(
       <ul>
          <li>Plot: Generates an image plot showing the predicted cell types <strong>(Fig. 1.7b,c)</strong>.</li>
          <li>Summary Table: Provides a summary table with the predicted cell types and associated scores <strong>(Fig. 1.7d)</strong>.</li>
-		  <img src='images/1.7.jpg' width='800' height='450' alt=''/>
+		  <img src='images/1.7.jpg' width='800' height='475' alt=''/>
       </ul>
 </ul>
 
@@ -2632,7 +2633,7 @@ tabPanel(
 <li>Clusters can be selected based on Seurat clusters or previously predicted annotation labels.</li>
 <li>Users can select genes of interest to extract cells for reclustering (positive selection); for example, FCN1 or multiple genes like FCN1,PSAP. When specifying multiple genes, separate each gene name with a comma.</li>
 <li>Exclude genes expressed in cells and perform the analysis using the remaining cells (negative selection); for example, FCN1 or multiple genes like FCN1,PSAP. When specifying multiple genes, separate each gene name with a comma.</li>
-<img src='images/2.1.jpg' width='400' height='250' alt=''/>
+<img src='images/2.1.png' width='400' height='250' alt=''/>
 </ul>
 	
 <h3>2.2. Subclustering Analysis Steps:</h3>
@@ -2676,7 +2677,7 @@ ScRDAVis includes Cluster-Based Correlation Analysis using the genesorteR packag
 <li>Correlation Heatmap: Displays the correlation values between genes within clusters in a matrix format <strong>(Fig. 3b)</strong>.</li>
 <li>Correlation Network Plot: Depicts the relationships between genes as a network, highlighting strongly correlated pairs <strong>(Fig. 3c)</strong>.</li>
 <li>Summary Table: With the complete correlation matrix for detailed analysis <strong>(Fig. 3d)</strong></li>
-	<img src='images/3.1.jpg' width='800' height='550' alt=''/>
+	<img src='images/3.1.jpg' width='800' height='600' alt=''/>
 </ul>
 </li>
 </ul>
