@@ -2525,7 +2525,7 @@ tabPanel(
      </ul>
     <li><strong>GPTCelltype:</strong></li>
       <ul>
-         <li>GPT Models: Utilizes various GPT models, including: gpt-5, gpt-5-mini, gpt-5-nano, GPT-4, GPT-4-turbo, GPT-4o-mini, GPT-4o, ChatGPT-4o-latest, GPT-3.5-turbo, GPT-3.5-turbo.</li>
+         <li>GPT Models: Utilizes various GPT models, including: GPT-5, GPT-5-mini, GPT-5-nano, GPT-4, GPT-4-turbo, GPT-4o-mini, GPT-4o, ChatGPT-4o-latest, GPT-3.5-turbo, GPT-3.5-turbo.</li>
          <li>Gene Requirements: Requires a minimum number of top genes for accurate prediction.</li>
          <li>Availability: Available via the web platform. To use it locally, users need to update their API key by setting Sys.setenv(OPENAI_API_KEY = 'your_openai_API_key') in the global.R file.</li>
       </ul>
