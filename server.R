@@ -5871,6 +5871,7 @@ observe({
       title = "Normalization and PCA Analysis",
       HTML("
     <ul>
+		<li><b>Normalization method</b>,(Default: LogNormalize), or SCTransform</li>
       <li><b>Scale factor</b> (Default: 10000, Min: 1, Max: 1e6) – Scale factor used in LogNormalize method for total expression normalization.</li>
 <li><b>Variable gene method</b> (Default: vst) – Method for selecting variable features: vst (default), mean.var.plot, or dispersion.</li>
 <li><b>Number of variable genes</b> (Default: 2000, Min: 100, Max: 10000) – Number of top variable genes to retain for downstream analysis.</li>
@@ -5890,6 +5891,7 @@ observe({
       title = "Clustering",
       HTML("
     <ul>
+
       <li><b>Clustering resolution</b> (Default: 0.5,  Min: 0.1, Max: 1) – Resolution used for cluster granularity. Higher = more clusters.</li>
 <li><b>Clustering algorithm</b> (Default: Louvain) – Graph-based clustering algorithm: Louvain (1), SLM (3), or Leiden (4).</li>
 <li><b>Integration method</b> (Default: None) – Data integration method. If 'None', no integration is performed.</li>
@@ -5952,7 +5954,7 @@ observe({
 <li><b>DE method for SingleR</b> (Default: classic) – SingleR Differential expression method used for prediction scoring. (classi, wilcox, t test).</li>
 <li><b>Reference data for ScType</b> (Default: Immune system) – Selected cell type reference for matching.</li>
 <li><b>Top genes for prediction for GPTCelltype</b> (Default: 10) – Number of top genes used for GPTCelltype or other predictions.</li>
-<li><b>Modelfor GPTCelltype</b> (Default: gpt-4, gpt-4o, gpt-4-turbo, gpt-3.5-turbo, etc.) – OpenAI models available in GPTCelltype. Available via the web platform. To use it locally, users need to update their API key by setting Sys.setenv(OPENAI_API_KEY = 'your_openai_API_key') in the global.R file</li>
+<li><b>Modelfor GPTCelltype</b> (Default: gpt-5, gpt-5-mini, gpt-5-nano, gpt-4, gpt-4o, gpt-4-turbo, gpt-3.5-turbo, etc.) – OpenAI models available in GPTCelltype. Available via the web platform. To use it locally, users need to update their API key by setting Sys.setenv(OPENAI_API_KEY = 'your_openai_API_key') in the global.R file</li>
 <li><b>Use Own Labels</b> Default: Cluster 0 to Cluster N) — This option allows users to manually assign custom names to clusters. Users may enter identical names for two or more clusters if they wish to merge them into a single group.</li>
     </ul>
     "),
@@ -6020,6 +6022,7 @@ observe({
     showModal(modalDialog(
       title = "Normalization and PCA Analysis",
       HTML("<ul>
+	  <li><b>Normalization method</b>,(Default: LogNormalize), or SCTransform</li>
       <li><b>Scale factor</b> (Default: 10000, Min: 1, Max: 1e6) – Scale factor used in LogNormalize method for total expression normalization.</li>
 <li><b>Variable gene method</b> (Default: vst) – Method for selecting variable features: vst (default), mean.var.plot, or dispersion.</li>
 <li><b>Number of variable genes</b> (Default: 2000, Min: 100, Max: 10000) – Number of top variable genes to retain for downstream analysis.</li>
@@ -6081,7 +6084,7 @@ observe({
 <li><b>DE method for SingleR</b> (Default: classic) – SingleR Differential expression method used for prediction scoring. (classi, wilcox, t test).</li>
 <li><b>Reference data for ScType</b> (Default: Immune system) – Selected cell type reference for matching.</li>
 <li><b>Top genes for prediction for GPTCelltype</b> (Default: 10) – Number of top genes used for GPTCelltype or other predictions.</li>
-<li><b>Modelfor GPTCelltype</b> (Default: gpt-4, gpt-4o, gpt-4-turbo, gpt-3.5-turbo, etc.) – OpenAI models available in GPTCelltype.</li>
+<li><b>Modelfor GPTCelltype</b> (Default: gpt-5, gpt-5-mini, gpt-5-nano, gpt-4, gpt-4o, gpt-4-turbo, gpt-3.5-turbo, etc.) – OpenAI models available in GPTCelltype.</li>
 <li><b>Use Own Labels</b> Default: Cluster 0 to Cluster N) — This option allows users to manually assign custom names to clusters. Users may enter identical names for two or more clusters if they wish to merge them into a single group.</li>
    
     </ul>"),
