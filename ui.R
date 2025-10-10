@@ -2038,7 +2038,7 @@ tabPanel(
                         column(6, selectInput("s_tfrn1", label = "Organism", choices = c("Human"="EnsDb.Hsapiens.v86", "Mouse"="EnsDb.Mmusculus.v79"), selected = "EnsDb.Hsapiens.v86")),
                     ),
                     box(id = "s_tfrn_box2",
-                        h3("Identify TFs in promoter regions (uses JASPAR 2024 database, Motif scan and XGBOost)"),
+                        h3("Identify TFs in promoter regions (uses JASPAR 2024 database, Motif scan and XGBoost)"),
                         column(6, numericInput("s_tfrn2", label = "max_depth", value = 1)),
                         column(6, numericInput("s_tfrn3", label = "eta", value = 0.1)),
                         column(6, numericInput("s_tfrn4", label = "alpha", value = 0.5)),
@@ -3176,4 +3176,5 @@ This functionality provides a comprehensive view of transcriptional regulation i
 
 )
 )
+
 
