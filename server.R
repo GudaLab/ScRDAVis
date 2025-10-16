@@ -5893,7 +5893,7 @@ observe({
     <ul>
 
       <li><b>Clustering resolution</b> (Default: 0.5,  Min: 0.1, Max: 1) – Resolution used for cluster granularity. Higher = more clusters.</li>
-<li><b>Clustering algorithm</b> (Default: Louvain) – Graph-based clustering algorithm: Louvain (1), SLM (3), or Leiden (4).</li>
+<li><b>Clustering algorithm</b> (Default: Leiden) – Graph-based clustering algorithm: Louvain (1), SLM (3), or Leiden (4).</li>
 <li><b>Integration method</b> (Default: None) – Data integration method. If 'None', no integration is performed.</li>
 <li><b>HarmonyIntegration</b> (Default: Reduction = harmony; Distance = Cosine) – Batch correction using Harmony with cosine distance.</li>
 <li><b>CCAIntegration</b> (Default: Reduction = cca; Distance = Euclidean) – Canonical correlation analysis for dataset integration.</li>
@@ -6040,7 +6040,7 @@ observe({
       title = "Clustering",
       HTML("<ul>
   <li><b>Clustering resolution</b> (Default: 0.5, , Min: 0.1, Max: 1) – Resolution used for cluster granularity. Higher = more clusters.</li>
-<li><b>Clustering algorithm</b> (Default: Louvain) – Graph-based clustering algorithm: Louvain (1), SLM (3), or Leiden (4).</li>
+<li><b>Clustering algorithm</b> (Default: Leiden) – Graph-based clustering algorithm: Louvain (1), SLM (3), or Leiden (4).</li>
 <li><b>Integration method</b> (Default: None) – Data integration method. If 'None', no integration is performed.</li>
 <li><b>HarmonyIntegration</b> (Default: Reduction = harmony; Distance = Cosine) – Batch correction using Harmony with cosine distance.</li>
 <li><b>CCAIntegration</b> (Default: Reduction = cca; Distance = Euclidean) – Canonical correlation analysis for dataset integration.</li>

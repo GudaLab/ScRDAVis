@@ -451,7 +451,7 @@ tabPanel(
   fluidRow(		
     h3("Clustering parameters and integration method"),
     column(4, numericInput("m_clustering4", label = "Resolution", min = 0, max = 10, value = 0.5, step = 0.1)),
-    column(4, selectInput("m_clustering5", label = "Clustering algorithm", choices = c("Louvain" = 1, "SLM" = 3, "Leiden" = 4), selected = 1)),
+    column(4, selectInput("m_clustering5", label = "Clustering algorithm", choices = c("Louvain" = 1, "SLM" = 3, "Leiden" = 4), selected = 4)),
   # ),
   # fluidRow(
   #   h3("Select integration method"),
@@ -464,7 +464,7 @@ tabPanel(
   fluidRow(   
     box(id = "m_umap_box",                      
         h3("UMAP parameters"), 
-        column(3, numericInput("m_clustering7", label = "Number of dimensions", min = 0, max = 100, value = 20, step = 1)),
+        column(3, numericInput("m_clustering7", label = "Number of dimensions", min = 0, max = 100, value = 30, step = 1)),
         column(3, numericInput("m_clustering8", label = "k-nearest-neighbours", min = 0, max = 50, value = 20, step = 1)),
         column(3, numericInput("m_clustering9", label = "min.dist", min = 0.001, max = 0.5, value = 0.3, step = 0.01)),
         column(3, selectInput("m_clustering10", label = "Show label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "FALSE")),
@@ -1100,7 +1100,7 @@ tabPanel(
                   fluidRow(		
                     h3("Clustering parameters and integration method"),
                     column(3, numericInput("m_subclustering_clustering4", label = "Resolution", min = 0, max = 10, value = 0.5, step = 0.1)),
-                    column(3, selectInput("m_subclustering_clustering5", label = "Clustering algorithm", choices = c("Louvain" = 1, "SLM" = 3, "Leiden" = 4), selected = 1)),
+                    column(3, selectInput("m_subclustering_clustering5", label = "Clustering algorithm", choices = c("Louvain" = 1, "SLM" = 3, "Leiden" = 4), selected = 4)),
                     # ),
                     # fluidRow(
                     #   h3("Select integration method"),
@@ -3176,5 +3176,4 @@ This functionality provides a comprehensive view of transcriptional regulation i
 
 )
 )
-
 
