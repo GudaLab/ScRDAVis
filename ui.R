@@ -184,7 +184,7 @@ runApp('/path/to/the/ScRDAVis-master', launch.browser=TRUE)</pre>
              br(),
              a(href="example_data/GSM8523011_C1_features.tsv.gz", "Features File",style = "color:red;",download=NA, target="_blank"),
              br(),
-             a(href="example_data/GSM8523011_C1_matrix.mtx.tsv.gz", "Matrix File",style = "color:red;",download=NA, target="_blank"),
+             a(href="example_data/GSM8523011_C1_matrix.mtx.gz", "Matrix File",style = "color:red;",download=NA, target="_blank"),
              br(),
              tags$b("Seurat Object file"),
              br(),
@@ -3176,4 +3176,5 @@ This functionality provides a comprehensive view of transcriptional regulation i
 
 )
 )
+
 
