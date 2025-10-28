@@ -32,6 +32,7 @@ if (!require("cowplot"))install.packages("cowplot")
 if (!require("pdftools"))install.packages("pdftools")
 if (!require("xgboost"))install.packages("xgboost")
 if (!require("msigdbr"))install.packages("msigdbr")
+if (!require('filelock')) install.packages("filelock")
 if (!require("msigdbdf"))install.packages("msigdbdf", repos = "https://igordot.r-universe.dev")
 if (!require("BiocManager")) install.packages("BiocManager", update = FALSE)
 if (!require("Seurat")) BiocManager::install("Seurat", update = FALSE)
@@ -96,5 +97,22 @@ if (!dir.exists(cache_path)) {
 
 # Set BiocFileCache directory environment variable
 Sys.setenv("BIOCFILECACHE_DIR" = cache_path)
+
+#views
+count_file <- "view_counter.rds"
+lock_file  <- "view_counter.lock"
+if (!file.exists(count_file)) saveRDS(0L, count_file)
+
+read_count <- function() {
+  readRDS(count_file)
+}
+increment_count <- function() {
+  lock <- lock(lock_file, timeout = 5000)   # wait up to 5s for the lock
+  on.exit(unlock(lock), add = TRUE)
+  n <- readRDS(count_file)
+  n <- n + 1L
+  saveRDS(n, count_file)
+  n
+}
 
 
