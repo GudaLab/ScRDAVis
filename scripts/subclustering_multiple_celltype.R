@@ -1,6 +1,7 @@
 datainput_subclustering_multiple_celltype <- function(index_subclustering_multiple_celltype_input, index_cell_markers, index_m_subclustering_celltype1, index_m_subclustering_celltype2, index_m_subclustering_celltype3, index_m_subclustering_celltype4, index_m_subclustering_celltype5, index_m_subclustering_celltype6, index_m_subclustering_celltype7, index_m_subclustering_celltype8, index_m_subclustering_clustering6, index_subclustering_multiple_sample_normalization_method){
   subclustering_multiple_sample_clustering <- index_subclustering_multiple_celltype_input
   subclustering_multiple_sample_clustering_markers <- index_cell_markers
+  index_m_subclustering_celltype8 <- as.logical(index_m_subclustering_celltype8)
   if(index_m_subclustering_celltype1 == 1){
     # load gene set preparation function
     source("https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/R/gene_sets_prepare.R")

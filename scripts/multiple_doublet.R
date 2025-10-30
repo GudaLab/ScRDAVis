@@ -1,5 +1,7 @@
+library(DoubletFinder)
 datainput_multiple_doublet <- function(index_multiple_doublet_input, index_m_doublet1, index_m_doublet3, index_m_clustering6, index_multiple_sample_normalization_method, index_multiple_sample_pca_dim){
   multiple_sample_clustering <- index_multiple_doublet_input
+  index_m_doublet3 <- as.logical(index_m_doublet3)
   # #doubletfinder
    multiple_sample_clustering.split <- SplitObject(multiple_sample_clustering, split.by = "orig.ident") 
   # loop through samples to find doublets

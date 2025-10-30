@@ -1,6 +1,7 @@
 datainput_multiple_doublet2 <- function(index_multiple_doublet1_input, index_m_doublet2, index_m_doublet3, index_m_clustering6, index_multiple_sample_normalization_method){
   
   multiple_sample_clustering <- index_multiple_doublet1_input 
+  index_m_doublet3 <- as.logical(index_m_doublet3)
   
   if (index_m_doublet2 == "remove_doublet"){
     #remove doublet

@@ -1,5 +1,7 @@
 datainput_multiple_clustering <- function(index_multiple_clustering_input, index_multiple_sample_normalization_method, index_m_clustering1, index_m_clustering2, index_m_clustering3, index_m_clustering4, index_m_clustering5, index_m_clustering6, index_m_clustering7, index_m_clustering8, index_m_clustering9, index_m_clustering10, index_m_clustering11, index_m_clustering12, index_m_clustering13){
   index_m_clustering5 <- as.numeric(index_m_clustering5)
+  index_m_clustering10 <- as.logical(index_m_clustering10)
+  index_m_clustering12 <- as.logical(index_m_clustering12)
   label_size <- ifelse(as.logical(index_m_clustering10) | as.logical(index_m_clustering12), 3.5, 0)
   
   if (index_m_clustering13 == "None"){

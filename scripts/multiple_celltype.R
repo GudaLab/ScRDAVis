@@ -1,6 +1,7 @@
 datainput_multiple_celltype <- function(index_multiple_celltype_input, index_cell_markers, index_m_celltype1, index_m_celltype2, index_m_celltype3, index_m_celltype4, index_m_celltype5, index_m_celltype6, index_m_celltype7, index_m_celltype8, index_m_clustering6, index_multiple_sample_normalization_method){
   multiple_sample_clustering <- index_multiple_celltype_input
   multiple_sample_clustering_markers <- index_cell_markers
+  index_m_celltype8 <- as.logical(index_m_celltype8)
   if(index_m_celltype1 == 1){
     # load gene set preparation function
     source("https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/R/gene_sets_prepare.R")
