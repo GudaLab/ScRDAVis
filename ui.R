@@ -3200,7 +3200,14 @@ This functionality provides a comprehensive view of transcriptional regulation i
          ") 
   ),
 ),
-
+tabPanel(
+  "Session Info",
+  tags$h4("R Session"),
+  downloadBttn("download_sess", "Download session-info.txt"),
+  br(),
+  withSpinner(verbatimTextOutput("sess")),
+  
+),
 
 
 

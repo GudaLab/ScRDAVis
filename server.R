@@ -23,7 +23,29 @@ server <- function(input, output, session) {
     output$view_count <- renderText(format(current, big.mark = ","))
   }, once = TRUE)
   
- 
+
+  ######session info
+  
+  # --- server ---
+  # Show session info in the tab and enable download as .txt
+  sess_txt <- reactive({
+    paste(capture.output(utils::sessionInfo()), collapse = "\n")
+  })
+  
+  output$sess <- renderPrint({
+    cat(sess_txt())
+  })
+  
+  output$download_sess <- downloadHandler(
+    filename = function() {
+      paste0("ScDAVis_session-info_", format(Sys.time(), "%Y-%m-%d_%H-%M-%S"), ".txt")
+    },
+    content = function(file) {
+      writeLines(sess_txt(), con = file, useBytes = TRUE)
+    }
+  )
+  
+  
 ############################################################################################################################################################
                                                                   ##    Multiple Input     ##
 ############################################################################################################################################################
