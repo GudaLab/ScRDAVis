@@ -150,4 +150,4 @@ Users can download these datasets directly from the provided links and use them 
 This application was tested on: Linux (Red Hat and Ubuntu) and Windows (10 and 11)
 
 ## Citation
-Jagadesan S, Guda C (2025) ScRDAVis: An R shiny application for single-cell transcriptome data analysis and visualization. PLoS Comput Biol 21(11): e1013721. https://doi.org/10.1371/journal.pcbi.101372. (https://doi.org/10.1371/journal.pcbi.101372)
+Jagadesan S, Guda C (2025) ScRDAVis: An R shiny application for single-cell transcriptome data analysis and visualization. PLoS Comput Biol 21(11): e1013721. https://doi.org/10.1371/journal.pcbi.101372.
