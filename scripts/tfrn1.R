@@ -44,15 +44,9 @@ datainput_single_multiple_sample_tfrn1<- function(index_multiple_sample_tfrn1_in
   # define model params:
   model_params <- list(objective = 'reg:squarederror',  max_depth = index_s_tfrn2,  eta = index_s_tfrn3,  nthread=64,  alpha=index_s_tfrn4)
   
-  callbacks <- if (utils::packageVersion("xgboost") >= "2.0.0") {
-    list(xgboost::xgb.cb.cv.predict(save_models = TRUE))
-  } else {
-    list(xgboost::cb.cv.predict(save_models = TRUE))
-  }
   
   # construct the TF network
-  single_multiple_sample_clustering <- ConstructTFNetwork(single_multiple_sample_clustering, model_params,
-                                                          callbacks = callbacks)
+  single_multiple_sample_clustering <- ConstructTFNetwork(single_multiple_sample_clustering, model_params)
   results <- GetTFNetwork(single_multiple_sample_clustering)
   head(results)
   
