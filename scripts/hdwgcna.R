@@ -82,6 +82,7 @@ datainput_single_multiple_sample_hdwgcna<- function(index_multiple_sample_hdwgcn
     group.by = cluster_types, # specify the columns in seurat_obj@meta.data to group by
     reduction = index_s_hdwgcna4, # select the dimensionality reduction to perform KNN on
     min_cells = index_s_hdwgcna6,
+    layer = "counts",
     k = index_s_hdwgcna5, # nearest-neighbors parameter
     max_shared = index_s_hdwgcna7, # maximum number of shared cells between two metacells
     ident.group = cluster_types, # set the Idents of the metacell seurat object
@@ -97,7 +98,7 @@ datainput_single_multiple_sample_hdwgcna<- function(index_multiple_sample_hdwgcn
       group_name = cluster_number, # the name of the group of interest in the group.by column
       group.by=cluster_types, # the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups
       assay = 'RNA', # using RNA assay
-      slot = 'data' # using normalized data
+      layer = 'data' # using normalized data
     )
   }
   else if(index_s_hdwgcna1 == "multiple_sample" & index_multiple_sample_normalization_method_hdwgcna == "SCTransform"){
@@ -107,7 +108,7 @@ datainput_single_multiple_sample_hdwgcna<- function(index_multiple_sample_hdwgcn
       group_name = cluster_number, # the name of the group of interest in the group.by column
       group.by=cluster_types, # the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups
       assay = 'SCT', # using RNA assay
-      slot = 'data' # using normalized data
+      layer = 'data' # using normalized data
     )
   }
   else if (index_s_hdwgcna1 == "multiple_sample_subclustering" & index_subclustering_multiple_sample_normalization_method_hdwgcna == "LogNormalize"){
@@ -117,7 +118,7 @@ datainput_single_multiple_sample_hdwgcna<- function(index_multiple_sample_hdwgcn
       group_name = cluster_number, # the name of the group of interest in the group.by column
       group.by=cluster_types, # the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups
       assay = 'RNA', # using RNA assay
-      slot = 'data' # using normalized data
+      layer = 'data' # using normalized data
     )
   }
   else if(index_s_hdwgcna1 == "multiple_sample_subclustering" & index_subclustering_multiple_sample_normalization_method_hdwgcna == "SCTransform"){
@@ -127,7 +128,7 @@ datainput_single_multiple_sample_hdwgcna<- function(index_multiple_sample_hdwgcn
       group_name = cluster_number, # the name of the group of interest in the group.by column
       group.by=cluster_types, # the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups
       assay = 'SCT', # using RNA assay
-      slot = 'data' # using normalized data
+      layer = 'data' # using normalized data
     )
   }
   
