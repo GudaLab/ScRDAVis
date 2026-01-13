@@ -833,7 +833,7 @@ tabPanel(
   ),  
   fluidRow(   
     box(id = "m_celltype_box4",                      
-        column(6, selectInput("m_celltype5", label = "Select model", choices = c("gpt-5" = "gpt-5","gpt-5-mini" = "gpt-5-mini","gpt-5-nano" = "gpt-5-nano","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-5")),  
+        column(6, selectInput("m_celltype5", label = "Select model", choices = c("gpt-5.2" = "gpt-5.2","gpt-5.1" = "gpt-5.1","gpt-5" = "gpt-5","gpt-5-mini" = "gpt-5-mini","gpt-5-nano" = "gpt-5-nano","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-5")),  
         column(6, numericInput("m_celltype6", label = "Top gene numbers to predict cell type",  min = 1, max = 25, value = 10)),  
     ),
   ),
@@ -1338,7 +1338,7 @@ tabPanel(
                   ),  
                   fluidRow(   
                     box(id = "m_subclustering_celltype_box4",                      
-                        column(6, selectInput("m_subclustering_celltype5", label = "Select model", choices = c("gpt-5" = "gpt-5","gpt-5-mini" = "gpt-5-mini","gpt-5-nano" = "gpt-5-nano","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-5")),  
+                        column(6, selectInput("m_subclustering_celltype5", label = "Select model", choices = c("gpt-5.2" = "gpt-5.2","gpt-5.1" = "gpt-5.1","gpt-5" = "gpt-5","gpt-5-mini" = "gpt-5-mini","gpt-5-nano" = "gpt-5-nano","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-5")),  
                         column(6, numericInput("m_subclustering_celltype6", label = "Top gene numbers to predict cell type",  min = 1, max = 25, value = 10)),  
                     ),
                   ),

@@ -586,7 +586,7 @@ server <- function(input, output, session) {
   #####################Tab1##############################
   ######################data Input##################
   datainput_multiple_sample_level<- eventReactive(input$multiple_sample_submit,{
-    tryCatch({ 
+    tryCatch({
     if (input$multiple_sample_format == "h5") {
       upload_multiple_sample_file <- input$multiple_sample_file
       upload_multiple_sample_file_names <- input$multiple_sample_file$name
@@ -595,10 +595,10 @@ server <- function(input, output, session) {
       req(input$multiple_sample_file)
       }
     else if (input$multiple_sample_format == "MFB") {
-      
+
       file1 <- input$multiple_sample_file_mfb[['datapath']]
       filesdir = dirname(file1)
-      
+
       file.rename(file1, paste0(filesdir,'/',input$multiple_sample_file_mfb$name))
       upload_multiple_sample_file <- filesdir
       upload_multiple_sample_file_names <- input$multiple_sample_file_mfb$name
@@ -616,7 +616,8 @@ server <- function(input, output, session) {
       type=input$multiple_sample_format
       ext <- tools::file_ext(input$multiple_sample_file_txt)
       req(input$multiple_sample_file_txt)
-      }
+    }
+      
     # else if (input$multiple_sample_format == "exampledata") {
     #   # Load example data
     #   upload_multiple_sample_file <- "www/example_data/example_data.RDS"
