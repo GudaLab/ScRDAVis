@@ -69,6 +69,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     #multiple_sample_clustering<- IntegrateLayers(object = index_multiple_clustering_input, method = HarmonyIntegration, orig.reduction = "pca", new.reduction = "harmony", verbose = FALSE)
     multiple_sample_clustering<- FindNeighbors(multiple_sample_clustering, reduction = "harmony", dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3, nn.method="annoy", annoy.metric="cosine")
     multiple_sample_clustering<- FindClusters(multiple_sample_clustering, resolution = index_m_clustering4, algorithm = index_m_clustering5, cluster.name = "harmony_clusters")
+    multiple_sample_clustering$seurat_clusters <- multiple_sample_clustering$harmony_clusters
     if (index_m_clustering6 == "umap")
     { 
       multiple_sample_clustering<- RunUMAP(multiple_sample_clustering, dims = 1:index_m_clustering7, n.neighbors = index_m_clustering8, min.dist = index_m_clustering9, reduction = "harmony", reduction.name = "umap")
@@ -129,6 +130,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     }
     multiple_sample_clustering<- FindNeighbors(multiple_sample_clustering, reduction = "cca", dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3, nn.method="annoy", annoy.metric="euclidean")
     multiple_sample_clustering<- FindClusters(multiple_sample_clustering, resolution = index_m_clustering4, algorithm = index_m_clustering5, cluster.name = "cca_clusters")
+    multiple_sample_clustering$seurat_clusters <- multiple_sample_clustering$cca_clusters
     if (index_m_clustering6 == "umap")
     { 
       multiple_sample_clustering<- RunUMAP(multiple_sample_clustering, dims = 1:index_m_clustering7, n.neighbors = index_m_clustering8, min.dist = index_m_clustering9, reduction = "cca", reduction.name = "umap")
@@ -190,6 +192,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     }
     multiple_sample_clustering<- FindNeighbors(multiple_sample_clustering, reduction = "rpca", dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3, nn.method="annoy", annoy.metric="euclidean")
     multiple_sample_clustering<- FindClusters(multiple_sample_clustering, resolution = index_m_clustering4, algorithm = index_m_clustering5, cluster.name = "rpca_clusters")
+    multiple_sample_clustering$seurat_clusters <- multiple_sample_clustering$rpca_clusters
     if (index_m_clustering6 == "umap")
     { 
       multiple_sample_clustering<- RunUMAP(multiple_sample_clustering, dims = 1:index_m_clustering7, n.neighbors = index_m_clustering8, min.dist = index_m_clustering9, reduction = "rpca", reduction.name = "umap")
@@ -217,7 +220,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     #cell_couts_in_custer_for_each_condition
     multiple_sample_clustering_cell_couts_in_condition <- multiple_sample_clustering@meta.data %>% as.data.table
     multiple_sample_clustering_total_cell_couts_in_custer_for_each_condition <- data.frame(t(multiple_sample_clustering_cell_couts_in_condition[, .N, by = c("condition", "rpca_clusters")] %>% dcast(., condition ~ rpca_clusters, value.var = "N"))) %>%  rownames_to_column(var = "condition") %>% `colnames<-`(.[1, ]) %>%  .[-1, ]
-    
+    multiple_sample_clustering$seurat_clusters <- multiple_sample_clustering$rpca_clusters
     plots20 <- ggplot(multiple_sample_clustering@meta.data, aes(rpca_clusters, fill = condition)) +
       geom_bar(stat="count")+
       geom_text(stat='count', aes(label=after_stat(count)), position = position_stack(vjust = 0.5), size=label_size)+
@@ -251,6 +254,7 @@ datainput_multiple_clustering <- function(index_multiple_clustering_input, index
     }
     multiple_sample_clustering<- FindNeighbors(multiple_sample_clustering, reduction = "jointpca", dims = 1:index_m_clustering1 , k.param = index_m_clustering2, n.trees = index_m_clustering3, nn.method="annoy", annoy.metric="euclidean")
     multiple_sample_clustering<- FindClusters(multiple_sample_clustering, resolution = index_m_clustering4, algorithm = index_m_clustering5, cluster.name = "jointpca_clusters")
+    multiple_sample_clustering$seurat_clusters <- multiple_sample_clustering$jointpca_clusters
     if (index_m_clustering6 == "umap")
     { 
       multiple_sample_clustering<- RunUMAP(multiple_sample_clustering, dims = 1:index_m_clustering7, n.neighbors = index_m_clustering8, min.dist = index_m_clustering9, reduction = "jointpca", reduction.name = "umap")

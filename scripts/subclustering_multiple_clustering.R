@@ -65,7 +65,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     cluster_type = "seurat_clusters"
      }
   
-  else if (index_subclustering_multiple_clustering13 == "HarmonyIntegration")
+  else if (index_m_subclustering_clustering13 == "HarmonyIntegration")
   {
     if (index_subclustering_multiple_sample_normalization_method == "LogNormalize"){
       subclustering_multiple_sample_clustering<- IntegrateLayers(object = index_subclustering_multiple_clustering_input, method = HarmonyIntegration, normalization.method = "LogNormalize", orig.reduction = "pca", new.reduction = "harmony", verbose = FALSE)
@@ -76,6 +76,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     #subclustering_multiple_sample_clustering<- IntegrateLayers(object = index_subclustering_multiple_clustering_input, method = HarmonyIntegration, orig.reduction = "pca", new.reduction = "harmony", verbose = FALSE)
     subclustering_multiple_sample_clustering<- FindNeighbors(subclustering_multiple_sample_clustering, reduction = "harmony", dims = 1:index_subclustering_multiple_clustering1 , k.param = index_subclustering_multiple_clustering2, n.trees = index_subclustering_multiple_clustering3)
     subclustering_multiple_sample_clustering<- FindClusters(subclustering_multiple_sample_clustering, resolution = index_subclustering_multiple_clustering4, algorithm = index_subclustering_multiple_clustering5, cluster.name = "harmony_clusters")
+    subclustering_multiple_sample_clustering$seurat_clusters <- subclustering_multiple_sample_clustering$harmony_clusters
     if (index_subclustering_multiple_clustering6 == "umap")
     { 
       subclustering_multiple_sample_clustering<- RunUMAP(subclustering_multiple_sample_clustering, dims = 1:index_subclustering_multiple_clustering7, n.neighbors = index_subclustering_multiple_clustering8, min.dist = index_subclustering_multiple_clustering9, reduction = "harmony", reduction.name = "umap")
@@ -133,7 +134,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     cluster_type = "harmony_clusters"
   }
   
-  else if (index_subclustering_multiple_clustering13 == "CCAIntegration")
+  else if (index_m_subclustering_clustering13 == "CCAIntegration")
   {
     if (index_subclustering_multiple_sample_normalization_method == "LogNormalize"){
       subclustering_multiple_sample_clustering<- IntegrateLayers(object = index_subclustering_multiple_clustering_input, method = CCAIntegration, normalization.method = "LogNormalize", orig.reduction = "pca", new.reduction = "cca", verbose = FALSE)
@@ -143,6 +144,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     }
     subclustering_multiple_sample_clustering<- FindNeighbors(subclustering_multiple_sample_clustering, reduction = "cca", dims = 1:index_subclustering_multiple_clustering1 , k.param = index_subclustering_multiple_clustering2, n.trees = index_subclustering_multiple_clustering3)
     subclustering_multiple_sample_clustering<- FindClusters(subclustering_multiple_sample_clustering, resolution = index_subclustering_multiple_clustering4, algorithm = index_subclustering_multiple_clustering5, cluster.name = "cca_clusters")
+    subclustering_multiple_sample_clustering$seurat_clusters <- subclustering_multiple_sample_clustering$cca_clusters
     if (index_subclustering_multiple_clustering6 == "umap")
     { 
       subclustering_multiple_sample_clustering<- RunUMAP(subclustering_multiple_sample_clustering, dims = 1:index_subclustering_multiple_clustering7, n.neighbors = index_subclustering_multiple_clustering8, min.dist = index_subclustering_multiple_clustering9, reduction = "cca", reduction.name = "umap")
@@ -198,7 +200,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     cluster_type = "cca_clusters"
   }
   
-  else if (index_subclustering_multiple_clustering13 == "RPCAIntegration")
+  else if (index_m_subclustering_clustering13 == "RPCAIntegration")
   {
     if (index_subclustering_multiple_sample_normalization_method == "LogNormalize"){
     subclustering_multiple_sample_clustering<- IntegrateLayers(object = index_subclustering_multiple_clustering_input, method = RPCAIntegration, normalization.method = "LogNormalize", orig.reduction = "pca", new.reduction = "rpca", verbose = FALSE)
@@ -208,6 +210,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     }
     subclustering_multiple_sample_clustering<- FindNeighbors(subclustering_multiple_sample_clustering, reduction = "rpca", dims = 1:index_subclustering_multiple_clustering1 , k.param = index_subclustering_multiple_clustering2, n.trees = index_subclustering_multiple_clustering3)
     subclustering_multiple_sample_clustering<- FindClusters(subclustering_multiple_sample_clustering, resolution = index_subclustering_multiple_clustering4, algorithm = index_subclustering_multiple_clustering5, cluster.name = "rpca_clusters")
+    subclustering_multiple_sample_clustering$seurat_clusters <- subclustering_multiple_sample_clustering$rpca_clusters
     if (index_subclustering_multiple_clustering6 == "umap")
     { 
       subclustering_multiple_sample_clustering<- RunUMAP(subclustering_multiple_sample_clustering, dims = 1:index_subclustering_multiple_clustering7, n.neighbors = index_subclustering_multiple_clustering8, min.dist = index_subclustering_multiple_clustering9, reduction = "rpca", reduction.name = "umap")
@@ -263,7 +266,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     cluster_type = "rpca_clusters"
   }
   
-  else if (index_subclustering_multiple_clustering13 == "JointPCAIntegration")
+  else if (index_m_subclustering_clustering13 == "JointPCAIntegration")
   {
     if (index_subclustering_multiple_sample_normalization_method == "LogNormalize"){
       subclustering_multiple_sample_clustering<- IntegrateLayers(object = index_subclustering_multiple_clustering_input, method = JointPCAIntegration, normalization.method = "LogNormalize", orig.reduction = "pca", new.reduction = "jointpca", verbose = FALSE)
@@ -273,6 +276,7 @@ datainput_subclustering_multiple_clustering <- function(index_subclustering_mult
     }
     subclustering_multiple_sample_clustering<- FindNeighbors(subclustering_multiple_sample_clustering, reduction = "jointpca", dims = 1:index_subclustering_multiple_clustering1 , k.param = index_subclustering_multiple_clustering2, n.trees = index_subclustering_multiple_clustering3)
     subclustering_multiple_sample_clustering<- FindClusters(subclustering_multiple_sample_clustering, resolution = index_subclustering_multiple_clustering4, algorithm = index_subclustering_multiple_clustering5, cluster.name = "jointpca_clusters")
+    subclustering_multiple_sample_clustering$seurat_clusters <- subclustering_multiple_sample_clustering$jointpca_clusters
     if (index_subclustering_multiple_clustering6 == "umap")
     { 
       subclustering_multiple_sample_clustering<- RunUMAP(subclustering_multiple_sample_clustering, dims = 1:index_subclustering_multiple_clustering7, n.neighbors = index_subclustering_multiple_clustering8, min.dist = index_subclustering_multiple_clustering9, reduction = "jointpca", reduction.name = "umap")
