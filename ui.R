@@ -125,6 +125,9 @@ runApp('/path/to/the/ScRDAVis-master', launch.browser=TRUE)</pre>
  <h3>Usage</h3>
     <p>Please refer our Manual tab.</p>
         <hr>
+        <h3>Cite: </h3>
+<p> Jagadesan S, Guda C (2025) ScRDAVis: An R shiny application for single-cell transcriptome data analysis and visualization. PLoS Comput Biol 21(11): e1013721. <a href='https://doi.org/10.1371/journal.pcbi.1013721'>https://doi.org/10.1371/journal.pcbi.1013721</a></p>
+<hr>
 <h3> Developed and maintained by</h3>
 <p>ScRDAVis was developed by Sankarasubramanian Jagadesan and Babu Guda. We share a passion for developing a user-friendly tool for biologists, particularly those who do not have access to bioinformaticians or programming expertise.
 </p>
