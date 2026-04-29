@@ -1,7 +1,33 @@
-datainput_multiple_celltype <- function(index_multiple_celltype_input, index_cell_markers, index_m_celltype1, index_m_celltype2, index_m_celltype3, index_m_celltype4, index_m_celltype5, index_m_celltype6, index_m_celltype7, index_m_celltype8, index_m_clustering6, index_multiple_sample_normalization_method){
+datainput_multiple_celltype <- function(index_multiple_celltype_input, index_cell_markers, index_m_celltype1, index_m_celltype2, index_m_celltype3, index_m_celltype4, index_m_celltype5, index_m_celltype6, index_m_celltype7, index_m_celltype8, index_m_celltype9, index_m_clustering6, index_multiple_sample_normalization_method){
   multiple_sample_clustering <- index_multiple_celltype_input
   multiple_sample_clustering_markers <- index_cell_markers
   index_m_celltype8 <- as.logical(index_m_celltype8)
+  
+  resolve_split_by <- function(object, split_by_value) {
+    if (is.null(split_by_value) || split_by_value %in% c("none", "NULL", "")) {
+      return(NULL)
+    }
+    if (!split_by_value %in% colnames(object@meta.data)) {
+      return(NULL)
+    }
+    split_by_value
+  }
+  
+  build_annotation_dimplot <- function(object, annotation_column) {
+    plot_args <- list(
+      object = object,
+      reduction = index_m_clustering6,
+      label = index_m_celltype8,
+      repel = TRUE,
+      group.by = annotation_column
+    )
+    split_by_column <- resolve_split_by(object, index_m_celltype9)
+    if (!is.null(split_by_column)) {
+      plot_args$split.by <- split_by_column
+    }
+    do.call(DimPlot, plot_args)
+  }
+  
   if(index_m_celltype1 == 1){
     # load gene set preparation function
     source("https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/R/gene_sets_prepare.R")
@@ -42,7 +68,7 @@ datainput_multiple_celltype <- function(index_multiple_celltype_input, index_cel
       multiple_sample_clustering@meta.data$sctype_classification[multiple_sample_clustering@meta.data$seurat_clusters == j] = as.character(cl_type$type[1])
     }
     
-    plots40 <- DimPlot(multiple_sample_clustering, reduction = index_m_clustering6, label = index_m_celltype8, repel = TRUE, group.by = c('sctype_classification', 'seurat_clusters'))
+    plots40 <- build_annotation_dimplot(multiple_sample_clustering, "sctype_classification")
     return(list(data1 = multiple_sample_clustering, data2 = unique(multiple_sample_clustering@meta.data$seurat_clusters), data3 = unique(multiple_sample_clustering@meta.data$sctype_classification), text_summary = 'sctype_classification', plot1 = plots40, data2 = sctype_scores))
   }
   
@@ -66,7 +92,7 @@ datainput_multiple_celltype <- function(index_multiple_celltype_input, index_cel
     Pred1$cells <- rownames(Pred)
     multiple_sample_clustering$singleR_labels <- Pred$labels[match(rownames(multiple_sample_clustering@meta.data), rownames(Pred))]
     
-    plots40 <- DimPlot(multiple_sample_clustering, reduction = index_m_clustering6, label = index_m_celltype8, repel = TRUE, group.by=c('singleR_labels', 'seurat_clusters'))
+    plots40 <- build_annotation_dimplot(multiple_sample_clustering, "singleR_labels")
     plots41 <- plotScoreHeatmap(Pred)
     plots42 <- plotDeltaDistribution(Pred)
     return(list(data1 = multiple_sample_clustering, data2 = unique(multiple_sample_clustering@meta.data$seurat_clusters), data3 = unique(multiple_sample_clustering@meta.data$singleR_labels), text_summary = 'singleR_labels', plot1 = plots40, data2 = Pred1, plot2 = plots41, plot3 = plots42))
@@ -82,7 +108,7 @@ datainput_multiple_celltype <- function(index_multiple_celltype_input, index_cel
     multiple_sample_clustering@meta.data$GPTCelltype <- as.factor(res[as.character(Idents(multiple_sample_clustering))])
     
     # Visualize cell type annotation on UMAP
-    plots40 <- DimPlot(multiple_sample_clustering, reduction = index_m_clustering6, label = index_m_celltype8, repel = TRUE,  group.by = c('GPTCelltype', 'seurat_clusters'))
+    plots40 <- build_annotation_dimplot(multiple_sample_clustering, "GPTCelltype")
     return(list(data1 = multiple_sample_clustering, data2 = unique(multiple_sample_clustering@meta.data$seurat_clusters), data3 = unique(multiple_sample_clustering@meta.data$GPTCelltype), text_summary = 'GPTCelltype', plot1 = plots40))
   }
   else if(index_m_celltype1 == 4){
@@ -90,7 +116,7 @@ datainput_multiple_celltype <- function(index_multiple_celltype_input, index_cel
     names(cell_type) <- levels(multiple_sample_clustering)
     multiple_sample_clustering@meta.data$cell_type <- as.factor(cell_type[as.character(Idents(multiple_sample_clustering))])
     
-    plots40 <- DimPlot(multiple_sample_clustering, reduction = index_m_clustering6, label = index_m_celltype8, repel = TRUE,  group.by = c('cell_type','seurat_clusters'), order = as.numeric(sort(unique('seurat_clusters'))))
+    plots40 <- build_annotation_dimplot(multiple_sample_clustering, "cell_type")
     return(list(data1 = multiple_sample_clustering, data2 = unique(multiple_sample_clustering@meta.data$seurat_clusters), data3 = unique(multiple_sample_clustering@meta.data$cell_type), text_summary = 'cell_type', plot1 = plots40))
     }
   

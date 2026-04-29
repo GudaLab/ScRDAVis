@@ -31,6 +31,80 @@ shinyUI(
     navbarPage(id ="menu_tabs",
     theme = shinytheme("cerulean"),
     "",
+    header = tagList(
+      tags$style(HTML("
+        #run-status-widget {
+          position: fixed;
+          right: 16px;
+          bottom: 16px;
+          z-index: 2000;
+          width: 320px;
+          background: #ffffff;
+          border: 1px solid #d9d9d9;
+          border-radius: 4px;
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+          overflow: hidden;
+        }
+        #run-status-widget .run-status-body {
+          padding: 10px 12px 12px 12px;
+        }
+        #run-status-widget .run-status-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          margin-bottom: 6px;
+          font-weight: 600;
+          color: #2f2f2f;
+        }
+        #run-status-widget .run-status-close {
+          border: 0;
+          background: transparent;
+          color: #777777;
+          font-size: 18px;
+          line-height: 1;
+          padding: 0;
+          cursor: pointer;
+        }
+        #run-status-widget .run-status-close:hover {
+          color: #222222;
+        }
+        #run-status-widget .run-status-title {
+          font-size: 12px;
+          line-height: 1.4;
+          margin-bottom: 4px;
+          color: #333333;
+        }
+        #run-status-widget .run-status-detail {
+          font-size: 12px;
+          color: #666666;
+          line-height: 1.4;
+        }
+        #run-status-widget .progress {
+          height: 8px;
+          margin-bottom: 8px;
+          border-radius: 0;
+          background-color: #ebebeb;
+        }
+        #run-status-widget .progress-bar {
+          min-width: 0 !important;
+          font-size: 0;
+          line-height: 8px;
+        }
+        #shiny-notification-panel {
+          top: auto !important;
+          bottom: 16px !important;
+          right: 16px !important;
+          left: auto !important;
+          width: 320px;
+        }
+        #shiny-notification-panel .shiny-notification {
+          width: 320px;
+          margin-bottom: 10px;
+        }
+      ")),
+      uiOutput("run_status_widget_ui")
+    ),
     tabPanel(
       "ScRDAVis",
 	  tags$script(inactivity),
@@ -848,6 +922,7 @@ tabPanel(
   fluidRow(   
     box(id = "m_celltype_box6", 
         column(4, selectInput("m_celltype8", label = "Dim plots label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "FALSE")),
+        column(4, selectInput("m_celltype_splitby", label = "split.by", choices = c("None" = "none", "Condition" = "condition", "Samples" = "orig.ident"), selected = "none")),
         br(),
         column(3, actionBttn("multiple_sample_celltype", "Detect cell type",  style = "unite",color = "primary", icon = icon("download"))),
     ),
@@ -1350,9 +1425,10 @@ tabPanel(
                         uiOutput("m_subclustering_celltype7"),
                     ),
                   ),
-                  fluidRow(   
+                    fluidRow(   
                     box(id = "m_subclustering_celltype_box6", 
                         column(4, selectInput("m_subclustering_celltype8", label = "Dim plots label", choices = c("Yes" = "TRUE", "No" = "FALSE"), selected = "FALSE")),
+                        column(4, selectInput("m_subclustering_celltype_splitby", label = "split.by", choices = c("None" = "none", "Condition" = "condition", "Samples" = "orig.ident"), selected = "none")),
                         br(),
                         column(3, actionBttn("subclustering_multiple_sample_celltype", "Detect cell type",  style = "unite",color = "primary", icon = icon("download"))),
                     ),
@@ -1691,8 +1767,9 @@ tabPanel(
     box(id = "s_gsea_box2",
         h3("GSEA parameters"), 
         column(4, selectInput("s_gsea5", label = "Organism", choices = c("Human"="Homo sapiens", "Mouse"="Mus musculus"), selected = "Homo sapiens")),
-        column(4, selectInput("s_gsea6", label = "Category (from MSigDB)", choices = c("Hallmark gene sets (H)"="H", "Positional gene sets (C1)"="C1", "Curated gene sets (C2)"="C2", "Regulatory target gene sets (C3)"="C3", "Computational gene sets (C4)"="C4", "Ontology gene sets (C5)" ="C5", "Oncogenic signature gene sets (C6)"="C6", "Immunologic signature gene sets (C7)"="C7", "Cell type signature gene sets (C8)"="C8"), selected = "C2")),
+        column(4, selectInput("s_gsea6", label = "Collection (from MSigDB)", choices = c("Hallmark gene sets (H)"="H", "Positional gene sets (C1)"="C1", "Curated gene sets (C2)"="C2", "Regulatory target gene sets (C3)"="C3", "Computational gene sets (C4)"="C4", "Ontology gene sets (C5)" ="C5", "Oncogenic signature gene sets (C6)"="C6", "Immunologic signature gene sets (C7)"="C7", "Cell type signature gene sets (C8)"="C8"), selected = "C2")),
         column(4, selectInput("s_gsea7", label = "ScoreType", choices = c("std"="std", "pos"="pos", "neg"="neg"), selected = "std")),
+        column(12, tags$small("Human uses the official Human MSigDB collections (H, C1-C8). Mouse uses the official Mouse MSigDB collections (MH, M1, M2, M3, M5, M7, M8).")),
         column(4, numericInput("s_gsea8", label = "Minimal size of genes", value = 15)),
         column(4, numericInput("s_gsea9", label = "Maximal size of genes", value = 50)),
         column(4, numericInput("s_gsea10", label = "Number of permutations", value = 100)),
@@ -1834,7 +1911,7 @@ tabPanel(
 ######################################################Menu8#####################################################################   
 #############################################Trajectory and Pseudotime analysis#################################################
 tabPanel(
-  "Trajectory and Pseudotime analysis",
+  "Trajectory and Pseudotime Analysis",
   useShinyjs(),
   actionButton("info_btn22", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "Trajectory & Pseudotime Analysis (Monocle3)"),
   
@@ -3142,7 +3219,7 @@ Transcription Factor (TF) Regulatory Network Analysis in ScRDAVis employs the hd
 <ul>
 <li>Human: EnsDb.Hsapiens.v86, BSgenome.Hsapiens.UCSC.hg38.</li>
 <li>Mouse: EnsDb.Mmusculus.v79, BSgenome.Mmusculus.UCSC.mm10.</li>
-<li>Motifs from the JASPAR 2020 database for multiple species.</li>
+<li>Motifs from the JASPAR 2024 database for multiple species.</li>
 </ul>
 </li>
 <li><strong>Machine Learning Model:</strong>
@@ -3202,6 +3279,23 @@ This functionality provides a comprehensive view of transcriptional regulation i
 
          ") 
   ),
+),
+tabPanel(
+  "Run Log",
+  fluidRow(
+    box(width = 12,
+        h3("Current analysis status"),
+        uiOutput("run_status_ui")
+    ),
+    box(width = 12,
+        h3("Selected parameters"),
+        withSpinner(type = 4, dataTableOutput("run_log_params_table"))
+    ),
+    box(width = 12,
+        h3("Run and navigation history"),
+        withSpinner(type = 4, dataTableOutput("run_log_table"))
+    )
+  )
 ),
 tabPanel(
   "Session Info",

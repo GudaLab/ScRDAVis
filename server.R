@@ -45,6 +45,595 @@ server <- function(input, output, session) {
     }
   )
   
+  `%||%` <- function(x, y) {
+    if (is.null(x) || length(x) == 0 || all(is.na(x))) {
+      return(y)
+    }
+    x
+  }
+  
+  extract_labels_from_ui <- function(ui_path = "ui.R") {
+    ui_lines <- readLines(ui_path, warn = FALSE, encoding = "UTF-8")
+    input_labels <- character()
+    button_labels <- character()
+    
+    input_patterns <- c(
+      '.*(?:selectInput|numericInput|textInput|fileInput|textAreaInput|sliderInput|checkboxInput|checkboxGroupInput|radioButtons|dateInput|dateRangeInput)\\("([^"]+)",\\s*label\\s*=\\s*"([^"]+)".*',
+      '.*(?:selectInput|numericInput|textInput|fileInput|textAreaInput|sliderInput|checkboxInput|checkboxGroupInput|radioButtons|dateInput|dateRangeInput)\\("([^"]+)",\\s*label\\s*=\\s*h[1-6]\\("([^"]+)"\\).*'
+    )
+    button_pattern <- '.*(?:actionBttn|actionButton)\\("([^"]+)",\\s*"([^"]+)".*'
+    
+    for (line in ui_lines) {
+      for (pattern in input_patterns) {
+        match_groups <- regmatches(line, regexec(pattern, line, perl = TRUE))[[1]]
+        if (length(match_groups) == 3) {
+          input_labels[match_groups[2]] <- match_groups[3]
+          break
+        }
+      }
+      
+      button_groups <- regmatches(line, regexec(button_pattern, line, perl = TRUE))[[1]]
+      if (length(button_groups) == 3) {
+        button_labels[button_groups[2]] <- button_groups[3]
+      }
+    }
+    
+    list(input_labels = input_labels, button_labels = button_labels)
+  }
+  
+  ui_label_maps <- extract_labels_from_ui()
+  input_label_map <- c(
+    ui_label_maps$input_labels,
+    s_gsea3 = "Select one or multiple cluster(s) for analsysis"
+  )
+  button_label_map <- ui_label_maps$button_labels
+  
+  analysis_trigger_ids <- c(
+    "multiple_sample_submit",
+    "multiple_sample_qc_filtering",
+    "multiple_sample_normalization",
+    "multiple_sample_clustering",
+    "multiple_sample_doublet",
+    "multiple_sample_doublet2",
+    "multiple_sample_marker",
+    "multiple_sample_celltype",
+    "multiple_sample_clusterbased",
+    "multiple_sample_conditionbased",
+    "subclustering_multiple_sample_submit",
+    "subclustering_multiple_sample_normalization",
+    "subclustering_multiple_sample_clustering",
+    "subclustering_multiple_sample_marker",
+    "subclustering_multiple_sample_celltype",
+    "subclustering_multiple_sample_clusterbased",
+    "subclustering_multiple_sample_conditionbased",
+    "single_multiple_sample_cccn",
+    "single_multiple_sample_go",
+    "single_multiple_sample_pathway",
+    "single_multiple_sample_gsea",
+    "single_multiple_sample_cellchat1",
+    "single_multiple_sample_cellchat2",
+    "single_multiple_sample_trajectory1",
+    "single_multiple_sample_trajectory2",
+    "single_multiple_sample_trajectory3",
+    "single_multiple_sample_trajectory4",
+    "single_multiple_sample_hdwgcna",
+    "single_multiple_sample_tfrn1",
+    "single_multiple_sample_tfrn2"
+  )
+  
+  get_active_navigation_context <- function() {
+    menu_label <- input$menu_tabs %||% "ScRDAVis"
+    tab_label <- switch(
+      menu_label,
+      "Single or Multiple Samples Analysis" = input$multiple_tabsets %||% "Stats",
+      "Subclustering" = input$subclustering_multiple_tabsets %||% "Cell Stats",
+      "Co-expression and TF Analysis" = input$Coexpression_tabsets %||% "Co-expression network analysis",
+      menu_label
+    )
+    
+    list(menu = menu_label, tab = tab_label)
+  }
+  
+  get_parameter_patterns <- function(menu_label, tab_label = NULL) {
+    if (identical(menu_label, "Single or Multiple Samples Analysis")) {
+      return(c("^multiple_sample_", "^m_"))
+    }
+    if (identical(menu_label, "Subclustering")) {
+      return(c("^subclustering_multiple_sample_", "^m_subclustering_"))
+    }
+    if (identical(menu_label, "Correlation Network")) {
+      return("^s_cccn")
+    }
+    if (identical(menu_label, "GO Terms")) {
+      return("^s_go")
+    }
+    if (identical(menu_label, "Pathway Analysis")) {
+      return("^s_pathway")
+    }
+    if (identical(menu_label, "GSEA Analysis")) {
+      return("^s_gsea")
+    }
+    if (identical(menu_label, "Cell-Cell Communication")) {
+      return("^s_cellchat")
+    }
+    if (identical(menu_label, "Trajectory and Pseudotime Analysis")) {
+      return("^s_trajectory")
+    }
+    if (identical(menu_label, "Co-expression and TF Analysis")) {
+      if (grepl("Transcription Factor", tab_label %||% "", fixed = TRUE)) {
+        return("^s_tfrn")
+      }
+      return("^s_hdwgcna")
+    }
+    
+    character()
+  }
+  
+  format_input_value <- function(value) {
+    if (is.null(value) || length(value) == 0) {
+      return(NA_character_)
+    }
+    
+    if (is.data.frame(value)) {
+      if ("name" %in% names(value)) {
+        return(paste(value$name, collapse = ", "))
+      }
+      return(paste(apply(value, 1, paste, collapse = " "), collapse = "; "))
+    }
+    
+    if (is.list(value) && !is.atomic(value)) {
+      flattened <- unlist(value, use.names = FALSE)
+      if (length(flattened) == 0) {
+        return(NA_character_)
+      }
+      return(paste(flattened, collapse = ", "))
+    }
+    
+    formatted_value <- paste(as.character(value), collapse = ", ")
+    if (!nzchar(formatted_value)) {
+      return(NA_character_)
+    }
+    
+    formatted_value
+  }
+  
+  collect_menu_parameters <- function(menu_label, tab_label = NULL) {
+    patterns <- get_parameter_patterns(menu_label, tab_label)
+    if (length(patterns) == 0) {
+      return(data.frame(Parameter = character(), Value = character(), stringsAsFactors = FALSE))
+    }
+    
+    input_values <- reactiveValuesToList(input)
+    input_ids <- names(input_values)
+    selected_ids <- input_ids[
+      vapply(
+        input_ids,
+        function(input_id) any(vapply(patterns, function(pattern) grepl(pattern, input_id, perl = TRUE), logical(1))),
+        logical(1)
+      )
+    ]
+    selected_ids <- unique(selected_ids[selected_ids %in% names(input_label_map)])
+    
+    parameter_rows <- lapply(selected_ids, function(input_id) {
+      formatted_value <- format_input_value(input_values[[input_id]])
+      if (is.na(formatted_value)) {
+        return(NULL)
+      }
+      
+      data.frame(
+        Parameter = unname(input_label_map[[input_id]] %||% input_id),
+        Value = formatted_value,
+        stringsAsFactors = FALSE
+      )
+    })
+    
+    parameter_rows <- Filter(Negate(is.null), parameter_rows)
+    if (length(parameter_rows) == 0) {
+      return(data.frame(Parameter = character(), Value = character(), stringsAsFactors = FALSE))
+    }
+    
+    do.call(rbind, parameter_rows)
+  }
+  
+  run_log_entries <- reactiveVal(
+    data.frame(
+      Timestamp = character(),
+      `Entry Type` = character(),
+      Menu = character(),
+      Tab = character(),
+      Action = character(),
+      Status = character(),
+      Details = character(),
+      Parameters = character(),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
+  )
+  latest_run_params <- reactiveVal(
+    data.frame(
+      Parameter = character(),
+      Value = character(),
+      stringsAsFactors = FALSE
+    )
+  )
+  run_status <- reactiveValues(
+    status = "Idle",
+    analysis = "Waiting for analysis",
+    menu = "",
+    tab = "",
+    message = "No analysis is currently running.",
+    progress = 0,
+    started_at = "",
+    completed_at = ""
+  )
+  run_status_widget_dismissed <- reactiveVal(TRUE)
+  
+  append_run_log <- function(entry_type, status, action_label, menu_label, tab_label, parameters_df = NULL, detail = "") {
+    parameter_text <- ""
+    if (!is.null(parameters_df) && nrow(parameters_df) > 0) {
+      parameter_text <- paste(
+        paste0(parameters_df$Parameter, ": ", parameters_df$Value),
+        collapse = "; "
+      )
+    }
+    
+    new_entry <- data.frame(
+      Timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+      `Entry Type` = entry_type,
+      Menu = menu_label %||% "",
+      Tab = tab_label %||% "",
+      Action = action_label %||% "",
+      Status = status %||% "",
+      Details = detail %||% "",
+      Parameters = parameter_text,
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
+    
+    run_log_entries(rbind(new_entry, run_log_entries()))
+  }
+  
+  start_run_status <- function(action_label, menu_label, tab_label, message = "Loading analysis inputs.") {
+    run_status$status <- "Loading"
+    run_status$analysis <- action_label
+    run_status$menu <- menu_label %||% ""
+    run_status$tab <- tab_label %||% ""
+    run_status$message <- message
+    run_status$progress <- 10
+    run_status$started_at <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    run_status$completed_at <- ""
+  }
+  
+  update_run_status <- function(status = NULL, progress = NULL, message = NULL) {
+    if (!is.null(status)) {
+      run_status$status <- status
+    }
+    if (!is.null(progress)) {
+      run_status$progress <- max(0, min(100, as.integer(progress)))
+    }
+    if (!is.null(message) && nzchar(message)) {
+      run_status$message <- message
+    }
+    if (!nzchar(run_status$started_at)) {
+      run_status$started_at <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    }
+    if (identical(run_status$status, "Completed successfully") || identical(run_status$status, "Failed")) {
+      run_status$completed_at <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    }
+  }
+  
+  complete_run_status <- function(message = "Analysis completed successfully.") {
+    update_run_status(status = "Completed successfully", progress = 100, message = message)
+  }
+  
+  fail_run_status <- function(message = "Analysis failed.") {
+    if (!nzchar(run_status$started_at)) {
+      run_status$started_at <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    }
+    run_status$status <- "Failed"
+    run_status$message <- message
+    run_status$progress <- 100
+    run_status$completed_at <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+  }
+  
+  render_status_panel <- function() {
+    progress_class <- switch(
+      run_status$status,
+      "Loading" = "progress-bar-info progress-bar-striped active",
+      "Running" = "progress-bar-warning",
+      "Completed successfully" = "progress-bar-success",
+      "Failed" = "progress-bar-danger",
+      ""
+    )
+    
+    tagList(
+      tags$p(tags$b("Status: "), run_status$status),
+      tags$p(tags$b("Analysis: "), run_status$analysis),
+      tags$p(tags$b("Menu: "), run_status$menu %||% ""),
+      tags$p(tags$b("Tab: "), run_status$tab %||% ""),
+      tags$p(tags$b("Message: "), run_status$message),
+      tags$div(
+        class = "progress",
+        style = "height: 24px;",
+        tags$div(
+          class = paste("progress-bar", progress_class),
+          role = "progressbar",
+          style = paste0("width: ", run_status$progress, "%; min-width: 3em;"),
+          paste0(run_status$progress, "%")
+        )
+      ),
+      if (nzchar(run_status$started_at)) {
+        tags$p(tags$b("Started: "), run_status$started_at)
+      },
+      if (nzchar(run_status$completed_at)) {
+        tags$p(tags$b("Completed: "), run_status$completed_at)
+      }
+    )
+  }
+  
+  output$run_status_widget_ui <- renderUI({
+    NULL
+  })
+  
+  observeEvent(input$run_status_widget_close, {
+    run_status_widget_dismissed(TRUE)
+  }, ignoreInit = TRUE)
+  
+  output$run_status_ui <- renderUI({
+    render_status_panel()
+  })
+  
+  output$gsea_status_ui <- renderUI({
+    render_status_panel()
+  })
+  
+  output$run_log_params_table <- renderDataTable({
+    DT::datatable(
+      latest_run_params(),
+      options = list(
+        dom = "t",
+        pageLength = 25,
+        scrollX = TRUE
+      ),
+      rownames = FALSE,
+      selection = "none"
+    )
+  })
+  
+  output$run_log_table <- renderDataTable({
+    DT::datatable(
+      run_log_entries(),
+      options = list(
+        scrollX = TRUE,
+        pageLength = 10,
+        order = list(list(0, "desc"))
+      ),
+      rownames = FALSE,
+      selection = "none"
+    )
+  })
+  
+  observeEvent(input$menu_tabs, {
+    context <- get_active_navigation_context()
+    append_run_log(
+      entry_type = "Navigation",
+      status = "Opened",
+      action_label = paste("Menu selected:", context$menu),
+      menu_label = context$menu,
+      tab_label = context$tab,
+      detail = "Top-level menu changed."
+    )
+  }, ignoreInit = TRUE)
+  
+  observeEvent(input$multiple_tabsets, {
+    append_run_log(
+      entry_type = "Navigation",
+      status = "Opened",
+      action_label = paste("Tab selected:", input$multiple_tabsets),
+      menu_label = "Single or Multiple Samples Analysis",
+      tab_label = input$multiple_tabsets,
+      detail = "Sub-tab changed."
+    )
+  }, ignoreInit = TRUE)
+  
+  observeEvent(input$subclustering_multiple_tabsets, {
+    append_run_log(
+      entry_type = "Navigation",
+      status = "Opened",
+      action_label = paste("Tab selected:", input$subclustering_multiple_tabsets),
+      menu_label = "Subclustering",
+      tab_label = input$subclustering_multiple_tabsets,
+      detail = "Sub-tab changed."
+    )
+  }, ignoreInit = TRUE)
+  
+  observeEvent(input$Coexpression_tabsets, {
+    append_run_log(
+      entry_type = "Navigation",
+      status = "Opened",
+      action_label = paste("Tab selected:", input$Coexpression_tabsets),
+      menu_label = "Co-expression and TF Analysis",
+      tab_label = input$Coexpression_tabsets,
+      detail = "Sub-tab changed."
+    )
+  }, ignoreInit = TRUE)
+  
+  lapply(analysis_trigger_ids, function(trigger_id) {
+    observeEvent(input[[trigger_id]], {
+      context <- get_active_navigation_context()
+      parameter_df <- collect_menu_parameters(context$menu, context$tab)
+      latest_run_params(parameter_df)
+    }, ignoreInit = TRUE)
+  })
+  
+  observe_analysis_status <- function(button_id, reactive_fn) {
+    observeEvent(input[[button_id]], {
+      context <- get_active_navigation_context()
+      parameter_df <- collect_menu_parameters(context$menu, context$tab)
+      action_label <- button_label_map[[button_id]] %||% button_id
+      
+      latest_run_params(parameter_df)
+      start_run_status(
+        action_label = action_label,
+        menu_label = context$menu,
+        tab_label = context$tab,
+        message = "Loading analysis inputs."
+      )
+      append_run_log(
+        entry_type = "Analysis",
+        status = "Loading",
+        action_label = action_label,
+        menu_label = context$menu,
+        tab_label = context$tab,
+        parameters_df = parameter_df,
+        detail = "Analysis requested."
+      )
+      
+      withProgress(
+        message = paste(context$menu, "-", action_label, "Running"),
+        detail = "Loading analysis...",
+        value = 0,
+        style = "notification",
+        {
+          tryCatch(
+            {
+              incProgress(0.15, detail = "Loading analysis...")
+              update_run_status(
+                status = "Loading",
+                progress = 15,
+                message = "Loading analysis inputs."
+              )
+              
+              incProgress(0.35, detail = "Running analysis...")
+              update_run_status(
+                status = "Running",
+                progress = 50,
+                message = "Running analysis."
+              )
+              
+              reactive_fn()
+              
+              incProgress(0.50, detail = "Analysis completed successfully.")
+              complete_run_status("Analysis completed successfully.")
+              append_run_log(
+                entry_type = "Analysis",
+                status = "Completed successfully",
+                action_label = action_label,
+                menu_label = context$menu,
+                tab_label = context$tab,
+                parameters_df = parameter_df,
+                detail = "Analysis completed successfully."
+              )
+            },
+            error = function(e) {
+              fail_run_status(conditionMessage(e))
+              append_run_log(
+                entry_type = "Analysis",
+                status = "Failed",
+                action_label = action_label,
+                menu_label = context$menu,
+                tab_label = context$tab,
+                parameters_df = parameter_df,
+                detail = conditionMessage(e)
+              )
+              stop(e)
+            }
+          )
+        }
+      )
+    }, ignoreInit = TRUE)
+  }
+  
+  register_seurat_object_download <- function(output_id, filename_text, object_fn) {
+    output[[output_id]] <- downloadHandler(
+      filename = function() {
+        filename_text
+      },
+      content = function(file) {
+        context <- get_active_navigation_context()
+        parameter_df <- collect_menu_parameters(context$menu, context$tab)
+        action_label <- "Download Seurat Object"
+        
+        latest_run_params(parameter_df)
+        start_run_status(
+          action_label = action_label,
+          menu_label = context$menu,
+          tab_label = context$tab,
+          message = "Preparing Seurat object download."
+        )
+        append_run_log(
+          entry_type = "Download",
+          status = "Preparing",
+          action_label = action_label,
+          menu_label = context$menu,
+          tab_label = context$tab,
+          parameters_df = parameter_df,
+          detail = paste("Preparing", filename_text)
+        )
+        
+        withProgress(
+          message = paste(context$menu, "-", action_label),
+          detail = "Preparing Seurat object...",
+          value = 0,
+          style = "notification",
+          {
+            tryCatch(
+              {
+                incProgress(0.20, detail = "Preparing Seurat object...")
+                update_run_status(
+                  status = "Loading",
+                  progress = 20,
+                  message = "Preparing Seurat object download."
+                )
+                
+                seurat_object <- object_fn()
+                
+                incProgress(0.45, detail = "Downloading Seurat object...")
+                update_run_status(
+                  status = "Running",
+                  progress = 65,
+                  message = "Downloading Seurat object."
+                )
+                
+                saveRDS(seurat_object, file = file, compress = TRUE)
+                
+                incProgress(0.35, detail = "Download completed successfully.")
+                complete_run_status("Seurat object download completed successfully.")
+                append_run_log(
+                  entry_type = "Download",
+                  status = "Completed successfully",
+                  action_label = action_label,
+                  menu_label = context$menu,
+                  tab_label = context$tab,
+                  parameters_df = parameter_df,
+                  detail = paste(filename_text, "download completed successfully.")
+                )
+                showNotification(
+                  "Seurat object download completed successfully.",
+                  type = "message",
+                  duration = 4
+                )
+              },
+              error = function(e) {
+                fail_run_status(paste("Download failed:", conditionMessage(e)))
+                append_run_log(
+                  entry_type = "Download",
+                  status = "Failed",
+                  action_label = action_label,
+                  menu_label = context$menu,
+                  tab_label = context$tab,
+                  parameters_df = parameter_df,
+                  detail = conditionMessage(e)
+                )
+                stop(e)
+              }
+            )
+          }
+        )
+      }
+    )
+  }
+  
   
 ############################################################################################################################################################
                                                                   ##    Multiple Input     ##
@@ -733,13 +1322,10 @@ server <- function(input, output, session) {
     paste(data[[4]])
   })
   
-  output$m_so_before_filtering<- downloadHandler(
-    filename = function(){
-      paste("seuart_object_before_qc.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_multiple_sample_level()[[5]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_so_before_filtering",
+    "seuart_object_before_qc.RDS",
+    function() datainput_multiple_sample_level()[[5]]
   )
   
   ###############link to next tab###########################      
@@ -1005,13 +1591,10 @@ server <- function(input, output, session) {
   )      
   
   ###################save seurat object after qc###################
-  output$m_so_after_filtering<- downloadHandler(
-    filename = function(){
-      paste("multiple_sample_seuart_object_after_qc.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_multiple_qc_filter_level()[[7]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_so_after_filtering",
+    "multiple_sample_seuart_object_after_qc.RDS",
+    function() datainput_multiple_qc_filter_level()[[7]]
   )
   
   ###############link to next tab###########################      
@@ -1215,13 +1798,10 @@ server <- function(input, output, session) {
   
   
   ###################save seurat object after normalization###################
-  output$m_normalization<- downloadHandler(
-    filename = function(){
-      paste("multiple_sample_seuart_object_after_normalization.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_multiple_normalization_pca_level()[[5]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_normalization",
+    "multiple_sample_seuart_object_after_normalization.RDS",
+    function() datainput_multiple_normalization_pca_level()[[5]]
   )
   
   #####################################link to next tab###########################      
@@ -1440,13 +2020,10 @@ server <- function(input, output, session) {
   ) 
   
   ###################save seurat object after clustering###################
-  output$m_clustering<- downloadHandler(
-    filename = function(){
-      paste("multiple_sample_seuart_object_after_clustering.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_multiple_clustering_level()[[10]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_clustering",
+    "multiple_sample_seuart_object_after_clustering.RDS",
+    function() datainput_multiple_clustering_level()[[10]]
   )
   
   
@@ -1827,13 +2404,10 @@ server <- function(input, output, session) {
     }
   )
   ###################save seurat object after doublet removal###################
-  output$m_doublet<- downloadHandler(
-    filename = function(){
-      paste("multiple_sample_seuart_object_after_doublet_removal.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_multiple_doublet2_level()[[10]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_doublet",
+    "multiple_sample_seuart_object_after_doublet_removal.RDS",
+    function() datainput_multiple_doublet2_level()[[10]]
   )
   
   #####################################link to next tab###########################     
@@ -1962,13 +2536,10 @@ server <- function(input, output, session) {
   
   
   ###################save seurat object after doublet removal###################
-  output$m_marker<- downloadHandler(
-    filename = function(){
-      paste("multiple_sample_seuart_object_after_marker_identification.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_multiple_marker_level()[[2]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_marker",
+    "multiple_sample_seuart_object_after_marker_identification.RDS",
+    function() datainput_multiple_marker_level()[[2]]
   )
   
   #####################################link to next tab###########################     
@@ -2026,7 +2597,7 @@ server <- function(input, output, session) {
   
   datainput_multiple_celltype_level <- eventReactive(input$multiple_sample_celltype,{
     source("scripts/multiple_celltype.R")
-    datainput_multiple_celltype(index_multiple_celltype_input = datainput_multiple_marker_level()[[2]], index_cell_markers = datainput_multiple_marker_level()[[1]], index_m_celltype1 = input$m_celltype1, index_m_celltype2 = input$m_celltype2, index_m_celltype3 = input$m_celltype3, index_m_celltype4 = input$m_celltype4, index_m_celltype5 = input$m_celltype5, index_m_celltype6 = input$m_celltype6, index_m_celltype7 = c(input$mcelltypenames0,input$mcelltypenames1,input$mcelltypenames2,input$mcelltypenames3,input$mcelltypenames4,input$mcelltypenames5,input$mcelltypenames6,input$mcelltypenames7,input$mcelltypenames8,input$mcelltypenames9,input$mcelltypenames10,input$mcelltypenames11,input$mcelltypenames12,input$mcelltypenames13,input$mcelltypenames14,input$mcelltypenames15,input$mcelltypenames16,input$mcelltypenames17,input$mcelltypenames18,input$mcelltypenames19,input$mcelltypenames20,input$mcelltypenames21,input$mcelltypenames22,input$mcelltypenames23,input$mcelltypenames24,input$mcelltypenames25,input$mcelltypenames26,input$mcelltypenames27,input$mcelltypenames28,input$mcelltypenames29,input$mcelltypenames30,input$mcelltypenames31,input$mcelltypenames32,input$mcelltypenames33,input$mcelltypenames34,input$mcelltypenames35,input$mcelltypenames36,input$mcelltypenames37,input$mcelltypenames38,input$mcelltypenames39,input$mcelltypenames40,input$mcelltypenames41,input$mcelltypenames42,input$mcelltypenames43,input$mcelltypenames44,input$mcelltypenames45,input$mcelltypenames46,input$mcelltypenames47,input$mcelltypenames48,input$mcelltypenames49,input$mcelltypenames50,input$mcelltypenames51,input$mcelltypenames52,input$mcelltypenames53,input$mcelltypenames54,input$mcelltypenames55,input$mcelltypenames56,input$mcelltypenames57,input$mcelltypenames58,input$mcelltypenames59,input$mcelltypenames60,input$mcelltypenames61,input$mcelltypenames62,input$mcelltypenames63,input$mcelltypenames64,input$mcelltypenames65,input$mcelltypenames66,input$mcelltypenames67,input$mcelltypenames68,input$mcelltypenames69,input$mcelltypenames70,input$mcelltypenames71,input$mcelltypenames72,input$mcelltypenames73,input$mcelltypenames74,input$mcelltypenames75,input$mcelltypenames76,input$mcelltypenames77,input$mcelltypenames78,input$mcelltypenames79,input$mcelltypenames80,input$mcelltypenames81,input$mcelltypenames82,input$mcelltypenames83,input$mcelltypenames84,input$mcelltypenames85,input$mcelltypenames86,input$mcelltypenames87,input$mcelltypenames88,input$mcelltypenames89,input$mcelltypenames90,input$mcelltypenames91,input$mcelltypenames92,input$mcelltypenames93,input$mcelltypenames94,input$mcelltypenames95,input$mcelltypenames96,input$mcelltypenames97,input$mcelltypenames98,input$mcelltypenames99), index_m_celltype8 = input$m_celltype8, index_m_clustering6 = input$m_clustering6, index_multiple_sample_normalization_method = input$multiple_sample_normalization_method)
+    datainput_multiple_celltype(index_multiple_celltype_input = datainput_multiple_marker_level()[[2]], index_cell_markers = datainput_multiple_marker_level()[[1]], index_m_celltype1 = input$m_celltype1, index_m_celltype2 = input$m_celltype2, index_m_celltype3 = input$m_celltype3, index_m_celltype4 = input$m_celltype4, index_m_celltype5 = input$m_celltype5, index_m_celltype6 = input$m_celltype6, index_m_celltype7 = c(input$mcelltypenames0,input$mcelltypenames1,input$mcelltypenames2,input$mcelltypenames3,input$mcelltypenames4,input$mcelltypenames5,input$mcelltypenames6,input$mcelltypenames7,input$mcelltypenames8,input$mcelltypenames9,input$mcelltypenames10,input$mcelltypenames11,input$mcelltypenames12,input$mcelltypenames13,input$mcelltypenames14,input$mcelltypenames15,input$mcelltypenames16,input$mcelltypenames17,input$mcelltypenames18,input$mcelltypenames19,input$mcelltypenames20,input$mcelltypenames21,input$mcelltypenames22,input$mcelltypenames23,input$mcelltypenames24,input$mcelltypenames25,input$mcelltypenames26,input$mcelltypenames27,input$mcelltypenames28,input$mcelltypenames29,input$mcelltypenames30,input$mcelltypenames31,input$mcelltypenames32,input$mcelltypenames33,input$mcelltypenames34,input$mcelltypenames35,input$mcelltypenames36,input$mcelltypenames37,input$mcelltypenames38,input$mcelltypenames39,input$mcelltypenames40,input$mcelltypenames41,input$mcelltypenames42,input$mcelltypenames43,input$mcelltypenames44,input$mcelltypenames45,input$mcelltypenames46,input$mcelltypenames47,input$mcelltypenames48,input$mcelltypenames49,input$mcelltypenames50,input$mcelltypenames51,input$mcelltypenames52,input$mcelltypenames53,input$mcelltypenames54,input$mcelltypenames55,input$mcelltypenames56,input$mcelltypenames57,input$mcelltypenames58,input$mcelltypenames59,input$mcelltypenames60,input$mcelltypenames61,input$mcelltypenames62,input$mcelltypenames63,input$mcelltypenames64,input$mcelltypenames65,input$mcelltypenames66,input$mcelltypenames67,input$mcelltypenames68,input$mcelltypenames69,input$mcelltypenames70,input$mcelltypenames71,input$mcelltypenames72,input$mcelltypenames73,input$mcelltypenames74,input$mcelltypenames75,input$mcelltypenames76,input$mcelltypenames77,input$mcelltypenames78,input$mcelltypenames79,input$mcelltypenames80,input$mcelltypenames81,input$mcelltypenames82,input$mcelltypenames83,input$mcelltypenames84,input$mcelltypenames85,input$mcelltypenames86,input$mcelltypenames87,input$mcelltypenames88,input$mcelltypenames89,input$mcelltypenames90,input$mcelltypenames91,input$mcelltypenames92,input$mcelltypenames93,input$mcelltypenames94,input$mcelltypenames95,input$mcelltypenames96,input$mcelltypenames97,input$mcelltypenames98,input$mcelltypenames99), index_m_celltype8 = input$m_celltype8, index_m_celltype9 = input$m_celltype_splitby, index_m_clustering6 = input$m_clustering6, index_multiple_sample_normalization_method = input$multiple_sample_normalization_method)
   })
   output$m_celltype1_plot<-renderPlot({
     datainput_multiple_celltype_level()[5]
@@ -2126,13 +2697,10 @@ server <- function(input, output, session) {
  
   
   ###################save seurat object after doublet###################
-  output$m_celltype<- downloadHandler(
-    filename = function(){
-      paste("multiple_sample_seuart_object_after_celltypes.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_multiple_celltype_level()[[1]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_celltype",
+    "multiple_sample_seuart_object_after_celltypes.RDS",
+    function() datainput_multiple_celltype_level()[[1]]
   )
   #####################################link to next tab###########################     
   observeEvent(input$link_m_clusterbased, {
@@ -2273,13 +2841,10 @@ server <- function(input, output, session) {
   
   
   ###################save seurat object after doublet###################
-  output$m_clusterbased <- downloadHandler(
-    filename = function(){
-      paste("multiple_sample_seuart_object_after_plots.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_multiple_clusterbased_level()[[2]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_clusterbased",
+    "multiple_sample_seuart_object_after_plots.RDS",
+    function() datainput_multiple_clusterbased_level()[[2]]
   )
   
   #####################################link to next tab###########################     
@@ -2397,13 +2962,10 @@ server <- function(input, output, session) {
   
   
   ###################save seurat object after doublet###################
-  output$m_conditionbased <- downloadHandler(
-    filename = function(){
-      paste("multiple_sample_seuart_object_after_plots.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_multiple_conditionbased_level()[[3]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_conditionbased",
+    "multiple_sample_seuart_object_after_plots.RDS",
+    function() datainput_multiple_conditionbased_level()[[3]]
   )
   
   
@@ -2897,13 +3459,10 @@ server <- function(input, output, session) {
   
   
   ###################save seurat object before qc###################
-  output$m_subclustering_stats<- downloadHandler(
-    filename = function(){
-      paste("multiple_sample_subclustering_seuart_object.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_subclustering_multiple_sample_level()[[3]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_subclustering_stats",
+    "multiple_sample_subclustering_seuart_object.RDS",
+    function() datainput_subclustering_multiple_sample_level()[[3]]
   )
   ###############link to next tab###########################      
   observeEvent(input$link_m_subclustering_normalization, {
@@ -3039,13 +3598,10 @@ server <- function(input, output, session) {
   
   
   ###################save seurat object after normalization###################
-  output$m_subclustering_normalization<- downloadHandler(
-    filename = function(){
-      paste("subclustering_multiple_sample_seuart_object_after_normalization.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_subclustering_multiple_normalization_pca_level()[[5]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_subclustering_normalization",
+    "subclustering_multiple_sample_seuart_object_after_normalization.RDS",
+    function() datainput_subclustering_multiple_normalization_pca_level()[[5]]
   )
   
   #####################################link to next tab###########################      
@@ -3297,13 +3853,10 @@ server <- function(input, output, session) {
   )	  
   
   ###################save seurat object after clustering###################
-  output$m_subclustering_clustering<- downloadHandler(
-    filename = function(){
-      paste("subclustering_multiple_sample_seuart_object_after_clustering.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_subclustering_multiple_clustering_level()[[10]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_subclustering_clustering",
+    "subclustering_multiple_sample_seuart_object_after_clustering.RDS",
+    function() datainput_subclustering_multiple_clustering_level()[[10]]
   )
   
   
@@ -3433,13 +3986,10 @@ server <- function(input, output, session) {
   
   
   ###################save seurat object after doublet removal###################
-  output$m_subclustering_marker<- downloadHandler(
-    filename = function(){
-      paste("subclustering_multiple_sample_seuart_object_after_marker_identification.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_subclustering_multiple_marker_level()[[2]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_subclustering_marker",
+    "subclustering_multiple_sample_seuart_object_after_marker_identification.RDS",
+    function() datainput_subclustering_multiple_marker_level()[[2]]
   )
   
   #####################################link to next tab###########################     
@@ -3498,8 +4048,8 @@ server <- function(input, output, session) {
   datainput_subclustering_multiple_celltype_level <- eventReactive(input$subclustering_multiple_sample_celltype,{
     source("scripts/subclustering_multiple_celltype.R")
     datainput_subclustering_multiple_celltype(index_subclustering_multiple_celltype_input = datainput_subclustering_multiple_marker_level()[[2]], index_cell_markers = datainput_subclustering_multiple_marker_level()[[1]], index_m_subclustering_celltype1 = input$m_subclustering_celltype1, index_m_subclustering_celltype2 = input$m_subclustering_celltype2, index_m_subclustering_celltype3 = input$m_subclustering_celltype3, index_m_subclustering_celltype4 = input$m_subclustering_celltype4, index_m_subclustering_celltype5 = input$m_subclustering_celltype5, index_m_subclustering_celltype6 = input$m_subclustering_celltype6, 
-                                              index_m_subclustering_celltype7 = c(input$subclustering_mcelltypenames0,input$subclustering_mcelltypenames1,input$subclustering_mcelltypenames2,input$subclustering_mcelltypenames3,input$subclustering_mcelltypenames4,input$subclustering_mcelltypenames5,input$subclustering_mcelltypenames6,input$subclustering_mcelltypenames7,input$subclustering_mcelltypenames8,input$subclustering_mcelltypenames9,input$subclustering_mcelltypenames10,input$subclustering_mcelltypenames11,input$subclustering_mcelltypenames12,input$subclustering_mcelltypenames13,input$subclustering_mcelltypenames14,input$subclustering_mcelltypenames15,input$subclustering_mcelltypenames16,input$subclustering_mcelltypenames17,input$subclustering_mcelltypenames18,input$subclustering_mcelltypenames19,input$subclustering_mcelltypenames20,input$subclustering_mcelltypenames21,input$subclustering_mcelltypenames22,input$subclustering_mcelltypenames23,input$subclustering_mcelltypenames24,input$subclustering_mcelltypenames25,input$subclustering_mcelltypenames26,input$subclustering_mcelltypenames27,input$subclustering_mcelltypenames28,input$subclustering_mcelltypenames29,input$subclustering_mcelltypenames30,input$subclustering_mcelltypenames31,input$subclustering_mcelltypenames32,input$subclustering_mcelltypenames33,input$subclustering_mcelltypenames34,input$subclustering_mcelltypenames35,input$subclustering_mcelltypenames36,input$subclustering_mcelltypenames37,input$subclustering_mcelltypenames38,input$subclustering_mcelltypenames39,input$subclustering_mcelltypenames40,input$subclustering_mcelltypenames41,input$subclustering_mcelltypenames42,input$subclustering_mcelltypenames43,input$subclustering_mcelltypenames44,input$subclustering_mcelltypenames45,input$subclustering_mcelltypenames46,input$subclustering_mcelltypenames47,input$subclustering_mcelltypenames48,input$subclustering_mcelltypenames49,input$subclustering_mcelltypenames50,input$subclustering_mcelltypenames51,input$subclustering_mcelltypenames52,input$subclustering_mcelltypenames53,input$subclustering_mcelltypenames54,input$subclustering_mcelltypenames55,input$subclustering_mcelltypenames56,input$subclustering_mcelltypenames57,input$subclustering_mcelltypenames58,input$subclustering_mcelltypenames59,input$subclustering_mcelltypenames60,input$subclustering_mcelltypenames61,input$subclustering_mcelltypenames62,input$subclustering_mcelltypenames63,input$subclustering_mcelltypenames64,input$subclustering_mcelltypenames65,input$subclustering_mcelltypenames66,input$subclustering_mcelltypenames67,input$subclustering_mcelltypenames68,input$subclustering_mcelltypenames69,input$subclustering_mcelltypenames70,input$subclustering_mcelltypenames71,input$subclustering_mcelltypenames72,input$subclustering_mcelltypenames73,input$subclustering_mcelltypenames74,input$subclustering_mcelltypenames75,input$subclustering_mcelltypenames76,input$subclustering_mcelltypenames77,input$subclustering_mcelltypenames78,input$subclustering_mcelltypenames79,input$subclustering_mcelltypenames80,input$subclustering_mcelltypenames81,input$subclustering_mcelltypenames82,input$subclustering_mcelltypenames83,input$subclustering_mcelltypenames84,input$subclustering_mcelltypenames85,input$subclustering_mcelltypenames86,input$subclustering_mcelltypenames87,input$subclustering_mcelltypenames88,input$subclustering_mcelltypenames89,input$subclustering_mcelltypenames90,input$subclustering_mcelltypenames91,input$subclustering_mcelltypenames92,input$subclustering_mcelltypenames93,input$subclustering_mcelltypenames94,input$subclustering_mcelltypenames95,input$subclustering_mcelltypenames96,input$subclustering_mcelltypenames97,input$subclustering_mcelltypenames98,input$subclustering_mcelltypenames99), 
-                                              index_m_subclustering_celltype8 = input$m_subclustering_celltype8, index_m_subclustering_clustering6 = input$m_subclustering_clustering6, index_subclustering_multiple_sample_normalization_method = input$subclustering_multiple_sample_normalization_method)
+                                               index_m_subclustering_celltype7 = c(input$subclustering_mcelltypenames0,input$subclustering_mcelltypenames1,input$subclustering_mcelltypenames2,input$subclustering_mcelltypenames3,input$subclustering_mcelltypenames4,input$subclustering_mcelltypenames5,input$subclustering_mcelltypenames6,input$subclustering_mcelltypenames7,input$subclustering_mcelltypenames8,input$subclustering_mcelltypenames9,input$subclustering_mcelltypenames10,input$subclustering_mcelltypenames11,input$subclustering_mcelltypenames12,input$subclustering_mcelltypenames13,input$subclustering_mcelltypenames14,input$subclustering_mcelltypenames15,input$subclustering_mcelltypenames16,input$subclustering_mcelltypenames17,input$subclustering_mcelltypenames18,input$subclustering_mcelltypenames19,input$subclustering_mcelltypenames20,input$subclustering_mcelltypenames21,input$subclustering_mcelltypenames22,input$subclustering_mcelltypenames23,input$subclustering_mcelltypenames24,input$subclustering_mcelltypenames25,input$subclustering_mcelltypenames26,input$subclustering_mcelltypenames27,input$subclustering_mcelltypenames28,input$subclustering_mcelltypenames29,input$subclustering_mcelltypenames30,input$subclustering_mcelltypenames31,input$subclustering_mcelltypenames32,input$subclustering_mcelltypenames33,input$subclustering_mcelltypenames34,input$subclustering_mcelltypenames35,input$subclustering_mcelltypenames36,input$subclustering_mcelltypenames37,input$subclustering_mcelltypenames38,input$subclustering_mcelltypenames39,input$subclustering_mcelltypenames40,input$subclustering_mcelltypenames41,input$subclustering_mcelltypenames42,input$subclustering_mcelltypenames43,input$subclustering_mcelltypenames44,input$subclustering_mcelltypenames45,input$subclustering_mcelltypenames46,input$subclustering_mcelltypenames47,input$subclustering_mcelltypenames48,input$subclustering_mcelltypenames49,input$subclustering_mcelltypenames50,input$subclustering_mcelltypenames51,input$subclustering_mcelltypenames52,input$subclustering_mcelltypenames53,input$subclustering_mcelltypenames54,input$subclustering_mcelltypenames55,input$subclustering_mcelltypenames56,input$subclustering_mcelltypenames57,input$subclustering_mcelltypenames58,input$subclustering_mcelltypenames59,input$subclustering_mcelltypenames60,input$subclustering_mcelltypenames61,input$subclustering_mcelltypenames62,input$subclustering_mcelltypenames63,input$subclustering_mcelltypenames64,input$subclustering_mcelltypenames65,input$subclustering_mcelltypenames66,input$subclustering_mcelltypenames67,input$subclustering_mcelltypenames68,input$subclustering_mcelltypenames69,input$subclustering_mcelltypenames70,input$subclustering_mcelltypenames71,input$subclustering_mcelltypenames72,input$subclustering_mcelltypenames73,input$subclustering_mcelltypenames74,input$subclustering_mcelltypenames75,input$subclustering_mcelltypenames76,input$subclustering_mcelltypenames77,input$subclustering_mcelltypenames78,input$subclustering_mcelltypenames79,input$subclustering_mcelltypenames80,input$subclustering_mcelltypenames81,input$subclustering_mcelltypenames82,input$subclustering_mcelltypenames83,input$subclustering_mcelltypenames84,input$subclustering_mcelltypenames85,input$subclustering_mcelltypenames86,input$subclustering_mcelltypenames87,input$subclustering_mcelltypenames88,input$subclustering_mcelltypenames89,input$subclustering_mcelltypenames90,input$subclustering_mcelltypenames91,input$subclustering_mcelltypenames92,input$subclustering_mcelltypenames93,input$subclustering_mcelltypenames94,input$subclustering_mcelltypenames95,input$subclustering_mcelltypenames96,input$subclustering_mcelltypenames97,input$subclustering_mcelltypenames98,input$subclustering_mcelltypenames99), 
+                                              index_m_subclustering_celltype8 = input$m_subclustering_celltype8, index_m_subclustering_celltype9 = input$m_subclustering_celltype_splitby, index_m_subclustering_clustering6 = input$m_subclustering_clustering6, index_subclustering_multiple_sample_normalization_method = input$subclustering_multiple_sample_normalization_method)
   })
   output$m_subclustering_celltype1_plot<-renderPlot({
     datainput_subclustering_multiple_celltype_level()[5]
@@ -3599,13 +4149,10 @@ server <- function(input, output, session) {
   
   
   ###################save seurat object after doublet###################
-  output$m_subclustering_celltype<- downloadHandler(
-    filename = function(){
-      paste("subclustering_multiple_sample_seuart_object_after_celltypes.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_subclustering_multiple_celltype_level()[[1]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_subclustering_celltype",
+    "subclustering_multiple_sample_seuart_object_after_celltypes.RDS",
+    function() datainput_subclustering_multiple_celltype_level()[[1]]
   )
   #####################################link to next tab###########################     
   observeEvent(input$link_m_subclustering_clusterbased, {
@@ -3740,13 +4287,10 @@ server <- function(input, output, session) {
   
   
   ###################save seurat object after doublet###################
-  output$m_subclustering_clusterbased <- downloadHandler(
-    filename = function(){
-      paste("subclustering_multiple_sample_seuart_object_after_plots.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_subclustering_multiple_clusterbased_level()[[2]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_subclustering_clusterbased",
+    "subclustering_multiple_sample_seuart_object_after_plots.RDS",
+    function() datainput_subclustering_multiple_clusterbased_level()[[2]]
   )
   
   #####################################link to next tab###########################     
@@ -3862,13 +4406,10 @@ server <- function(input, output, session) {
   
   
   ###################save seurat object after doublet###################
-  output$m_subclustering_conditionbased <- downloadHandler(
-    filename = function(){
-      paste("subclustering_multiple_sample_seuart_object_after_plots.RDS")
-    },
-    content = function(file){
-      saveRDS(datainput_subclustering_multiple_conditionbased_level()[[3]], file= file, compress = TRUE)
-    }
+  register_seurat_object_download(
+    "m_subclustering_conditionbased",
+    "subclustering_multiple_sample_seuart_object_after_plots.RDS",
+    function() datainput_subclustering_multiple_conditionbased_level()[[3]]
   )
   
   
@@ -4296,6 +4837,51 @@ server <- function(input, output, session) {
   shinyjs::hide("s_gsea_box2")
   shinyjs::hide("s_gsea_box3")
   
+  gsea_collection_choices <- list(
+    "Homo sapiens" = c(
+      "Hallmark gene sets (H)" = "H",
+      "Positional gene sets (C1)" = "C1",
+      "Curated gene sets (C2)" = "C2",
+      "Regulatory target gene sets (C3)" = "C3",
+      "Computational gene sets (C4)" = "C4",
+      "Ontology gene sets (C5)" = "C5",
+      "Oncogenic signature gene sets (C6)" = "C6",
+      "Immunologic signature gene sets (C7)" = "C7",
+      "Cell type signature gene sets (C8)" = "C8"
+    ),
+    "Mus musculus" = c(
+      "Hallmark gene sets (MH)" = "MH",
+      "Positional gene sets (M1)" = "M1",
+      "Curated gene sets (M2)" = "M2",
+      "Regulatory target gene sets (M3)" = "M3",
+      "Ontology gene sets (M5)" = "M5",
+      "Immunologic signature gene sets (M7)" = "M7",
+      "Cell type signature gene sets (M8)" = "M8"
+    )
+  )
+  
+  observeEvent(input$s_gsea5, {
+    available_choices <- gsea_collection_choices[[input$s_gsea5 %||% "Homo sapiens"]] %||% gsea_collection_choices[["Homo sapiens"]]
+    available_values <- unname(available_choices)
+    current_value <- isolate(input$s_gsea6)
+    default_value <- if (identical(input$s_gsea5, "Mus musculus")) "M2" else "C2"
+    selected_value <- if (!is.null(current_value) && current_value %in% available_values) {
+      current_value
+    } else if (default_value %in% available_values) {
+      default_value
+    } else {
+      available_values[1]
+    }
+    
+    updateSelectInput(
+      session,
+      inputId = "s_gsea6",
+      label = "Collection (from MSigDB)",
+      choices = available_choices,
+      selected = selected_value
+    )
+  }, ignoreInit = FALSE)
+  
  
   observeEvent(input$multiple_sample_celltype, {
     if(input$m_marker1 == 1){
@@ -4381,8 +4967,105 @@ server <- function(input, output, session) {
   })
   
   datainput_single_multiple_sample_gsea_level <- eventReactive(input$single_multiple_sample_gsea,{
-    source("scripts/gsea.R")
-    datainput_single_multiple_sample_gsea(index_multiple_sample_gsea_input = datainput_multiple_celltype_level()[[1]], index_subclustering_multiple_sample_gsea_input = datainput_subclustering_multiple_celltype_level()[[1]], index_multiple_sample_gsea_input2 = datainput_multiple_celltype_level()[[4]], index_subclustering_multiple_sample_gsea_input2 = datainput_subclustering_multiple_celltype_level()[[4]], index_multiple_sample_gsea_input3 = datainput_multiple_marker_level()[[1]], index_subclustering_multiple_sample_gsea_input3 = datainput_subclustering_multiple_marker_level()[[1]], index_s_gsea1 = input$s_gsea1, index_s_gsea2 = input$s_gsea2, index_s_gsea3 = input$s_gsea3, index_s_gsea4 = input$s_gsea4, index_s_gsea5 = input$s_gsea5, index_s_gsea6 = input$s_gsea6, index_s_gsea7 = input$s_gsea7, index_s_gsea8 = input$s_gsea8, index_s_gsea9 = input$s_gsea9, index_s_gsea10 = input$s_gsea10, index_s_gsea11 = input$s_gsea11,index_s_gsea12= input$s_gsea12)
+    context <- get_active_navigation_context()
+    action_label <- button_label_map[["single_multiple_sample_gsea"]] %||% "GSEA analysis"
+    parameter_df <- collect_menu_parameters(context$menu, context$tab)
+    latest_run_params(parameter_df)
+    
+    start_run_status(
+      action_label = action_label,
+      menu_label = context$menu,
+      tab_label = context$tab,
+      message = "Loading GSEA inputs."
+    )
+    append_run_log(
+      entry_type = "Analysis",
+      status = "Loading",
+      action_label = action_label,
+      menu_label = context$menu,
+      tab_label = context$tab,
+      parameters_df = parameter_df,
+      detail = "Loading analysis inputs."
+    )
+    
+    withProgress(message = "Running GSEA analysis", value = 0, style = "notification", {
+      progress_value <- 0
+      progress_callback <- function(value = NULL, detail = NULL) {
+        target_value <- progress_value
+        if (!is.null(value) && is.finite(value)) {
+          target_value <- max(progress_value, min(1, as.numeric(value)))
+        }
+        
+        if (target_value > progress_value) {
+          incProgress(target_value - progress_value, detail = detail %||% run_status$message)
+          progress_value <<- target_value
+        } else if (!is.null(detail) && nzchar(detail)) {
+          incProgress(0, detail = detail)
+        }
+        
+        update_run_status(
+          status = if (target_value < 0.4) "Loading" else "Running",
+          progress = round(progress_value * 100),
+          message = detail %||% "Running GSEA analysis."
+        )
+      }
+      
+      progress_callback(0.05, "Loading the GSEA module.")
+      source("scripts/gsea.R")
+      
+      result <- tryCatch(
+        {
+          datainput_single_multiple_sample_gsea(
+            index_multiple_sample_gsea_input = datainput_multiple_celltype_level()[[1]],
+            index_subclustering_multiple_sample_gsea_input = datainput_subclustering_multiple_celltype_level()[[1]],
+            index_multiple_sample_gsea_input2 = datainput_multiple_celltype_level()[[4]],
+            index_subclustering_multiple_sample_gsea_input2 = datainput_subclustering_multiple_celltype_level()[[4]],
+            index_multiple_sample_gsea_input3 = datainput_multiple_marker_level()[[1]],
+            index_subclustering_multiple_sample_gsea_input3 = datainput_subclustering_multiple_marker_level()[[1]],
+            index_s_gsea1 = input$s_gsea1,
+            index_s_gsea2 = input$s_gsea2,
+            index_s_gsea3 = input$s_gsea3,
+            index_s_gsea4 = input$s_gsea4,
+            index_s_gsea5 = input$s_gsea5,
+            index_s_gsea6 = input$s_gsea6,
+            index_s_gsea7 = input$s_gsea7,
+            index_s_gsea8 = input$s_gsea8,
+            index_s_gsea9 = input$s_gsea9,
+            index_s_gsea10 = input$s_gsea10,
+            index_s_gsea11 = input$s_gsea11,
+            index_s_gsea12 = input$s_gsea12,
+            progress_callback = progress_callback
+          )
+        },
+        error = function(e) {
+          fail_run_status(conditionMessage(e))
+          append_run_log(
+            entry_type = "Analysis",
+            status = "Failed",
+            action_label = action_label,
+            menu_label = context$menu,
+            tab_label = context$tab,
+            parameters_df = parameter_df,
+            detail = conditionMessage(e)
+          )
+          stop(e)
+        }
+      )
+      
+      progress_callback(1, "GSEA analysis completed successfully.")
+      complete_run_status("GSEA analysis completed successfully.")
+      append_run_log(
+        entry_type = "Analysis",
+        status = "Completed successfully",
+        action_label = action_label,
+        menu_label = context$menu,
+        tab_label = context$tab,
+        parameters_df = parameter_df,
+        detail = "GSEA analysis completed successfully."
+      )
+      
+      result
+    })
   })  
   
   output$s_gsea1_plot<-renderPlot({
@@ -4840,7 +5523,7 @@ observe({
                                                              #bFilter=0
                                                            ),rownames= FALSE, selection = "none"))
   
-  output$download_s_cellchat7_table <- downloadHandler(
+  output$download_s_cellchat2_table <- downloadHandler(
     filename = function() { 
       paste("cellchat_summary_table_", input$s_cellchat10, '.csv', sep='') },
     content = function(file){
@@ -5283,20 +5966,16 @@ observe({
   })
   
   observeEvent(input$single_multiple_sample_hdwgcna, {
-    files_to_delete <- c(
-      "www/combined_output.pdf",
-      "www/PlotDendrogram.pdf",
-      "www/ModuleUMAPPlot.pdf",
-      "www/PlotModuleCorrelogram.pdf"
+    files_to_delete <- list.files(
+      path = file.path(getwd(), "www"),
+      pattern = "^(combined_output|PlotDendrogram|ModuleUMAPPlot|PlotModuleCorrelogram)_.*\\.pdf$",
+      full.names = TRUE
     )
     
-    for (file in files_to_delete) {
-      full_path <- file.path(getwd(), file)
+    for (full_path in files_to_delete) {
       if (file.exists(full_path)) {
         unlink(full_path)
         cat("Deleted:", full_path, "\n")
-      } else {
-        cat("File not found, skipping:", full_path, "\n")
       }
     }
   })
@@ -5361,13 +6040,13 @@ observe({
   # })
   
   output$s_hdwgcna3_plot <- shiny::renderUI({
-    # Construct the path to the PDF
-    pdf_path <- file.path(datainput_single_multiple_sample_hdwgcna_level()[6],"/www/")
+    pdf_name <- datainput_single_multiple_sample_hdwgcna_level()[["dendrogram_file"]]
+    pdf_path <- file.path(datainput_single_multiple_sample_hdwgcna_level()[[6]], "www", pdf_name)
     
     # Ensure the file exists before rendering
     if (file.exists(pdf_path)) {
       tags$iframe(
-        src = "PlotDendrogram.pdf",  # Use 'file:///' for local paths
+        src = paste0(pdf_name, "?v=", as.integer(file.info(pdf_path)$mtime)),
         style = "width:100%; height:600px;",
         frameborder = 1
       )
@@ -5428,13 +6107,13 @@ observe({
   )
   
   output$s_hdwgcna6_plot <- renderUI({
-    # Construct the path to the PDF
-    pdf_path <- file.path(datainput_single_multiple_sample_hdwgcna_level()[6],"/www/")
+    pdf_name <- datainput_single_multiple_sample_hdwgcna_level()[["correlogram_file"]]
+    pdf_path <- file.path(datainput_single_multiple_sample_hdwgcna_level()[[6]], "www", pdf_name)
     
     # Ensure the file exists before rendering
     if (file.exists(pdf_path)) {
       tags$iframe(
-        src = "PlotModuleCorrelogram.pdf",  # Use 'file:///' for local paths
+        src = paste0(pdf_name, "?v=", as.integer(file.info(pdf_path)$mtime)),
         style = "width:100%; height:600px;",
         frameborder = 1
       )
@@ -5479,14 +6158,14 @@ observe({
   )
   
   output$s_hdwgcna8_plot <- renderUI({
-     # Construct the path to the PDF
-    pdf_path <- file.path(datainput_single_multiple_sample_hdwgcna_level()[6],"/www/")
+    pdf_name <- datainput_single_multiple_sample_hdwgcna_level()[["module_networks_file"]]
+    pdf_path <- file.path(datainput_single_multiple_sample_hdwgcna_level()[[6]], "www", pdf_name)
     
     
     # Ensure the file exists before rendering
     if (file.exists(pdf_path)) {
       tags$iframe(
-        src = "combined_output.pdf" ,  
+        src = paste0(pdf_name, "?v=", as.integer(file.info(pdf_path)$mtime)) ,  
         style = "width:100%; height:600px;",
         frameborder = 1
       )
@@ -5499,13 +6178,13 @@ observe({
   
   
   output$s_hdwgcna9_plot <- renderUI({
-    # Construct the path to the PDF
-    pdf_path <- file.path(datainput_single_multiple_sample_hdwgcna_level()[6],"/www/")
+    pdf_name <- datainput_single_multiple_sample_hdwgcna_level()[["module_umap_file"]]
+    pdf_path <- file.path(datainput_single_multiple_sample_hdwgcna_level()[[6]], "www", pdf_name)
 
     # Ensure the file exists before rendering
     if (file.exists(pdf_path)) {
       tags$iframe(
-        src = "ModuleUMAPPlot.pdf" ,
+        src = paste0(pdf_name, "?v=", as.integer(file.info(pdf_path)$mtime)) ,
         style = "width:100%; height:600px;",
         frameborder = 1
       )
@@ -5863,6 +6542,36 @@ observe({
       saveRDS(datainput_single_multiple_sample_tfrn2_level()[6], file= file, compress = TRUE)
     }
   ) 
+  
+  observe_analysis_status("multiple_sample_submit", function() datainput_multiple_sample_level())
+  observe_analysis_status("multiple_sample_qc_filtering", function() datainput_multiple_qc_filter_level())
+  observe_analysis_status("multiple_sample_normalization", function() datainput_multiple_normalization_pca_level())
+  observe_analysis_status("multiple_sample_clustering", function() datainput_multiple_clustering_level())
+  observe_analysis_status("multiple_sample_doublet", function() datainput_multiple_doublet_level())
+  observe_analysis_status("multiple_sample_doublet2", function() datainput_multiple_doublet2_level())
+  observe_analysis_status("multiple_sample_marker", function() datainput_multiple_marker_level())
+  observe_analysis_status("multiple_sample_celltype", function() datainput_multiple_celltype_level())
+  observe_analysis_status("multiple_sample_clusterbased", function() datainput_multiple_clusterbased_level())
+  observe_analysis_status("multiple_sample_conditionbased", function() datainput_multiple_conditionbased_level())
+  observe_analysis_status("subclustering_multiple_sample_submit", function() datainput_subclustering_multiple_sample_level())
+  observe_analysis_status("subclustering_multiple_sample_normalization", function() datainput_subclustering_multiple_normalization_pca_level())
+  observe_analysis_status("subclustering_multiple_sample_clustering", function() datainput_subclustering_multiple_clustering_level())
+  observe_analysis_status("subclustering_multiple_sample_marker", function() datainput_subclustering_multiple_marker_level())
+  observe_analysis_status("subclustering_multiple_sample_celltype", function() datainput_subclustering_multiple_celltype_level())
+  observe_analysis_status("subclustering_multiple_sample_clusterbased", function() datainput_subclustering_multiple_clusterbased_level())
+  observe_analysis_status("subclustering_multiple_sample_conditionbased", function() datainput_subclustering_multiple_conditionbased_level())
+  observe_analysis_status("single_multiple_sample_cccn", function() datainput_single_multiple_sample_cccn_level())
+  observe_analysis_status("single_multiple_sample_go", function() datainput_single_multiple_sample_go_level())
+  observe_analysis_status("single_multiple_sample_pathway", function() datainput_single_multiple_sample_pathway_level())
+  observe_analysis_status("single_multiple_sample_cellchat1", function() datainput_single_multiple_sample_cellchat1_level())
+  observe_analysis_status("single_multiple_sample_cellchat2", function() datainput_single_multiple_sample_cellchat2_level())
+  observe_analysis_status("single_multiple_sample_trajectory1", function() datainput_single_multiple_sample_trajectory1_level())
+  observe_analysis_status("single_multiple_sample_trajectory2", function() datainput_single_multiple_sample_trajectory2_level())
+  observe_analysis_status("single_multiple_sample_trajectory3", function() datainput_single_multiple_sample_trajectory3_level())
+  observe_analysis_status("single_multiple_sample_trajectory4", function() datainput_single_multiple_sample_trajectory4_level())
+  observe_analysis_status("single_multiple_sample_hdwgcna", function() datainput_single_multiple_sample_hdwgcna_level())
+  observe_analysis_status("single_multiple_sample_tfrn1", function() datainput_single_multiple_sample_tfrn1_level())
+  observe_analysis_status("single_multiple_sample_tfrn2", function() datainput_single_multiple_sample_tfrn2_level())
   
   
   
@@ -6243,7 +6952,7 @@ observe({
 <li><b>Celltype method</b> (Default: Seurat clusters) – Clustering source for gene selection. (Seurat clusters or predicted).</li>
 <li><b>Select one or multiple cluster(s) for analsysis</b> (Default:0) – Select one or multiple clusters.</li>
 <li><b>Organism</b> (Default: Homo sapiens) – Species-specific gene set database. (Homo sapiens, Mus musculus).</li>
-<li><b>MSigDB category</b> (Default: Hallmark gene sets (H)) – Gene set collection from MSigDB. (H, C1, C2, C3, C4, C5, C6, C7, C8).</li>
+<li><b>MSigDB collection</b> (Default: C2 for human or M2 for mouse) – Human uses H and C1-C8; mouse uses MH, M1, M2, M3, M5, M7, and M8.</li>
 <li><b>ScoreType</b> (Default: std) – Controls whether to score all, positive or negative enrichment. (std, pos, neg.).</li>
 <li><b>Minimal gene size</b> (Default: 15, Min: 5, Max: 500) – Minimum genes per gene set.</li>
 <li><b>Maximal gene size</b> (Default: 50, Min: 15, Max: 5000) – Maximum genes per gene set.</li>
