@@ -70,23 +70,20 @@ if (!require("EnsDb.Hsapiens.v86"))BiocManager::install("EnsDb.Hsapiens.v86", up
 if (!require("EnsDb.Mmusculus.v79"))BiocManager::install("EnsDb.Mmusculus.v79", update = FALSE)
 if (!require("BSgenome.Hsapiens.UCSC.hg38"))BiocManager::install("BSgenome.Hsapiens.UCSC.hg38", update = FALSE)
 if (!require("BSgenome.Mmusculus.UCSC.mm10"))BiocManager::install("BSgenome.Mmusculus.UCSC.mm10", update = FALSE)
+## GitHub packages ##
+if (!require("DoubletFinder")) remotes::install_github("chris-mcginnis-ucsf/DoubletFinder", upgrade = "never", dependencies = TRUE)
+if (!require("GPTCelltype")) remotes::install_github("Winnie09/GPTCelltype", upgrade = "never", dependencies = TRUE)
+if (!require("presto")) remotes::install_github("immunogenomics/presto", upgrade = "never", dependencies = TRUE)
+if (!require("monocle3")) remotes::install_github("cole-trapnell-lab/monocle3", upgrade = "never", dependencies = TRUE)
+if (!require("SeuratWrappers")) remotes::install_github("satijalab/seurat-wrappers", upgrade = "never", dependencies = TRUE)
+if (!require("SeuratDisk")) remotes::install_github("mojaveazure/seurat-disk", upgrade = "never", dependencies = TRUE)
+if (!require("CellChat")) remotes::install_github("jinworks/CellChat", upgrade = "never", dependencies = TRUE)
+if (!require("genesorteR")) remotes::install_github("mahmoudibrahim/genesorteR", upgrade = "never", dependencies = TRUE)
+if (!require("hdWGCNA")) remotes::install_github("smorabit/hdWGCNA", upgrade = "never", dependencies = TRUE)
 source("scripts/PrctCellExpringGene.R")
 options(shiny.maxRequestSize=2000*1024^2)
 options(future.globals.maxSize= 925289600000)
 Sys.setenv(OPENAI_API_KEY = '')  #Add your key here
-
-optional_github_pkgs <- c(
-  "DoubletFinder",
-  "GPTCelltype",
-  "presto",
-  "monocle3",
-  "SeuratWrappers",
-  "SeuratDisk",
-  "CellChat",
-  "genesorteR",
-  "enrichR",
-  "hdWGCNA"
-)
 
 for (pkg in optional_github_pkgs) {
   suppressWarnings(suppressPackageStartupMessages(require(pkg, character.only = TRUE, quietly = TRUE)))
