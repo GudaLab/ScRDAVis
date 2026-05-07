@@ -85,6 +85,10 @@ options(shiny.maxRequestSize=2000*1024^2)
 options(future.globals.maxSize= 925289600000)
 Sys.setenv(OPENAI_API_KEY = '')  #Add your key here
 
+optional_github_pkgs <- c(
+   "enrichR",
+)
+
 for (pkg in optional_github_pkgs) {
   suppressWarnings(suppressPackageStartupMessages(require(pkg, character.only = TRUE, quietly = TRUE)))
 }
