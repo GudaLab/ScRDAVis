@@ -266,6 +266,7 @@ server <- function(input, output, session) {
     started_at = "",
     completed_at = ""
   )
+  completed_analysis <- reactiveValues()
   run_status_widget_dismissed <- reactiveVal(TRUE)
   
   append_run_log <- function(entry_type, status, action_label, menu_label, tab_label, parameters_df = NULL, detail = "") {
@@ -472,6 +473,7 @@ server <- function(input, output, session) {
       parameter_df <- collect_menu_parameters(context$menu, context$tab)
       action_label <- button_label_map[[button_id]] %||% button_id
       
+      completed_analysis[[button_id]] <- FALSE
       latest_run_params(parameter_df)
       start_run_status(
         action_label = action_label,
@@ -512,6 +514,7 @@ server <- function(input, output, session) {
               )
               
               reactive_fn()
+              completed_analysis[[button_id]] <- TRUE
               
               incProgress(0.50, detail = "Analysis completed successfully.")
               complete_run_status("Analysis completed successfully.")
@@ -526,6 +529,7 @@ server <- function(input, output, session) {
               )
             },
             error = function(e) {
+              completed_analysis[[button_id]] <- FALSE
               fail_run_status(conditionMessage(e))
               append_run_log(
                 entry_type = "Analysis",
@@ -629,6 +633,129 @@ server <- function(input, output, session) {
               }
             )
           }
+        )
+      }
+    )
+  }
+  
+  get_analysis_pdf_path <- function(pdf_name, root_dir = getwd()) {
+    if (is.null(pdf_name) || !nzchar(pdf_name)) {
+      return(NULL)
+    }
+    
+    if (file.exists(pdf_name)) {
+      return(normalizePath(pdf_name, winslash = "/", mustWork = FALSE))
+    }
+    
+    candidate_paths <- c(
+      file.path(root_dir %||% getwd(), pdf_name),
+      file.path(root_dir %||% getwd(), "www", pdf_name),
+      file.path(getwd(), "www", pdf_name),
+      file.path(getwd(), pdf_name)
+    )
+    candidate_paths <- unique(candidate_paths)
+    existing_paths <- candidate_paths[file.exists(candidate_paths)]
+    if (length(existing_paths) == 0) {
+      return(candidate_paths[[1]])
+    }
+    existing_paths[[1]]
+  }
+  
+  www_url <- function(...) {
+    parts <- vapply(list(...), URLencode, character(1), reserved = TRUE)
+    paste(parts, collapse = "/")
+  }
+  
+  local_resource_url <- function(file_path, prefix_seed = "scrdavis_resource") {
+    resource_dir <- dirname(file_path)
+    resource_id <- paste(basename(dirname(resource_dir)), basename(resource_dir), sep = "_")
+    resource_prefix <- sanitize_bulk_file_stem(
+      paste(prefix_seed, resource_id, sep = "_"),
+      "scrdavis_resource"
+    )
+    shiny::addResourcePath(resource_prefix, resource_dir)
+    www_url(resource_prefix, basename(file_path))
+  }
+  
+  render_pdf_preview <- function(pdf_name, root_dir = getwd(), title = "PDF preview", height = "650px") {
+    pdf_path <- get_analysis_pdf_path(pdf_name, root_dir)
+    if (is.null(pdf_path) || !file.exists(pdf_path)) {
+      return(tags$p("PDF file not found. Please rerun the analysis."))
+    }
+    
+    pdf_mtime <- as.integer(file.info(pdf_path)$mtime)
+    pdf_url <- paste0(local_resource_url(pdf_path, "hdwgcna_pdf"), "?v=", pdf_mtime)
+    preview_dir <- file.path(dirname(pdf_path), "hdwgcna_pdf_previews")
+    dir.create(preview_dir, recursive = TRUE, showWarnings = FALSE)
+    
+    preview_tags <- NULL
+    if (requireNamespace("pdftools", quietly = TRUE)) {
+      preview_tags <- tryCatch(
+        {
+          pdf_info <- pdftools::pdf_info(pdf_path)
+          page_count <- max(1L, as.integer(pdf_info$pages %||% 1L))
+          pdf_stem <- sanitize_bulk_file_stem(tools::file_path_sans_ext(basename(pdf_path)), "pdf_preview")
+          preview_files <- file.path(preview_dir, sprintf("%s_page_%03d.png", pdf_stem, seq_len(page_count)))
+          preview_stale <- !all(file.exists(preview_files)) ||
+            any(file.info(preview_files[file.exists(preview_files)])$mtime < file.info(pdf_path)$mtime)
+          
+          if (preview_stale) {
+            unlink(Sys.glob(file.path(preview_dir, paste0(pdf_stem, "_page_*.png"))))
+            preview_files <- pdftools::pdf_convert(
+              pdf = pdf_path,
+              format = "png",
+              pages = seq_len(page_count),
+              filenames = preview_files,
+              dpi = 144,
+              verbose = FALSE
+            )
+          }
+          
+          preview_files <- preview_files[file.exists(preview_files)]
+          if (length(preview_files) == 0) {
+            return(NULL)
+          }
+          
+          tags$div(
+            lapply(seq_along(preview_files), function(page_index) {
+              preview_file <- preview_files[[page_index]]
+              preview_url <- paste0(
+                local_resource_url(preview_file, "hdwgcna_pdf_preview"),
+                "?v=",
+                as.integer(file.info(preview_file)$mtime)
+              )
+              tagList(
+                if (length(preview_files) > 1) {
+                  tags$p(tags$b(paste("Page", page_index)))
+                },
+                tags$img(
+                  src = preview_url,
+                  alt = paste(title, "page", page_index),
+                  style = "width:100%; max-width:1100px; border:1px solid #d9d9d9; margin-bottom:14px;"
+                )
+              )
+            })
+          )
+        },
+        error = function(e) NULL
+      )
+    }
+    
+    tagList(
+      tags$div(
+        style = "margin: 8px 0 12px 0;",
+        tags$a(href = pdf_url, target = "_blank", "Open PDF in new tab"),
+        tags$span(" | "),
+        tags$a(href = pdf_url, download = basename(pdf_path), "Download PDF")
+      ),
+      if (!is.null(preview_tags)) {
+        preview_tags
+      } else {
+        tags$object(
+          data = pdf_url,
+          type = "application/pdf",
+          style = paste0("width:100%; height:", height, "; border:1px solid #d9d9d9;"),
+          tags$a(href = pdf_url, target = "_blank", "Open PDF in new tab")
         )
       }
     )
@@ -4967,6 +5094,7 @@ server <- function(input, output, session) {
   })
   
   datainput_single_multiple_sample_gsea_level <- eventReactive(input$single_multiple_sample_gsea,{
+    completed_analysis[["single_multiple_sample_gsea"]] <- FALSE
     context <- get_active_navigation_context()
     action_label <- button_label_map[["single_multiple_sample_gsea"]] %||% "GSEA analysis"
     parameter_df <- collect_menu_parameters(context$menu, context$tab)
@@ -5038,6 +5166,7 @@ server <- function(input, output, session) {
           )
         },
         error = function(e) {
+          completed_analysis[["single_multiple_sample_gsea"]] <- FALSE
           fail_run_status(conditionMessage(e))
           append_run_log(
             entry_type = "Analysis",
@@ -5052,6 +5181,7 @@ server <- function(input, output, session) {
         }
       )
       
+      completed_analysis[["single_multiple_sample_gsea"]] <- TRUE
       progress_callback(1, "GSEA analysis completed successfully.")
       complete_run_status("GSEA analysis completed successfully.")
       append_run_log(
@@ -5173,7 +5303,7 @@ server <- function(input, output, session) {
   
   output$s_cellchat1_plot<-renderPlot({
     #grid.newpage() 
-    datainput_single_multiple_sample_cellchat1_level()[1]
+    draw_bulk_plot(datainput_single_multiple_sample_cellchat1_level()[[1]])
   })
   # observeEvent(input$download_s_cellchat1_plot, {
   #   showModal(modalDialog(
@@ -5200,7 +5330,7 @@ server <- function(input, output, session) {
   
   
   output$s_cellchat2_plot<-renderPlot({
-    datainput_single_multiple_sample_cellchat1_level()[2]
+    draw_bulk_plot(datainput_single_multiple_sample_cellchat1_level()[[2]])
   })
   # observeEvent(input$download_s_cellchat2_plot, {
   #   showModal(modalDialog(
@@ -5226,7 +5356,7 @@ server <- function(input, output, session) {
   
   
   output$s_cellchat3_plot<-renderPlot({
-    datainput_single_multiple_sample_cellchat1_level()[3]
+    draw_bulk_plot(datainput_single_multiple_sample_cellchat1_level()[[3]])
   })
   # observeEvent(input$download_s_cellchat3_plot, {
   #   showModal(modalDialog(
@@ -5252,7 +5382,7 @@ server <- function(input, output, session) {
   
   
   output$s_cellchat4_plot<-renderPlot({
-    datainput_single_multiple_sample_cellchat1_level()[4]
+    draw_bulk_plot(datainput_single_multiple_sample_cellchat1_level()[[4]])
   })
   # observeEvent(input$download_s_cellchat4_plot, {
   #   showModal(modalDialog(
@@ -5277,7 +5407,7 @@ server <- function(input, output, session) {
   # )
   
   output$s_cellchat12_plot<-renderPlot({
-    datainput_single_multiple_sample_cellchat1_level()[5]
+    draw_bulk_plot(datainput_single_multiple_sample_cellchat1_level()[[5]])
   })
   # observeEvent(input$download_s_cellchat12_plot, {
   #   showModal(modalDialog(
@@ -5338,7 +5468,7 @@ observe({
   })  
   
   output$s_cellchat5_plot<-renderPlot({
-    datainput_single_multiple_sample_cellchat2_level()[1]
+    draw_bulk_plot(datainput_single_multiple_sample_cellchat2_level()[[1]])
   })
   # observeEvent(input$download_s_cellchat5_plot, {
   #   showModal(modalDialog(
@@ -5363,7 +5493,7 @@ observe({
   # )
   
   output$s_cellchat6_plot<-renderPlot({
-    datainput_single_multiple_sample_cellchat2_level()[2]
+    draw_bulk_plot(datainput_single_multiple_sample_cellchat2_level()[[2]])
   })
   # observeEvent(input$download_s_cellchat6_plot, {
   #   showModal(modalDialog(
@@ -5389,7 +5519,7 @@ observe({
   
   
   output$s_cellchat7_plot<-renderPlot({
-    datainput_single_multiple_sample_cellchat2_level()[3]
+    draw_bulk_plot(datainput_single_multiple_sample_cellchat2_level()[[3]])
   })
   # observeEvent(input$download_s_cellchat7_plot, {
   #   showModal(modalDialog(
@@ -5414,7 +5544,7 @@ observe({
   # )
   
   output$s_cellchat11_plot<-renderPlot({
-    datainput_single_multiple_sample_cellchat2_level()[4]
+    draw_bulk_plot(datainput_single_multiple_sample_cellchat2_level()[[4]])
   })
   # observeEvent(input$download_s_cellchat11_plot, {
   #   showModal(modalDialog(
@@ -5439,7 +5569,7 @@ observe({
   # )
   
   output$s_cellchat8_plot<-renderPlot({
-    datainput_single_multiple_sample_cellchat2_level()[5]
+    draw_bulk_plot(datainput_single_multiple_sample_cellchat2_level()[[5]])
   })
   observeEvent(input$download_s_cellchat8_plot, {
     showModal(modalDialog(
@@ -5464,7 +5594,7 @@ observe({
   )
   
   output$s_cellchat9_plot<-renderPlot({
-    datainput_single_multiple_sample_cellchat2_level()[6]
+    draw_bulk_plot(datainput_single_multiple_sample_cellchat2_level()[[6]])
   })
   observeEvent(input$download_s_cellchat9_plot, {
     showModal(modalDialog(
@@ -5489,7 +5619,7 @@ observe({
   )
   
   output$s_cellchat10_plot<-renderPlot({
-    datainput_single_multiple_sample_cellchat2_level()[7]
+    draw_bulk_plot(datainput_single_multiple_sample_cellchat2_level()[[7]])
   })
   observeEvent(input$download_s_cellchat10_plot, {
     showModal(modalDialog(
@@ -5965,21 +6095,6 @@ observe({
     }
   })
   
-  observeEvent(input$single_multiple_sample_hdwgcna, {
-    files_to_delete <- list.files(
-      path = file.path(getwd(), "www"),
-      pattern = "^(combined_output|PlotDendrogram|ModuleUMAPPlot|PlotModuleCorrelogram)_.*\\.pdf$",
-      full.names = TRUE
-    )
-    
-    for (full_path in files_to_delete) {
-      if (file.exists(full_path)) {
-        unlink(full_path)
-        cat("Deleted:", full_path, "\n")
-      }
-    }
-  })
-  
   datainput_single_multiple_sample_hdwgcna_level <- eventReactive(input$single_multiple_sample_hdwgcna,{
     source("scripts/hdwgcna.R")
     datainput_single_multiple_sample_hdwgcna(index_multiple_sample_hdwgcna_input = datainput_multiple_celltype_level()[[1]], index_subclustering_multiple_sample_hdwgcna_input = datainput_subclustering_multiple_celltype_level()[[1]], index_multiple_sample_hdwgcna_input2 = datainput_multiple_celltype_level()[[4]], index_subclustering_multiple_sample_hdwgcna_input2 = datainput_subclustering_multiple_celltype_level()[[4]], index_multiple_sample_normalization_method_hdwgcna = input$multiple_sample_normalization_method, index_subclustering_multiple_sample_normalization_method_hdwgcna = input$subclustering_multiple_sample_normalization_method, index_s_hdwgcna1 = input$s_hdwgcna1, index_s_hdwgcna2 = input$s_hdwgcna2, index_s_hdwgcna3 = input$s_hdwgcna3, index_s_hdwgcna4 = input$s_hdwgcna4, index_s_hdwgcna5 = input$s_hdwgcna5, index_s_hdwgcna6 = input$s_hdwgcna6, index_s_hdwgcna7 = input$s_hdwgcna7, index_s_hdwgcna8 = input$s_hdwgcna8, index_s_hdwgcna9 = input$s_hdwgcna9, index_s_hdwgcna10 = input$s_hdwgcna10, index_s_hdwgcna11 = input$s_hdwgcna11, index_s_hdwgcna12 = input$s_hdwgcna12, index_s_hdwgcna13 = input$s_hdwgcna13, index_s_hdwgcna14 = input$s_hdwgcna14)
@@ -6041,18 +6156,11 @@ observe({
   
   output$s_hdwgcna3_plot <- shiny::renderUI({
     pdf_name <- datainput_single_multiple_sample_hdwgcna_level()[["dendrogram_file"]]
-    pdf_path <- file.path(datainput_single_multiple_sample_hdwgcna_level()[[6]], "www", pdf_name)
-    
-    # Ensure the file exists before rendering
-    if (file.exists(pdf_path)) {
-      tags$iframe(
-        src = paste0(pdf_name, "?v=", as.integer(file.info(pdf_path)$mtime)),
-        style = "width:100%; height:600px;",
-        frameborder = 1
-      )
-    } else {
-      tags$p("PDF file not found. Please ensure the file exists at the specified path.")
-    }
+    render_pdf_preview(
+      pdf_name,
+      datainput_single_multiple_sample_hdwgcna_level()[[6]],
+      title = "Co-expression network plot"
+    )
   })
   
  
@@ -6108,18 +6216,11 @@ observe({
   
   output$s_hdwgcna6_plot <- renderUI({
     pdf_name <- datainput_single_multiple_sample_hdwgcna_level()[["correlogram_file"]]
-    pdf_path <- file.path(datainput_single_multiple_sample_hdwgcna_level()[[6]], "www", pdf_name)
-    
-    # Ensure the file exists before rendering
-    if (file.exists(pdf_path)) {
-      tags$iframe(
-        src = paste0(pdf_name, "?v=", as.integer(file.info(pdf_path)$mtime)),
-        style = "width:100%; height:600px;",
-        frameborder = 1
-      )
-    } else {
-      tags$p("PDF file not found. Please ensure the file exists at the specified path.")
-    }
+    render_pdf_preview(
+      pdf_name,
+      datainput_single_multiple_sample_hdwgcna_level()[[6]],
+      title = "Module correlogram plot"
+    )
   })
   
   output$s_hdwgcna7_plot<-renderPlot({
@@ -6159,38 +6260,21 @@ observe({
   
   output$s_hdwgcna8_plot <- renderUI({
     pdf_name <- datainput_single_multiple_sample_hdwgcna_level()[["module_networks_file"]]
-    pdf_path <- file.path(datainput_single_multiple_sample_hdwgcna_level()[[6]], "www", pdf_name)
-    
-    
-    # Ensure the file exists before rendering
-    if (file.exists(pdf_path)) {
-      tags$iframe(
-        src = paste0(pdf_name, "?v=", as.integer(file.info(pdf_path)$mtime)) ,  
-        style = "width:100%; height:600px;",
-        frameborder = 1
-      )
-      
-    } else {
-      tags$p("PDF file not found. Please ensure the file exists at the specified path.")
-    }
-    
+    render_pdf_preview(
+      pdf_name,
+      datainput_single_multiple_sample_hdwgcna_level()[[6]],
+      title = "Individual module network plots"
+    )
   })
   
   
   output$s_hdwgcna9_plot <- renderUI({
     pdf_name <- datainput_single_multiple_sample_hdwgcna_level()[["module_umap_file"]]
-    pdf_path <- file.path(datainput_single_multiple_sample_hdwgcna_level()[[6]], "www", pdf_name)
-
-    # Ensure the file exists before rendering
-    if (file.exists(pdf_path)) {
-      tags$iframe(
-        src = paste0(pdf_name, "?v=", as.integer(file.info(pdf_path)$mtime)) ,
-        style = "width:100%; height:600px;",
-        frameborder = 1
-      )
-    } else {
-      tags$p("PDF file not found. Please ensure the file exists at the specified path.")
-    }
+    render_pdf_preview(
+      pdf_name,
+      datainput_single_multiple_sample_hdwgcna_level()[[6]],
+      title = "UMAP plot for co-expression networks"
+    )
   })
   
   
@@ -6542,6 +6626,1025 @@ observe({
       saveRDS(datainput_single_multiple_sample_tfrn2_level()[6], file= file, compress = TRUE)
     }
   ) 
+
+  ######################################################Bulk downloads#############################################################
+  bulk_download_status <- reactiveValues(
+    status = "Idle",
+    message = "No bulk download is currently running.",
+    progress = 0,
+    started_at = "",
+    completed_at = "",
+    exported = 0,
+    skipped = 0
+  )
+  
+  update_bulk_download_status <- function(status = NULL, progress = NULL, message = NULL, exported = NULL, skipped = NULL) {
+    if (!is.null(status)) {
+      bulk_download_status$status <- status
+    }
+    if (!is.null(progress)) {
+      bulk_download_status$progress <- max(0, min(100, as.integer(progress)))
+    }
+    if (!is.null(message) && nzchar(message)) {
+      bulk_download_status$message <- message
+    }
+    if (!is.null(exported)) {
+      bulk_download_status$exported <- exported
+    }
+    if (!is.null(skipped)) {
+      bulk_download_status$skipped <- skipped
+    }
+    if (!nzchar(bulk_download_status$started_at)) {
+      bulk_download_status$started_at <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    }
+    if (bulk_download_status$status %in% c("Completed successfully", "Failed")) {
+      bulk_download_status$completed_at <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    }
+  }
+  
+  output$bulk_download_status_ui <- renderUI({
+    progress_class <- switch(
+      bulk_download_status$status,
+      "Preparing" = "progress-bar-info progress-bar-striped active",
+      "Extracting" = "progress-bar-warning progress-bar-striped active",
+      "Creating ZIP" = "progress-bar-warning progress-bar-striped active",
+      "Completed successfully" = "progress-bar-success",
+      "Failed" = "progress-bar-danger",
+      "progress-bar-info"
+    )
+    
+    tagList(
+      tags$p(tags$b("Status: "), bulk_download_status$status),
+      tags$p(tags$b("Message: "), bulk_download_status$message),
+      tags$div(
+        class = "progress",
+        style = "height: 24px;",
+        tags$div(
+          class = paste("progress-bar", progress_class),
+          role = "progressbar",
+          style = paste0("width: ", bulk_download_status$progress, "%; min-width: 3em;"),
+          paste0(bulk_download_status$progress, "%")
+        )
+      ),
+      tags$p(tags$b("Exported files: "), bulk_download_status$exported),
+      if (nzchar(bulk_download_status$started_at)) {
+        tags$p(tags$b("Started: "), bulk_download_status$started_at)
+      },
+      if (nzchar(bulk_download_status$completed_at)) {
+        tags$p(tags$b("Completed: "), bulk_download_status$completed_at)
+      }
+    )
+  })
+  
+  sanitize_bulk_path_part <- function(value, fallback = "Untitled") {
+    value <- paste(as.character(value %||% fallback), collapse = " ")
+    value <- gsub("[<>:\"/\\\\|?*]+", "_", value, perl = TRUE)
+    value <- gsub("\\s+", " ", trimws(value), perl = TRUE)
+    value <- gsub("[. ]+$", "", value, perl = TRUE)
+    if (!nzchar(value)) {
+      value <- fallback
+    }
+    substr(value, 1, 120)
+  }
+  
+  sanitize_bulk_file_stem <- function(value, fallback = "output") {
+    value <- sanitize_bulk_path_part(value, fallback)
+    value <- gsub("\\s+", "_", value, perl = TRUE)
+    value <- gsub("[^A-Za-z0-9._-]+", "_", value, perl = TRUE)
+    value <- gsub("_+", "_", value, perl = TRUE)
+    value <- gsub("^_+|_+$", "", value, perl = TRUE)
+    if (!nzchar(value)) {
+      value <- fallback
+    }
+    substr(value, 1, 120)
+  }
+  
+  bulk_analysis_completed <- function(trigger_id) {
+    if (is.null(trigger_id) || !nzchar(trigger_id)) {
+      return(TRUE)
+    }
+    isTRUE(completed_analysis[[trigger_id]])
+  }
+  
+  normalize_bulk_plot_object <- function(plot_obj) {
+    if (is.list(plot_obj) && length(plot_obj) == 1 && is.null(class(plot_obj))) {
+      return(plot_obj[[1]])
+    }
+    plot_obj
+  }
+  
+  scrdavis_cellchat_plot <- function(draw_fn) {
+    force(draw_fn)
+    structure(list(draw = draw_fn), class = "scrdavis_plotter")
+  }
+  
+  draw_bulk_plot <- function(plot_obj) {
+    plot_obj <- normalize_bulk_plot_object(plot_obj)
+    if (is.null(plot_obj)) {
+      return(invisible(FALSE))
+    }
+    
+    if (inherits(plot_obj, "scrdavis_plotter") && is.function(plot_obj$draw)) {
+      drawn <- plot_obj$draw()
+      if (inherits(drawn, "recordedplot")) {
+        grDevices::replayPlot(drawn)
+      } else if (inherits(drawn, "grob") || inherits(drawn, "gTree") || inherits(drawn, "gtable")) {
+        grid::grid.newpage()
+        grid::grid.draw(drawn)
+      } else if (inherits(drawn, "ggplot")) {
+        print(drawn)
+      }
+      return(invisible(TRUE))
+    }
+    
+    if (inherits(plot_obj, "recordedplot")) {
+      grDevices::replayPlot(plot_obj)
+    } else if (inherits(plot_obj, "grob") || inherits(plot_obj, "gTree") || inherits(plot_obj, "gtable")) {
+      grid::grid.newpage()
+      grid::grid.draw(plot_obj)
+    } else {
+      print(plot_obj)
+    }
+    
+    invisible(TRUE)
+  }
+  
+  bulk_bitmap_device_type <- function() {
+    if (isTRUE(capabilities("cairo"))) {
+      return("cairo")
+    }
+    getOption("bitmapType", "Xlib")
+  }
+  
+  open_bulk_graphics_device <- function(file_path, image_format, width, height, dpi) {
+    ext <- tolower(gsub("^\\.", "", image_format))
+    bitmap_type <- bulk_bitmap_device_type()
+    switch(
+      ext,
+      jpg = grDevices::jpeg(file_path, width = width, height = height, units = "in", res = dpi, quality = 95, type = bitmap_type),
+      jpeg = grDevices::jpeg(file_path, width = width, height = height, units = "in", res = dpi, quality = 95, type = bitmap_type),
+      tiff = grDevices::tiff(file_path, width = width, height = height, units = "in", res = dpi, compression = "lzw", type = bitmap_type),
+      bmp = grDevices::bmp(file_path, width = width, height = height, units = "in", res = dpi, type = bitmap_type),
+      pdf = grDevices::pdf(file_path, width = width, height = height),
+      svg = grDevices::svg(file_path, width = width, height = height),
+      eps = grDevices::postscript(file_path, width = width, height = height, paper = "special", horizontal = FALSE, onefile = FALSE),
+      ps = grDevices::postscript(file_path, width = width, height = height, paper = "special", horizontal = FALSE, onefile = TRUE),
+      grDevices::jpeg(file_path, width = width, height = height, units = "in", res = dpi, quality = 95, type = bitmap_type)
+    )
+  }
+  
+  get_bulk_plot_dimensions <- function(plot_obj, item) {
+    width <- as.numeric(item$width %||% 8)
+    height <- as.numeric(item$height %||% 8)
+    
+    if (isTRUE(input$bulk_auto_image_size) && inherits(plot_obj, "ggplot")) {
+      layout <- tryCatch(ggplot2::ggplot_build(plot_obj)$layout$layout, error = function(e) NULL)
+      if (!is.null(layout) && all(c("ROW", "COL") %in% colnames(layout))) {
+        rows <- suppressWarnings(max(layout$ROW, na.rm = TRUE))
+        cols <- suppressWarnings(max(layout$COL, na.rm = TRUE))
+        if (is.finite(rows) && rows > 1) {
+          height <- max(height, min(49, rows * 4))
+        }
+        if (is.finite(cols) && cols > 1) {
+          width <- max(width, min(49, cols * 4))
+        }
+      }
+    }
+    
+    list(
+      width = max(2, min(49, width)),
+      height = max(2, min(49, height))
+    )
+  }
+  
+  save_bulk_plot <- function(plot_obj, file_path, image_format, width, height, dpi) {
+    plot_obj <- normalize_bulk_plot_object(plot_obj)
+    if (is.null(plot_obj)) {
+      return(FALSE)
+    }
+    
+    ggsave_ok <- !inherits(plot_obj, "scrdavis_plotter") && tryCatch(
+      {
+        ggplot2::ggsave(
+          filename = file_path,
+          plot = plot_obj,
+          width = width,
+          height = height,
+          dpi = dpi,
+          units = "in",
+          limitsize = FALSE
+        )
+        TRUE
+      },
+      error = function(e) FALSE
+    )
+    if (ggsave_ok && file.exists(file_path) && file.info(file_path)$size > 0) {
+      return(TRUE)
+    }
+    
+    if (file.exists(file_path)) {
+      unlink(file_path)
+    }
+    
+    device_open <- FALSE
+    tryCatch(
+      {
+        open_bulk_graphics_device(file_path, image_format, width, height, dpi)
+        device_open <- TRUE
+        draw_bulk_plot(plot_obj)
+        grDevices::dev.off()
+        device_open <- FALSE
+        file.exists(file_path) && file.info(file_path)$size > 0
+      },
+      error = function(e) {
+        if (device_open && grDevices::dev.cur() > 1) {
+          try(grDevices::dev.off(), silent = TRUE)
+        }
+        FALSE
+      }
+    )
+  }
+  
+  build_bulk_items <- function(menu, subtab = NULL, trigger_id, data_fn, plots = list(), tables = list(), pdfs = list()) {
+    items <- list()
+    folder <- Filter(nzchar, c(menu, subtab %||% ""))
+    
+    for (plot_spec in plots) {
+      items[[length(items) + 1]] <- local({
+        index <- plot_spec$index
+        list(
+          type = "plot",
+          menu = menu,
+          subtab = subtab,
+          folder = folder,
+          trigger_id = trigger_id,
+          name = plot_spec$name,
+          file_stem = sanitize_bulk_file_stem(plot_spec$name),
+          width = plot_spec$width %||% 8,
+          height = plot_spec$height %||% 8,
+          expr = function() data_fn()[[index]]
+        )
+      })
+    }
+    
+    for (table_spec in tables) {
+      items[[length(items) + 1]] <- local({
+        index <- table_spec$index
+        list(
+          type = "table",
+          menu = menu,
+          subtab = subtab,
+          folder = folder,
+          trigger_id = trigger_id,
+          name = table_spec$name,
+          file_stem = sanitize_bulk_file_stem(table_spec$name),
+          expr = function() data_fn()[[index]]
+        )
+      })
+    }
+    
+    for (pdf_spec in pdfs) {
+      items[[length(items) + 1]] <- local({
+        key <- pdf_spec$key
+        list(
+          type = "pdf",
+          menu = menu,
+          subtab = subtab,
+          folder = folder,
+          trigger_id = trigger_id,
+          name = pdf_spec$name,
+          file_stem = sanitize_bulk_file_stem(pdf_spec$name),
+          expr = function() {
+            result <- data_fn()
+            pdf_name <- result[[key]]
+            if (is.null(pdf_name) || !nzchar(pdf_name)) {
+              return(NULL)
+            }
+            base_dir <- result[["text_summary"]] %||% result[[6]] %||% getwd()
+            get_analysis_pdf_path(pdf_name, base_dir)
+          }
+        )
+      })
+    }
+    
+    items
+  }
+  
+  bulk_output_registry <- function() {
+    c(
+      build_bulk_items(
+        "Single or Multiple Samples Analysis",
+        "Stats",
+        "multiple_sample_submit",
+        function() datainput_multiple_sample_level(),
+        plots = list(
+          list(index = 1, name = "QC_before_filtering", width = 8, height = 12),
+          list(index = 3, name = "Feature_feature_relationships_plot", width = 12, height = 5)
+        ),
+        tables = list(
+          list(index = 2, name = "Number_of_cells_before_filtering")
+        )
+      ),
+      build_bulk_items(
+        "Single or Multiple Samples Analysis",
+        "Sample Groups and QC Filtering",
+        "multiple_sample_qc_filtering",
+        function() datainput_multiple_qc_filter_level(),
+        plots = list(
+          list(index = 1, name = "QC_after_filtering_sample_based", width = 8, height = 12),
+          list(index = 2, name = "QC_after_filtering_group_based", width = 5, height = 12),
+          list(index = 3, name = "Bar_plot_sample_based", width = 8, height = 10),
+          list(index = 4, name = "Bar_plot_group_based", width = 6, height = 5)
+        ),
+        tables = list(
+          list(index = 5, name = "Number_of_cells_in_samples_after_qc"),
+          list(index = 6, name = "Number_of_cells_in_groups_after_qc")
+        )
+      ),
+      build_bulk_items(
+        "Single or Multiple Samples Analysis",
+        "Normalization and PCA Analysis",
+        "multiple_sample_normalization",
+        function() datainput_multiple_normalization_pca_level(),
+        plots = list(
+          list(index = 1, name = "After_normalization_PCA_heatmap", width = 8, height = 5),
+          list(index = 2, name = "After_normalization_Elbow", width = 8, height = 5),
+          list(index = 3, name = "After_normalization_PCA_plot_sample_based", width = 8, height = 5),
+          list(index = 4, name = "After_normalization_PCA_plot_group_based", width = 8, height = 5),
+          list(index = 6, name = "JackStraw_plot", width = 8, height = 8)
+        )
+      ),
+      build_bulk_items(
+        "Single or Multiple Samples Analysis",
+        "Clustering",
+        "multiple_sample_clustering",
+        function() datainput_multiple_clustering_level(),
+        plots = list(
+          list(index = 1, name = "Cluster_plot", width = 8, height = 8),
+          list(index = 2, name = "Cluster_based_bar_plot", width = 8, height = 8),
+          list(index = 3, name = "Condition_based_plot", width = 8, height = 8),
+          list(index = 4, name = "Condition_based_bar_plot", width = 8, height = 8),
+          list(index = 5, name = "Sample_based_plot", width = 8, height = 8),
+          list(index = 6, name = "Sample_based_bar_plot", width = 8, height = 8)
+        ),
+        tables = list(
+          list(index = 7, name = "Number_of_cells_in_clusters"),
+          list(index = 8, name = "Number_of_cells_in_clusters_based_on_condition"),
+          list(index = 9, name = "Number_of_cells_in_clusters_based_on_samples")
+        )
+      ),
+      build_bulk_items(
+        "Single or Multiple Samples Analysis",
+        "Remove Doublets",
+        "multiple_sample_doublet",
+        function() datainput_multiple_doublet_level(),
+        plots = list(
+          list(index = 1, name = "Doublet_plot", width = 8, height = 8),
+          list(index = 2, name = "Doublet_plot_condition_based", width = 8, height = 8),
+          list(index = 3, name = "Doublet_plot_sample_based", width = 12, height = 8),
+          list(index = 4, name = "Doublet_plot_cluster_based", width = 8, height = 8)
+        ),
+        tables = list(
+          list(index = 5, name = "Number_of_singlets_and_doublet_counts")
+        )
+      ),
+      build_bulk_items(
+        "Single or Multiple Samples Analysis",
+        "Remove Doublets",
+        "multiple_sample_doublet2",
+        function() datainput_multiple_doublet2_level(),
+        plots = list(
+          list(index = 1, name = "Doublet_plot_after_selection", width = 12, height = 8),
+          list(index = 2, name = "Doublet_plot_condition_based_after_selection", width = 12, height = 10),
+          list(index = 3, name = "Doublet_plot_sample_based_after_selection", width = 14, height = 10),
+          list(index = 4, name = "Doublet_plot_cluster_based_after_selection", width = 14, height = 10),
+          list(index = 5, name = "Bar_plot_cluster_based_after_selection", width = 20, height = 6),
+          list(index = 11, name = "Doublet_plot_cluster_based_split_by_condition_and_sample_after_selection", width = 14, height = 10)
+        ),
+        tables = list(
+          list(index = 6, name = "Number_of_cells_after_cell_clusters"),
+          list(index = 7, name = "Number_of_cells_after_clusters_based_on_conditions"),
+          list(index = 8, name = "Number_of_cells_after_clusters_based_on_samples"),
+          list(index = 9, name = "Number_of_cells_after_doublet_selection")
+        )
+      ),
+      build_bulk_items(
+        "Single or Multiple Samples Analysis",
+        "Markers Identification",
+        "multiple_sample_marker",
+        function() datainput_multiple_marker_level(),
+        plots = list(
+          list(index = 3, name = "Heatmap_with_top5_expressed_genes", width = 12, height = 8)
+        ),
+        tables = list(
+          list(index = 1, name = "Number_of_identified_markers_or_differentially_expressed_genes")
+        )
+      ),
+      build_bulk_items(
+        "Single or Multiple Samples Analysis",
+        "Cell Type Prediction",
+        "multiple_sample_celltype",
+        function() datainput_multiple_celltype_level(),
+        plots = list(
+          list(index = 5, name = "Dimplot_with_celltype", width = 16, height = 8),
+          list(index = 7, name = "Celltype_score_plot_1", width = 20, height = 8),
+          list(index = 8, name = "Celltype_score_plot_2", width = 8, height = 8)
+        ),
+        tables = list(
+          list(index = 6, name = "Predicted_celltype_scores")
+        )
+      ),
+      build_bulk_items(
+        "Single or Multiple Samples Analysis",
+        "Cluster-Based Plots",
+        "multiple_sample_clusterbased",
+        function() datainput_multiple_clusterbased_level(),
+        plots = list(
+          list(index = 1, name = "Plots_for_top_or_selected_markers", width = 20, height = 20)
+        ),
+        tables = list(
+          list(index = 3, name = "Top_or_selected_cell_counts_proportion")
+        )
+      ),
+      build_bulk_items(
+        "Single or Multiple Samples Analysis",
+        "Condition Based Analysis",
+        "multiple_sample_conditionbased",
+        function() datainput_multiple_conditionbased_level(),
+        plots = list(
+          list(index = 1, name = "Plots_for_top_selected_markers", width = 20, height = 20)
+        ),
+        tables = list(
+          list(index = 2, name = "Differentially_expressed_genes_sample_based")
+        )
+      ),
+      build_bulk_items(
+        "Subclustering",
+        "Cell Stats",
+        "subclustering_multiple_sample_submit",
+        function() datainput_subclustering_multiple_sample_level(),
+        plots = list(
+          list(index = 1, name = "QC_for_the_selected_subclusters", width = 5, height = 8)
+        ),
+        tables = list(
+          list(index = 2, name = "Number_of_cells")
+        )
+      ),
+      build_bulk_items(
+        "Subclustering",
+        "Normalization and PCA Analysis",
+        "subclustering_multiple_sample_normalization",
+        function() datainput_subclustering_multiple_normalization_pca_level(),
+        plots = list(
+          list(index = 1, name = "After_normalization_PCA_plot", width = 8, height = 5),
+          list(index = 2, name = "After_normalization_Elbow", width = 8, height = 5),
+          list(index = 3, name = "After_normalization_PCA_plot_sample_based", width = 8, height = 5),
+          list(index = 4, name = "After_normalization_PCA_plot_group_based", width = 8, height = 5)
+        )
+      ),
+      build_bulk_items(
+        "Subclustering",
+        "Clustering",
+        "subclustering_multiple_sample_clustering",
+        function() datainput_subclustering_multiple_clustering_level(),
+        plots = list(
+          list(index = 1, name = "Cluster_plot", width = 8, height = 8),
+          list(index = 2, name = "Cluster_bar_plot", width = 8, height = 8),
+          list(index = 3, name = "Condition_based_plot", width = 8, height = 8),
+          list(index = 4, name = "Condition_based_bar_plot", width = 8, height = 8),
+          list(index = 5, name = "Sample_based_plot", width = 8, height = 8),
+          list(index = 6, name = "Sample_based_bar_plot", width = 8, height = 8),
+          list(index = 15, name = "Sample_based_plot_split_by_clusters", width = 15, height = 12)
+        ),
+        tables = list(
+          list(index = 7, name = "Number_of_cells_in_clusters"),
+          list(index = 8, name = "Number_of_cells_in_clusters_based_on_condition"),
+          list(index = 9, name = "Number_of_cells_in_clusters_based_on_samples")
+        )
+      ),
+      build_bulk_items(
+        "Subclustering",
+        "Markers Identification",
+        "subclustering_multiple_sample_marker",
+        function() datainput_subclustering_multiple_marker_level(),
+        plots = list(
+          list(index = 3, name = "Heatmap_with_top5_expressed_genes", width = 12, height = 8)
+        ),
+        tables = list(
+          list(index = 1, name = "Number_of_identified_markers_or_differentially_expressed_genes")
+        )
+      ),
+      build_bulk_items(
+        "Subclustering",
+        "Cell Type Prediction",
+        "subclustering_multiple_sample_celltype",
+        function() datainput_subclustering_multiple_celltype_level(),
+        plots = list(
+          list(index = 5, name = "Dimplot_with_celltype", width = 16, height = 8),
+          list(index = 7, name = "Celltype_score_plot_1", width = 8, height = 8),
+          list(index = 8, name = "Celltype_score_plot_2", width = 8, height = 8)
+        ),
+        tables = list(
+          list(index = 6, name = "Predicted_celltype_scores")
+        )
+      ),
+      build_bulk_items(
+        "Subclustering",
+        "Cluster-Based Plots",
+        "subclustering_multiple_sample_clusterbased",
+        function() datainput_subclustering_multiple_clusterbased_level(),
+        plots = list(
+          list(index = 1, name = "Plots_for_top_or_selected_markers", width = 20, height = 20)
+        ),
+        tables = list(
+          list(index = 3, name = "Top_or_selected_cell_counts_proportion")
+        )
+      ),
+      build_bulk_items(
+        "Subclustering",
+        "Condition Based Analysis",
+        "subclustering_multiple_sample_conditionbased",
+        function() datainput_subclustering_multiple_conditionbased_level(),
+        plots = list(
+          list(index = 1, name = "Plots_for_top_selected_markers", width = 20, height = 20)
+        ),
+        tables = list(
+          list(index = 2, name = "Differentially_expressed_genes_sample_based")
+        )
+      ),
+      build_bulk_items(
+        "Correlation Network",
+        NULL,
+        "single_multiple_sample_cccn",
+        function() datainput_single_multiple_sample_cccn_level(),
+        plots = list(
+          list(index = 1, name = "Cluster_based_correlation_matrix_plot", width = 8, height = 8),
+          list(index = 2, name = "Cluster_based_correlation_network_plot", width = 8, height = 8)
+        ),
+        tables = list(
+          list(index = 3, name = "Cluster_based_correlation_table")
+        )
+      ),
+      build_bulk_items(
+        "GO Terms",
+        NULL,
+        "single_multiple_sample_go",
+        function() datainput_single_multiple_sample_go_level(),
+        plots = list(
+          list(index = 1, name = "GO_terms_plot", width = 8, height = 8)
+        ),
+        tables = list(
+          list(index = 2, name = "GO_terms_summary_table")
+        )
+      ),
+      build_bulk_items(
+        "Pathway Analysis",
+        NULL,
+        "single_multiple_sample_pathway",
+        function() datainput_single_multiple_sample_pathway_level(),
+        plots = list(
+          list(index = 1, name = "Pathway_plot", width = 8, height = 8)
+        ),
+        tables = list(
+          list(index = 2, name = "Pathway_summary_table")
+        )
+      ),
+      build_bulk_items(
+        "GSEA Analysis",
+        NULL,
+        "single_multiple_sample_gsea",
+        function() datainput_single_multiple_sample_gsea_level(),
+        plots = list(
+          list(index = 1, name = "GSEA_plot", width = 15, height = 10)
+        ),
+        tables = list(
+          list(index = 2, name = "GSEA_summary_table")
+        )
+      ),
+      build_bulk_items(
+        "Cell-Cell Communication",
+        "CellChat analysis",
+        "single_multiple_sample_cellchat1",
+        function() datainput_single_multiple_sample_cellchat1_level(),
+        plots = list(
+          list(index = 1, name = "Interactions_plot_with_counts", width = 6, height = 6),
+          list(index = 2, name = "Interactions_plot_with_weights_strength", width = 6, height = 6),
+          list(index = 3, name = "Interaction_heatmap", width = 8, height = 8),
+          list(index = 4, name = "Incoming_and_outgoing_signaling_patterns", width = 10, height = 10),
+          list(index = 5, name = "Communication_pattern_of_target_and_secreting_cells", width = 10, height = 10)
+        ),
+        tables = list(
+          list(index = 6, name = "CellChat_interaction_table")
+        )
+      ),
+      build_bulk_items(
+        "Cell-Cell Communication",
+        "Selected pathway visualization",
+        "single_multiple_sample_cellchat2",
+        function() datainput_single_multiple_sample_cellchat2_level(),
+        plots = list(
+          list(index = 1, name = "Selected_pathway_circle_plot", width = 6, height = 6),
+          list(index = 2, name = "Selected_pathway_chord_plot", width = 6, height = 6),
+          list(index = 3, name = "Selected_pathway_heatmap", width = 8, height = 8),
+          list(index = 4, name = "Selected_pathway_hierarchy_plot", width = 8, height = 8),
+          list(index = 5, name = "Selected_pathway_bubble_plot", width = 8, height = 8),
+          list(index = 6, name = "Network_analysis_contribution_bar_plot", width = 8, height = 8),
+          list(index = 7, name = "Selected_pathway_gene_expression_plot", width = 8, height = 10)
+        ),
+        tables = list(
+          list(index = 8, name = "Selected_pathway_interaction_table")
+        )
+      ),
+      build_bulk_items(
+        "Trajectory and Pseudotime Analysis",
+        "Learn Trajectory",
+        "single_multiple_sample_trajectory1",
+        function() datainput_single_multiple_sample_trajectory1_level(),
+        plots = list(
+          list(index = 3, name = "Trajectory_plot", width = 8, height = 8)
+        )
+      ),
+      build_bulk_items(
+        "Trajectory and Pseudotime Analysis",
+        "Pseudotime analysis",
+        "single_multiple_sample_trajectory2",
+        function() datainput_single_multiple_sample_trajectory2_level(),
+        plots = list(
+          list(index = 3, name = "Cells_in_pseudotime", width = 8, height = 8),
+          list(index = 4, name = "Cells_ordered_by_Monocle3_pseudotime", width = 16, height = 8)
+        )
+      ),
+      build_bulk_items(
+        "Trajectory and Pseudotime Analysis",
+        "Find genes",
+        "single_multiple_sample_trajectory3",
+        function() datainput_single_multiple_sample_trajectory3_level(),
+        plots = list(
+          list(index = 3, name = "FeaturePlot_with_pseudotime", width = 8, height = 8)
+        ),
+        tables = list(
+          list(index = 4, name = "Genes_that_change_as_a_function_of_pseudotime")
+        )
+      ),
+      build_bulk_items(
+        "Trajectory and Pseudotime Analysis",
+        "Plot genes",
+        "single_multiple_sample_trajectory4",
+        function() datainput_single_multiple_sample_trajectory4_level(),
+        plots = list(
+          list(index = 3, name = "FeaturePlot_with_pseudotime_for_selected_genes", width = 8, height = 8)
+        )
+      ),
+      build_bulk_items(
+        "Co-expression and TF Analysis",
+        "Co-expression network analysis",
+        "single_multiple_sample_hdwgcna",
+        function() datainput_single_multiple_sample_hdwgcna_level(),
+        plots = list(
+          list(index = 1, name = "UMAP_plot_loaded_data", width = 8, height = 8),
+          list(index = 2, name = "Soft_power_threshold_plots", width = 8, height = 8),
+          list(index = 3, name = "Module_ranked_by_eigengene_based_connectivity_kME", width = 8, height = 8),
+          list(index = 4, name = "Module_feature_plots", width = 8, height = 8),
+          list(index = 5, name = "Module_with_Seurat_dot_plot", width = 8, height = 8)
+        ),
+        tables = list(
+          list(index = 7, name = "Soft_power_threshold_table"),
+          list(index = 8, name = "Module_assignment_table"),
+          list(index = 9, name = "Top_N_hub_genes")
+        ),
+        pdfs = list(
+          list(key = "dendrogram_file", name = "Co_expression_network_plot"),
+          list(key = "correlogram_file", name = "Module_correlogram_plot"),
+          list(key = "module_networks_file", name = "Individual_module_network_plots"),
+          list(key = "module_umap_file", name = "UMAP_plot_for_co_expression_networks")
+        )
+      ),
+      build_bulk_items(
+        "Co-expression and TF Analysis",
+        "Transcription Factor Regulatory Network Analysis",
+        "single_multiple_sample_tfrn1",
+        function() datainput_single_multiple_sample_tfrn1_level(),
+        plots = list(
+          list(index = 1, name = "Module_regulatory_network_plot_positive", width = 8, height = 8),
+          list(index = 2, name = "Module_regulatory_network_plot_negative", width = 8, height = 8),
+          list(index = 3, name = "Module_regulatory_network_plot_both", width = 8, height = 8),
+          list(index = 4, name = "Module_regulatory_network_plot_module_UMAP", width = 8, height = 8)
+        ),
+        tables = list(
+          list(index = 5, name = "TF_network_table")
+        )
+      ),
+      build_bulk_items(
+        "Co-expression and TF Analysis",
+        "Selected TF network plots",
+        "single_multiple_sample_tfrn2",
+        function() datainput_single_multiple_sample_tfrn2_level(),
+        plots = list(
+          list(index = 1, name = "Feature_plot_of_selected_TF", width = 8, height = 8),
+          list(index = 2, name = "Top_target_genes_within_TF_regulons", width = 8, height = 8),
+          list(index = 3, name = "TF_network_plot_positive", width = 8, height = 8),
+          list(index = 4, name = "TF_network_plot_negative", width = 8, height = 8),
+          list(index = 5, name = "TF_network_plot_both", width = 8, height = 8)
+        )
+      )
+    )
+  }
+  
+  export_bulk_item <- function(item, root_dir, image_format, dpi) {
+    item_dir <- do.call(file.path, c(list(root_dir), lapply(item$folder, sanitize_bulk_path_part)))
+    dir.create(item_dir, recursive = TRUE, showWarnings = FALSE)
+    
+    if (identical(item$type, "table")) {
+      table_data <- item$expr()
+      if (is.null(table_data) || length(table_data) == 0) {
+        return(FALSE)
+      }
+      output_path <- file.path(item_dir, paste0(item$file_stem, ".csv"))
+      write.csv(table_data, output_path)
+      return(file.exists(output_path) && file.info(output_path)$size > 0)
+    }
+    
+    if (identical(item$type, "pdf")) {
+      source_path <- item$expr()
+      if (is.null(source_path) || !file.exists(source_path)) {
+        return(FALSE)
+      }
+      output_path <- file.path(item_dir, paste0(item$file_stem, ".pdf"))
+      file.copy(source_path, output_path, overwrite = TRUE)
+      return(file.exists(output_path) && file.info(output_path)$size > 0)
+    }
+    
+    plot_obj <- item$expr()
+    if (is.null(plot_obj)) {
+      return(FALSE)
+    }
+    dims <- get_bulk_plot_dimensions(plot_obj, item)
+    output_path <- file.path(item_dir, paste0(item$file_stem, image_format))
+    save_bulk_plot(plot_obj, output_path, image_format, dims$width, dims$height, dpi)
+  }
+  
+  bulk_item_extension <- function(item, image_format) {
+    switch(
+      item$type,
+      plot = image_format,
+      table = ".csv",
+      pdf = ".pdf",
+      ""
+    )
+  }
+  
+  bulk_item_relative_path <- function(item, image_format) {
+    do.call(
+      file.path,
+      as.list(
+        c(
+          vapply(item$folder, sanitize_bulk_path_part, character(1)),
+          paste0(item$file_stem, bulk_item_extension(item, image_format))
+        )
+      )
+    )
+  }
+  
+  bulk_item_ready_status <- function(item) {
+    if (!bulk_analysis_completed(item$trigger_id)) {
+      return("Analysis incomplete")
+    }
+    
+    is_available <- tryCatch(
+      {
+        value <- item$expr()
+        if (identical(item$type, "pdf")) {
+          !is.null(value) && file.exists(value)
+        } else {
+          !is.null(value) && length(value) > 0
+        }
+      },
+      error = function(e) FALSE
+    )
+    
+    if (isTRUE(is_available)) {
+      "Ready"
+    } else {
+      "Completed, output unavailable"
+    }
+  }
+  
+  output$bulk_ready_table <- renderDataTable({
+    input$bulk_refresh_table
+    image_format <- input$bulk_image_format %||% ".jpg"
+    bulk_items <- bulk_output_registry()
+    
+    rows <- lapply(bulk_items, function(item) {
+      status <- bulk_item_ready_status(item)
+      if (!identical(status, "Ready")) {
+        return(NULL)
+      }
+      
+      data.frame(
+        Menu = item$menu %||% "",
+        `Sub-tab` = item$subtab %||% "",
+        Type = switch(item$type, plot = "Image", table = "CSV table", pdf = "PDF", item$type),
+        Output = item$name %||% "",
+        `ZIP path` = bulk_item_relative_path(item, image_format),
+        Status = status,
+        stringsAsFactors = FALSE,
+        check.names = FALSE
+      )
+    })
+    rows <- Filter(Negate(is.null), rows)
+    
+    ready_table <- if (length(rows) > 0) {
+      do.call(rbind, rows)
+    } else {
+      data.frame(
+        Menu = character(),
+        `Sub-tab` = character(),
+        Type = character(),
+        Output = character(),
+        `ZIP path` = character(),
+        Status = character(),
+        stringsAsFactors = FALSE,
+        check.names = FALSE
+      )
+    }
+    
+    DT::datatable(
+      ready_table,
+      options = list(
+        scrollX = TRUE,
+        pageLength = 10,
+        order = list(list(0, "asc"), list(1, "asc"), list(2, "asc")),
+        language = list(
+          emptyTable = "No completed images, PDFs, or CSV tables are ready for bulk download yet."
+        )
+      ),
+      rownames = FALSE,
+      selection = "none"
+    )
+  })
+  
+  create_bulk_zip_archive <- function(zip_file, root_dir) {
+    archive_entries <- list.files(root_dir, recursive = FALSE, all.files = TRUE, full.names = FALSE)
+    archive_entries <- archive_entries[!archive_entries %in% c(".", "..")]
+    if (length(archive_entries) == 0) {
+      stop("No files were available for the ZIP archive.")
+    }
+    
+    old_wd <- setwd(root_dir)
+    on.exit(setwd(old_wd), add = TRUE)
+    
+    if (requireNamespace("zip", quietly = TRUE)) {
+      zip::zipr(zipfile = zip_file, files = archive_entries, recurse = TRUE)
+    } else {
+      utils::zip(zipfile = zip_file, files = archive_entries, flags = "-r9X")
+    }
+  }
+  
+  output$bulk_download_zip <- downloadHandler(
+    filename = function() {
+      paste0("ScRDAVis_bulk_download_", format(Sys.time(), "%Y-%m-%d_%H-%M-%S"), ".zip")
+    },
+    contentType = "application/zip",
+    content = function(file) {
+      image_format <- input$bulk_image_format %||% ".jpg"
+      dpi <- max(72, min(300, as.numeric(input$bulk_image_dpi %||% 300)))
+      bulk_items <- bulk_output_registry()
+      total_steps <- length(bulk_items) + 3
+      step_count <- 0
+      exported_count <- 0
+      skipped_count <- 0
+      export_errors <- character()
+      
+      advance_bulk_progress <- function(detail, status = "Extracting") {
+        step_count <<- min(total_steps, step_count + 1)
+        progress <- round((step_count / total_steps) * 100)
+        incProgress(1 / total_steps, detail = detail)
+        update_bulk_download_status(
+          status = status,
+          progress = progress,
+          message = detail,
+          exported = exported_count,
+          skipped = skipped_count
+        )
+        update_run_status(
+          status = status,
+          progress = progress,
+          message = detail
+        )
+      }
+      
+      tryCatch(
+        {
+          bulk_download_status$started_at <- ""
+          bulk_download_status$completed_at <- ""
+          update_bulk_download_status(
+            status = "Preparing",
+            progress = 0,
+            message = "Preparing bulk download.",
+            exported = 0,
+            skipped = 0
+          )
+          start_run_status(
+            action_label = "Bulk ZIP download",
+            menu_label = "Bulk Downloads",
+            tab_label = "Bulk Downloads",
+            message = "Preparing bulk download."
+          )
+          append_run_log(
+            entry_type = "Download",
+            status = "Preparing",
+            action_label = "Bulk ZIP download",
+            menu_label = "Bulk Downloads",
+            tab_label = "Bulk Downloads",
+            detail = "Preparing bulk ZIP archive."
+          )
+          
+          withProgress(message = "Preparing bulk download", value = 0, style = "notification", {
+            temp_root <- tempfile("scrdavis_bulk_")
+            dir.create(temp_root, recursive = TRUE, showWarnings = FALSE)
+            on.exit(unlink(temp_root, recursive = TRUE, force = TRUE), add = TRUE)
+            
+            writeLines(sess_txt(), con = file.path(temp_root, "sessionInfo.txt"), useBytes = TRUE)
+            exported_count <- exported_count + 1
+            advance_bulk_progress("Writing sessionInfo.txt.", "Preparing")
+            
+            for (item in bulk_items) {
+              if (!bulk_analysis_completed(item$trigger_id)) {
+                skipped_count <- skipped_count + 1
+                advance_bulk_progress(paste("Skipping incomplete analysis:", item$name), "Extracting")
+                next
+              }
+              
+              success <- tryCatch(
+                export_bulk_item(item, temp_root, image_format, dpi),
+                error = function(e) {
+                  export_errors <<- c(export_errors, paste(item$name, conditionMessage(e), sep = ": "))
+                  FALSE
+                }
+              )
+              
+              if (isTRUE(success)) {
+                exported_count <- exported_count + 1
+                advance_bulk_progress(paste("Exported:", item$name), "Extracting")
+              } else {
+                skipped_count <- skipped_count + 1
+                advance_bulk_progress(paste("Skipped unavailable output:", item$name), "Extracting")
+              }
+            }
+            
+            zip_tmp <- tempfile(fileext = ".zip")
+            create_bulk_zip_archive(zip_tmp, temp_root)
+            advance_bulk_progress("Creating ZIP archive.", "Creating ZIP")
+            
+            if (!file.copy(zip_tmp, file, overwrite = TRUE)) {
+              stop("Could not write the ZIP archive to the requested download file.")
+            }
+            advance_bulk_progress("Bulk download completed successfully.", "Completed successfully")
+          })
+          
+          detail_message <- paste0("Bulk ZIP completed. Exported files: ", exported_count, ".")
+          complete_run_status(detail_message)
+          update_bulk_download_status(
+            status = "Completed successfully",
+            progress = 100,
+            message = detail_message,
+            exported = exported_count,
+            skipped = skipped_count
+          )
+          append_run_log(
+            entry_type = "Download",
+            status = "Completed successfully",
+            action_label = "Bulk ZIP download",
+            menu_label = "Bulk Downloads",
+            tab_label = "Bulk Downloads",
+            detail = detail_message
+          )
+          showNotification(detail_message, type = "message", duration = 5)
+        },
+        error = function(e) {
+          failure_message <- paste("Bulk download failed:", conditionMessage(e))
+          fail_run_status(failure_message)
+          update_bulk_download_status(
+            status = "Failed",
+            progress = 100,
+            message = failure_message,
+            exported = exported_count,
+            skipped = skipped_count
+          )
+          append_run_log(
+            entry_type = "Download",
+            status = "Failed",
+            action_label = "Bulk ZIP download",
+            menu_label = "Bulk Downloads",
+            tab_label = "Bulk Downloads",
+            detail = failure_message
+          )
+          showNotification(failure_message, type = "error", duration = 8)
+          stop(e)
+        }
+      )
+    }
+  )
   
   observe_analysis_status("multiple_sample_submit", function() datainput_multiple_sample_level())
   observe_analysis_status("multiple_sample_qc_filtering", function() datainput_multiple_qc_filter_level())

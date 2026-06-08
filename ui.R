@@ -2239,6 +2239,52 @@ tabPanel(
   # ),
 ),
 ######################################################Menu10#####################################################################   
+###################################################Bulk downloads#################################################################
+tabPanel(
+  "Bulk Downloads",
+  useShinyjs(),
+  mainPanel(
+    width = 12,
+    h2("Bulk Downloads"),
+    fluidRow(
+      box(
+        width = 12,
+        status = "primary",
+        solidHeader = FALSE,
+        column(
+          4,
+          selectInput(
+            "bulk_image_format",
+            label = "Image format",
+            choices = list("JPG" = ".jpg", "TIFF" = ".tiff", "PDF" = ".pdf", "SVG" = ".svg", "BMP" = ".bmp", "EPS" = ".eps", "PS" = ".ps"),
+            selected = ".jpg"
+          )
+        ),
+        column(
+          4,
+          numericInput("bulk_image_dpi", label = "Image resolution (dpi)", value = 300, min = 72, max = 300)
+        ),
+        column(
+          4,
+          checkboxInput("bulk_auto_image_size", label = "Automatically adjust image size", value = TRUE)
+        ),
+        column(
+          12,
+          actionBttn("bulk_refresh_table", "Refresh ready table", style = "unite", color = "primary", icon = icon("refresh")),
+          br(),
+          br(),
+          withSpinner(type = 4, dataTableOutput("bulk_ready_table")),
+          br(),
+          downloadBttn(outputId = "bulk_download_zip", label = "Download ZIP", style = "unite", color = "primary", icon = icon("download")),
+          br(),
+          br(),
+          uiOutput("bulk_download_status_ui")
+        )
+      )
+    )
+  )
+),
+######################################################Menu10#####################################################################   
 ###################################################Manual####################################################################
 tabPanel(
   "Manual",
@@ -2281,6 +2327,17 @@ tabPanel(
   <li><strong>High-Quality Plot Download:</strong> Users can download plots in seven formats: JPG, TIFF, PDF, SVG, BMP, EPS, and PS. However, a few specific plots, such as those requiring exceptionally high detail or complex rendering (e.g., network graphs or high-resolution heatmaps), are only available as PDF files to preserve their quality and detail.</li>
   <li><strong>Summary Tables:</strong> Tables are displayed using the DT package. Users can visualize up to 100 rows (default is 10) and download the entire table as a CSV file.</li>
   <li><strong>Download Seurat Object:</strong> In single or multiple sample analyses, users can download the processed results as an RDS file (Seurat Object). </li>
+</ul>
+<p><strong>Bulk Download Option:</strong></p>
+<ul>
+  <li>The Bulk Downloads menu lets users download all completed plots, PDF reports, and tables together as one ZIP file.</li>
+  <li>The ready table starts empty and updates only when an analysis output is completed and available for bulk download. Users can click Refresh ready table to update the list.</li>
+  <li>Users can choose the preferred image format before downloading. Supported image formats include JPG, TIFF, PDF, SVG, BMP, EPS, and PS.</li>
+  <li>Bulk image export automatically adjusts plot height and width for larger split or faceted figures.</li>
+  <li>Tables are exported as CSV files, and PDF-only outputs such as co-expression network reports are included as PDF files.</li>
+  <li>The ZIP file preserves the application structure by creating separate folders for each tab and sub-tab, with the corresponding images, PDFs, and CSV files saved inside those folders.</li>
+  <li>Only completed analyses are included. Outputs from analyses that have not been run are skipped from the ZIP file.</li>
+  <li>A sessionInfo.txt file is also included in the ZIP to record the R session and package information for reproducibility.</li>
 </ul>
 <p><strong>Example Datasets:</strong></p>
 <p>To ensure seamless analysis and reproducibility, ScRDAVis includes one reference dataset for each input format, sourced from NCBI, which has been pre-tested with the tool. These datasets allow users to explore the tool's functionalities and understand the analysis workflow effectively.</p>

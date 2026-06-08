@@ -1,3 +1,10 @@
+if (!exists("scrdavis_cellchat_plot", mode = "function")) {
+  scrdavis_cellchat_plot <- function(draw_fn) {
+    force(draw_fn)
+    structure(list(draw = draw_fn), class = "scrdavis_plotter")
+  }
+}
+
 datainput_single_multiple_sample_cellchat1<- function(index_multiple_sample_cellchat1_input, index_subclustering_multiple_sample_cellchat1_input, index_multiple_sample_cellchat1_input2, index_subclustering_multiple_sample_cellchat1_input2, index_s_cellchat1, index_s_cellchat2, index_s_cellchat3, index_s_cellchat4, index_s_cellchat5, index_s_cellchat6, index_s_cellchat7, index_s_cellchat8, index_s_cellchat9, index_s_cellchat10){
   index_s_cellchat10 <- as.logical(index_s_cellchat10)
   
@@ -96,8 +103,12 @@ datainput_single_multiple_sample_cellchat1<- function(index_multiple_sample_cell
   # Visualize signaling roles using circle plot
   #par(mfrow = c(1,2), xpd=TRUE)
   #grid.newpage() 
-  plots601 <- netVisual_circle(cellchat@net$count, vertex.weight = groupSize, weight.scale = T, label.edge= index_s_cellchat10, title.name = "Number of interactions")
-  plots602 <- netVisual_circle(cellchat@net$weight, vertex.weight = groupSize, weight.scale = T, label.edge= index_s_cellchat10, title.name ="Interaction weights/strength")
+  plots601 <- scrdavis_cellchat_plot(function() {
+    netVisual_circle(cellchat@net$count, vertex.weight = groupSize, weight.scale = T, label.edge= index_s_cellchat10, title.name = "Number of interactions")
+  })
+  plots602 <- scrdavis_cellchat_plot(function() {
+    netVisual_circle(cellchat@net$weight, vertex.weight = groupSize, weight.scale = T, label.edge= index_s_cellchat10, title.name ="Interaction weights/strength")
+  })
   #plots601+plots602
   #Heatmap of Interactions
   # Plot a heatmap of communication probabilities

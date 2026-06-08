@@ -2,6 +2,11 @@ datainput_single_multiple_sample_hdwgcna<- function(index_multiple_sample_hdwgcn
   index_s_hdwgcna11 <-as.logical(index_s_hdwgcna11)
   index_s_hdwgcna14 <-as.logical(index_s_hdwgcna14)
   run_stamp <- paste0(format(Sys.time(), "%Y%m%d%H%M%S"), "_", sample.int(1000000, 1))
+  output_dir <- file.path(tempdir(), paste0("scrdavis_hdwgcna_", run_stamp))
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+  old_wd <- getwd()
+  on.exit(setwd(old_wd), add = TRUE)
+  setwd(output_dir)
   
   write_placeholder_pdf <- function(path, title_text, body_text) {
     pdf(path, width = 8, height = 6)
@@ -161,7 +166,6 @@ datainput_single_multiple_sample_hdwgcna<- function(index_multiple_sample_hdwgcn
     overwrite_tom = TRUE
   )
   
-  output_dir <- paste0(getwd(),"/www/")  # Replace with your desired directory
   output_file <- paste0("PlotDendrogram_", run_stamp, ".pdf")          # File name for the PDF
   pdf_path <- file.path(output_dir, output_file)
   pdf(pdf_path, width = 8, height = 6)  # Specify width and height if needed
@@ -264,13 +268,12 @@ datainput_single_multiple_sample_hdwgcna<- function(index_multiple_sample_hdwgcn
     single_multiple_sample_clustering
   )
   
-  tempdir <-getwd()
   pdf_dir <- paste0(getwd(),"/ModuleNetworks")  # Replace with your directory
   
   # List all PDF files in the directory
   pdf_files <- list.files(pdf_dir, pattern = "\\.pdf$", full.names = TRUE)
   output_pdf_name <- paste0("combined_output_", run_stamp, ".pdf")
-  output_pdf <- file.path(getwd(), "www", output_pdf_name)
+  output_pdf <- file.path(output_dir, output_pdf_name)
   # Combine the PDF files
   pdf_combine(pdf_files, output = output_pdf)
   # Remove the directory
@@ -300,5 +303,5 @@ datainput_single_multiple_sample_hdwgcna<- function(index_multiple_sample_hdwgcn
   tom_dir <- paste0(getwd(),"/TOM")
   unlink(tom_dir, recursive = TRUE)
   
-  return(list(plot801 = plots801, plot802 = plots802, plot804 = plots804, plot805 = plots805, plot807 = plots807, text_summary = tempdir, data1 = power_table, data2 = modules, data3 = hub_df, data4 = single_multiple_sample_clustering, dendrogram_file = output_file, correlogram_file = output_file1, module_networks_file = output_pdf_name, module_umap_file = output_file2))
+  return(list(plot801 = plots801, plot802 = plots802, plot804 = plots804, plot805 = plots805, plot807 = plots807, text_summary = output_dir, data1 = power_table, data2 = modules, data3 = hub_df, data4 = single_multiple_sample_clustering, dendrogram_file = output_file, correlogram_file = output_file1, module_networks_file = output_pdf_name, module_umap_file = output_file2))
 }
