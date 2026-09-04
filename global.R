@@ -80,23 +80,11 @@ if (!require("SeuratDisk")) remotes::install_github("mojaveazure/seurat-disk", u
 if (!require("CellChat")) remotes::install_github("jinworks/CellChat", upgrade = "never", dependencies = TRUE)
 if (!require("genesorteR")) remotes::install_github("mahmoudibrahim/genesorteR", upgrade = "never", dependencies = TRUE)
 if (!require("hdWGCNA")) remotes::install_github("smorabit/hdWGCNA", upgrade = "never", dependencies = TRUE)
+if (!require("enrichR")) remotes::install_github("wjawaid/enrichR", upgrade = "never", dependencies = TRUE)
 source("scripts/PrctCellExpringGene.R")
+source("scripts/gptcelltype_with_key.R")
 options(shiny.maxRequestSize=2000*1024^2)
 options(future.globals.maxSize= 925289600000)
-Sys.setenv(OPENAI_API_KEY = '')  #Add your key here
-
-optional_github_pkgs <- c(
-   "enrichR",
-)
-
-for (pkg in optional_github_pkgs) {
-  suppressWarnings(suppressPackageStartupMessages(require(pkg, character.only = TRUE, quietly = TRUE)))
-}
-
-if (!nzchar(Sys.getenv("OPENAI_API_KEY"))) {
-  message("OPENAI_API_KEY is not set. GPTCelltype will remain unavailable until you set it in the R session or environment.")
-}
-
 
 # Determine OS-specific cache path
 if (.Platform$OS.type == "windows") {

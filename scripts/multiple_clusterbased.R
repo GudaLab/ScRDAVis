@@ -1,5 +1,6 @@
-datainput_multiple_clusterbased <- function(index_multiple_clusterbased_input, index_multiple_clusterbased_features, index_m_celltype_method, index_m_clusterbased1, index_m_clusterbased2, index_m_clusterbased3, index_m_clusterbased4, index_m_clusterbased5, index_m_clusterbased6) {
+datainput_multiple_clusterbased <- function(index_multiple_clusterbased_input, index_multiple_clusterbased_features, index_m_celltype_method, index_m_clusterbased1, index_m_clusterbased2, index_m_clusterbased3, index_m_clusterbased4, index_m_clusterbased5, index_m_clusterbased6, index_m_clusterbased_violin_dots = TRUE) {
   multiple_sample_clustering <- index_multiple_clusterbased_input
+  violin_pt_size <- ifelse(isTRUE(as.logical(index_m_clusterbased_violin_dots)), 1, 0)
   if (index_m_clusterbased1 == "gene_name_list" & index_m_clusterbased5 == "NULL"){
     top_markers_plot <- unlist(strsplit(index_m_clusterbased2, ","))
     
@@ -7,7 +8,7 @@ datainput_multiple_clusterbased <- function(index_multiple_clusterbased_input, i
       plots43 <- DotPlot(multiple_sample_clustering, idents=index_m_clusterbased6, features = top_markers_plot, group.by = index_m_clusterbased4) + coord_flip()
     }
     else if(index_m_clusterbased4 == "seurat_clusters" & index_m_clusterbased3 == "VlnPlot") {
-      plots43 <- VlnPlot(multiple_sample_clustering, idents=index_m_clusterbased6, features = top_markers_plot, ncol = 5, group.by = index_m_clusterbased4)
+      plots43 <- VlnPlot(multiple_sample_clustering, idents=index_m_clusterbased6, features = top_markers_plot, ncol = 5, group.by = index_m_clusterbased4, pt.size = violin_pt_size)
     }
     else if(index_m_clusterbased4 == "seurat_clusters" & index_m_clusterbased3 == "FeaturePlot") {
       Idents(multiple_sample_clustering) <- index_m_clusterbased4
@@ -18,7 +19,7 @@ datainput_multiple_clusterbased <- function(index_multiple_clusterbased_input, i
       plots43 <- DotPlot(multiple_sample_clustering, features = top_markers_plot, group.by = index_m_celltype_method) + coord_flip()
     }
     else if(index_m_clusterbased4 == "predicted" & index_m_clusterbased3 == "VlnPlot") {
-	plots43 <- VlnPlot(multiple_sample_clustering, features = top_markers_plot, ncol = 5, group.by = index_m_celltype_method)
+	plots43 <- VlnPlot(multiple_sample_clustering, features = top_markers_plot, ncol = 5, group.by = index_m_celltype_method, pt.size = violin_pt_size)
     }
     else if(index_m_clusterbased4 == "predicted" & index_m_clusterbased3 == "FeaturePlot") {
       Idents(multiple_sample_clustering) <- index_m_celltype_method
@@ -35,7 +36,7 @@ datainput_multiple_clusterbased <- function(index_multiple_clusterbased_input, i
       plots43 <- DotPlot(multiple_sample_clustering, idents=index_m_clusterbased6, features = top_markers_plot, group.by = index_m_clusterbased4) + coord_flip()
     }
     else if(index_m_clusterbased4 == "seurat_clusters" & index_m_clusterbased3 == "VlnPlot") {
-      plots43 <- VlnPlot(multiple_sample_clustering, idents=index_m_clusterbased6, features = top_markers_plot, ncol = 5, group.by = index_m_clusterbased4)
+      plots43 <- VlnPlot(multiple_sample_clustering, idents=index_m_clusterbased6, features = top_markers_plot, ncol = 5, group.by = index_m_clusterbased4, pt.size = violin_pt_size)
     }
     else if(index_m_clusterbased4 == "seurat_clusters" & index_m_clusterbased3 == "FeaturePlot") {
       Idents(multiple_sample_clustering) <- index_m_clusterbased4
@@ -47,7 +48,7 @@ datainput_multiple_clusterbased <- function(index_multiple_clusterbased_input, i
     }
     else if(index_m_clusterbased4 == "predicted" & index_m_clusterbased3 == "VlnPlot") {
     index_m_clusterbased6 <- unlist(strsplit(index_m_clusterbased6, ","))
-	plots43 <- VlnPlot(multiple_sample_clustering, features = top_markers_plot, ncol = 5, group.by = index_m_celltype_method)
+	plots43 <- VlnPlot(multiple_sample_clustering, features = top_markers_plot, ncol = 5, group.by = index_m_celltype_method, pt.size = violin_pt_size)
     }
     else if(index_m_clusterbased4 == "predicted" & index_m_clusterbased3 == "FeaturePlot") {
       Idents(multiple_sample_clustering) <- index_m_celltype_method
@@ -60,7 +61,7 @@ datainput_multiple_clusterbased <- function(index_multiple_clusterbased_input, i
       plots43 <- DotPlot(multiple_sample_clustering, idents=index_m_clusterbased6, features = top_markers_plot, group.by = index_m_clusterbased4, split.by = index_m_clusterbased5, cols=c(rep("blue",150), "white")) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + coord_flip()
     }
     else if(index_m_clusterbased4 == "seurat_clusters" & index_m_clusterbased3 == "VlnPlot") {
-      plots43 <- VlnPlot(multiple_sample_clustering, idents=index_m_clusterbased6, features = top_markers_plot, ncol = 5, group.by = index_m_clusterbased4, split.by = index_m_clusterbased5)+ theme(legend.position = 'right')
+      plots43 <- VlnPlot(multiple_sample_clustering, idents=index_m_clusterbased6, features = top_markers_plot, ncol = 5, group.by = index_m_clusterbased4, split.by = index_m_clusterbased5, pt.size = violin_pt_size)+ theme(legend.position = 'right')
     }
     else if(index_m_clusterbased4 == "seurat_clusters" & index_m_clusterbased3 == "FeaturePlot") {
       Idents(multiple_sample_clustering) <- index_m_clusterbased4
@@ -71,7 +72,7 @@ datainput_multiple_clusterbased <- function(index_multiple_clusterbased_input, i
       plots43 <- DotPlot(multiple_sample_clustering, features = top_markers_plot, group.by = index_m_celltype_method, split.by = index_m_clusterbased5, cols=c(rep("blue",150), "white")) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + coord_flip()
     }
     else if(index_m_clusterbased4 == "predicted" & index_m_clusterbased3 == "VlnPlot") {
-      plots43 <- VlnPlot(multiple_sample_clustering, features = top_markers_plot, ncol = 5, group.by = index_m_celltype_method, split.by = index_m_clusterbased5)+ theme(legend.position = 'right')
+      plots43 <- VlnPlot(multiple_sample_clustering, features = top_markers_plot, ncol = 5, group.by = index_m_celltype_method, split.by = index_m_clusterbased5, pt.size = violin_pt_size)+ theme(legend.position = 'right')
     }
     else if(index_m_clusterbased4 == "predicted" & index_m_clusterbased3 == "FeaturePlot") {
       Idents(multiple_sample_clustering) <- index_m_celltype_method
@@ -87,7 +88,7 @@ datainput_multiple_clusterbased <- function(index_multiple_clusterbased_input, i
       plots43 <- DotPlot(multiple_sample_clustering, idents=index_m_clusterbased6, features = top_markers_plot, group.by = index_m_clusterbased4, split.by = index_m_clusterbased5, cols=c(rep("blue",150), "white")) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + coord_flip()
     }
     else if(index_m_clusterbased4 == "seurat_clusters" & index_m_clusterbased3 == "VlnPlot") {
-      plots43 <- VlnPlot(multiple_sample_clustering, idents=index_m_clusterbased6, features = top_markers_plot, ncol = 5, group.by = index_m_clusterbased4, split.by = index_m_clusterbased5)+ theme(legend.position = 'right')
+      plots43 <- VlnPlot(multiple_sample_clustering, idents=index_m_clusterbased6, features = top_markers_plot, ncol = 5, group.by = index_m_clusterbased4, split.by = index_m_clusterbased5, pt.size = violin_pt_size)+ theme(legend.position = 'right')
     }
     else if(index_m_clusterbased4 == "seurat_clusters" & index_m_clusterbased3 == "FeaturePlot") {
       Idents(multiple_sample_clustering) <- index_m_clusterbased4
@@ -98,7 +99,7 @@ datainput_multiple_clusterbased <- function(index_multiple_clusterbased_input, i
       plots43 <- DotPlot(multiple_sample_clustering, features = top_markers_plot, group.by = index_m_celltype_method, split.by = index_m_clusterbased5, cols=c(rep("blue",150), "white")) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + coord_flip()
     }
     else if(index_m_clusterbased4 == "predicted" & index_m_clusterbased3 == "VlnPlot") {
-      plots43 <- VlnPlot(multiple_sample_clustering, features = top_markers_plot, ncol = 5, group.by = index_m_celltype_method, split.by = index_m_clusterbased5)+ theme(legend.position = 'right')
+      plots43 <- VlnPlot(multiple_sample_clustering, features = top_markers_plot, ncol = 5, group.by = index_m_celltype_method, split.by = index_m_clusterbased5, pt.size = violin_pt_size)+ theme(legend.position = 'right')
     }
     else if(index_m_clusterbased4 == "predicted" & index_m_clusterbased3 == "FeaturePlot") {
       Idents(multiple_sample_clustering) <- index_m_celltype_method

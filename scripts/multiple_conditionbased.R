@@ -1,5 +1,6 @@
-datainput_multiple_conditionbased <- function(index_multiple_conditionbased_input, index_multiple_sample_normalization_method, index_m_conditionbased1, index_m_conditionbased2, index_m_conditionbased3, index_m_conditionbased4, index_m_conditionbased5, index_m_conditionbased6, index_m_conditionbased7, index_m_conditionbased8, index_m_conditionbased9, index_m_conditionbased10) {
+datainput_multiple_conditionbased <- function(index_multiple_conditionbased_input, index_multiple_sample_normalization_method, index_m_conditionbased1, index_m_conditionbased2, index_m_conditionbased3, index_m_conditionbased4, index_m_conditionbased5, index_m_conditionbased6, index_m_conditionbased7, index_m_conditionbased8, index_m_conditionbased9, index_m_conditionbased10, index_m_conditionbased_violin_dots = TRUE) {
   multiple_sample_clustering_sample_based <- index_multiple_conditionbased_input
+  violin_pt_size <- ifelse(isTRUE(as.logical(index_m_conditionbased_violin_dots)), 1, 0)
   
   Idents(multiple_sample_clustering_sample_based) <- "condition"
   multiple_sample_clustering_sample_based <-subset(multiple_sample_clustering_sample_based, idents = c(index_m_conditionbased1, index_m_conditionbased2))
@@ -27,7 +28,7 @@ datainput_multiple_conditionbased <- function(index_multiple_conditionbased_inpu
   plots44 <- DotPlot(multiple_sample_clustering_sample_based, features = rev(as.character(unique(top25_sub$gene))), group.by = index_m_conditionbased8) + coord_flip() + theme(legend.position = 'right')
   }
   else if (index_m_conditionbased7 == "VlnPlot"){
-  plots44 <- VlnPlot(multiple_sample_clustering_sample_based, features = as.character(unique(top25_sub$gene)), ncol = 5, group.by = index_m_conditionbased8)  + theme(legend.position = 'right')
+  plots44 <- VlnPlot(multiple_sample_clustering_sample_based, features = as.character(unique(top25_sub$gene)), ncol = 5, group.by = index_m_conditionbased8, pt.size = violin_pt_size)  + theme(legend.position = 'right')
     }
   else if (index_m_conditionbased7 == "RidgePlot"){
   plots44 <- RidgePlot(multiple_sample_clustering_sample_based, features = as.character(unique(top25_sub$gene)), ncol = 5, group.by = index_m_conditionbased8)

@@ -1,5 +1,6 @@
-datainput_multiple_qc_filter <- function(index_multiple_qc_input, index_multiple_qc_input1, index_multiple_group_count, index_group1_name, index_group1_samples, index_group2_name, index_group2_samples, index_group3_name, index_group3_samples, index_group4_name, index_group4_samples, index_group5_name, index_group5_samples, index_group6_name, index_group6_samples, index_multiple_sample_min_count, index_multiple_sample_max_count, index_multiple_sample_max_mito_perc){
+datainput_multiple_qc_filter <- function(index_multiple_qc_input, index_multiple_qc_input1, index_multiple_group_count, index_group1_name, index_group1_samples, index_group2_name, index_group2_samples, index_group3_name, index_group3_samples, index_group4_name, index_group4_samples, index_group5_name, index_group5_samples, index_group6_name, index_group6_samples, index_multiple_sample_min_count, index_multiple_sample_max_count, index_multiple_sample_max_mito_perc, index_multiple_qc_violin_dots = TRUE){
    multiple_list <- index_multiple_qc_input1
+   violin_pt_size <- ifelse(isTRUE(as.logical(index_multiple_qc_violin_dots)), 1, 0)
 
   if (index_multiple_group_count == 2)
   {
@@ -265,10 +266,10 @@ datainput_multiple_qc_filter <- function(index_multiple_qc_input, index_multiple
      colnames(group_count_bar) <- c("Groups", "variable", "Cell_counts")  
    }
    
-  plots6 <- VlnPlot(groups_merged, features = "nFeature_RNA", ncol = 1)
-  plots7 <- VlnPlot(groups_merged, features = "nCount_RNA", ncol = 1)
-  plots8 <- VlnPlot(groups_merged, features = "percent.mt", ncol = 1)
-  plots9 <- VlnPlot(groups_merged, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 1, group.by = "condition")
+  plots6 <- VlnPlot(groups_merged, features = "nFeature_RNA", ncol = 1, pt.size = violin_pt_size)
+  plots7 <- VlnPlot(groups_merged, features = "nCount_RNA", ncol = 1, pt.size = violin_pt_size)
+  plots8 <- VlnPlot(groups_merged, features = "percent.mt", ncol = 1, pt.size = violin_pt_size)
+  plots9 <- VlnPlot(groups_merged, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 1, group.by = "condition", pt.size = violin_pt_size)
   
   plots10 <- ggplot(sample_count_bar, aes(x=Samples, y=Cell_counts, fill = variable)) +
     geom_bar(stat="identity", position = position_dodge())+
@@ -282,6 +283,16 @@ datainput_multiple_qc_filter <- function(index_multiple_qc_input, index_multiple
     geom_text(aes(label=Cell_counts), vjust=1.6, position = position_dodge(0.9), color="white", size=3.5)+
     theme(panel.background = element_blank(), panel.border=element_rect(fill=NA),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),strip.background=element_blank(), plot.margin=unit(c(1,1,1,1),"line")) +
     theme(axis.text.x=element_blank())+ guides(fill=guide_legend(title="Cell count"))+theme(axis.text.x = element_text(angle = 90, vjust = 1))
+  
+  if (is.null(groups_merged@misc$ScRDAVis)) {
+    groups_merged@misc$ScRDAVis <- list()
+  }
+  groups_merged@misc$ScRDAVis$qc_counts <- list(
+    sample_before = groups_table1,
+    sample_after = groups_table3,
+    group_before = groups_table2,
+    group_after = groups_table4
+  )
   
   return(list(plot1 = plots6+plots7+plots8, plot2 = plots9, plot3 = plots10, plot4 = plots11, data1 = groups_table3, data2 = groups_table4, data3 = groups_merged))
 }

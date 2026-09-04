@@ -1,5 +1,6 @@
-datainput_multiple_sample <- function(index_multiple_sample_file, index_multiple_sample_file1, index_multiple_sample_file_names, index_multiple_sample_format, index_multiple_sample_name, index_multiple_sample_cell, index_multiple_sample_genes){
+datainput_multiple_sample <- function(index_multiple_sample_file, index_multiple_sample_file1, index_multiple_sample_file_names, index_multiple_sample_format, index_multiple_sample_name, index_multiple_sample_cell, index_multiple_sample_genes, index_multiple_sample_violin_dots = TRUE){
 index_multiple_sample_format <- as.character(index_multiple_sample_format)
+violin_pt_size <- ifelse(isTRUE(as.logical(index_multiple_sample_violin_dots)), 1, 0)
 
 
 # Save and restore working directory
@@ -78,9 +79,9 @@ else if (index_multiple_sample_format == "exampledata")
 
 multiple_list_merged[["percent.mt"]] <- PercentageFeatureSet(multiple_list_merged, pattern = "^MT-")
 
-plots1 <- VlnPlot(multiple_list_merged, features = "nFeature_RNA", ncol = 1)
-plots2 <- VlnPlot(multiple_list_merged, features = "nCount_RNA", ncol = 1)
-plots3 <- VlnPlot(multiple_list_merged, features = "percent.mt", ncol = 1)
+plots1 <- VlnPlot(multiple_list_merged, features = "nFeature_RNA", ncol = 1, pt.size = violin_pt_size)
+plots2 <- VlnPlot(multiple_list_merged, features = "nCount_RNA", ncol = 1, pt.size = violin_pt_size)
+plots3 <- VlnPlot(multiple_list_merged, features = "percent.mt", ncol = 1, pt.size = violin_pt_size)
 plots4 <- FeatureScatter(multiple_list_merged, feature1 = "nCount_RNA", feature2 = "percent.mt")
 plots5 <- FeatureScatter(multiple_list_merged, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
 

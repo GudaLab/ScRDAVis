@@ -1,4 +1,4 @@
-datainput_multiple_celltype <- function(index_multiple_celltype_input, index_cell_markers, index_m_celltype1, index_m_celltype2, index_m_celltype3, index_m_celltype4, index_m_celltype5, index_m_celltype6, index_m_celltype7, index_m_celltype8, index_m_celltype9, index_m_clustering6, index_multiple_sample_normalization_method){
+datainput_multiple_celltype <- function(index_multiple_celltype_input, index_cell_markers, index_m_celltype1, index_m_celltype2, index_m_celltype3, index_m_celltype4, index_m_celltype5, index_m_celltype6, index_m_celltype7, index_m_celltype8, index_m_celltype9, index_m_clustering6, index_multiple_sample_normalization_method, index_m_celltype_api_key = NULL){
   multiple_sample_clustering <- index_multiple_celltype_input
   multiple_sample_clustering_markers <- index_cell_markers
   index_m_celltype8 <- as.logical(index_m_celltype8)
@@ -100,9 +100,12 @@ datainput_multiple_celltype <- function(index_multiple_celltype_input, index_cel
   
   else if(index_m_celltype1 == 3){
     #GPTCelltype
-    # IMPORTANT! Assign your OpenAI API key. See Vignette for details
-    
-    res <- gptcelltype(multiple_sample_clustering_markers, model = index_m_celltype5, topgenenumber = index_m_celltype6)
+    res <- gptcelltype_with_key(
+      multiple_sample_clustering_markers,
+      api_key = index_m_celltype_api_key,
+      model = index_m_celltype5,
+      topgenenumber = index_m_celltype6
+    )
     
     # Assign cell type annotation back to Seurat object
     multiple_sample_clustering@meta.data$GPTCelltype <- as.factor(res[as.character(Idents(multiple_sample_clustering))])

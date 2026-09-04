@@ -1,5 +1,6 @@
-datainput_subclustering_multiple_conditionbased <- function(index_subclustering_multiple_conditionbased_input, index_subclustering_multiple_sample_normalization_method, index_m_subclustering_conditionbased1, index_m_subclustering_conditionbased2, index_m_subclustering_conditionbased3, index_m_subclustering_conditionbased4, index_m_subclustering_conditionbased5, index_m_subclustering_conditionbased6, index_m_subclustering_conditionbased7, index_m_subclustering_conditionbased8, index_m_subclustering_conditionbased9, index_m_subclustering_conditionbased10) {
+datainput_subclustering_multiple_conditionbased <- function(index_subclustering_multiple_conditionbased_input, index_subclustering_multiple_sample_normalization_method, index_m_subclustering_conditionbased1, index_m_subclustering_conditionbased2, index_m_subclustering_conditionbased3, index_m_subclustering_conditionbased4, index_m_subclustering_conditionbased5, index_m_subclustering_conditionbased6, index_m_subclustering_conditionbased7, index_m_subclustering_conditionbased8, index_m_subclustering_conditionbased9, index_m_subclustering_conditionbased10, index_m_subclustering_conditionbased_violin_dots = TRUE) {
   subclustering_multiple_sample_clustering_sample_based <- index_subclustering_multiple_conditionbased_input
+  violin_pt_size <- ifelse(isTRUE(as.logical(index_m_subclustering_conditionbased_violin_dots)), 1, 0)
   
   Idents(subclustering_multiple_sample_clustering_sample_based) <- "condition"
   subclustering_multiple_sample_clustering_sample_based <-subset(subclustering_multiple_sample_clustering_sample_based, idents = c(index_m_subclustering_conditionbased1, index_m_subclustering_conditionbased2))
@@ -27,7 +28,7 @@ datainput_subclustering_multiple_conditionbased <- function(index_subclustering_
   plots44 <- DotPlot(subclustering_multiple_sample_clustering_sample_based, features = rev(as.character(unique(top25_sub$gene))), group.by = index_m_subclustering_conditionbased8) + coord_flip() + theme(legend.position = 'right')
   }
   else if (index_m_subclustering_conditionbased7 == "VlnPlot"){
-  plots44 <- VlnPlot(subclustering_multiple_sample_clustering_sample_based, features = as.character(unique(top25_sub$gene)), ncol = 5, group.by = index_m_subclustering_conditionbased8)  + theme(legend.position = 'right')
+  plots44 <- VlnPlot(subclustering_multiple_sample_clustering_sample_based, features = as.character(unique(top25_sub$gene)), ncol = 5, group.by = index_m_subclustering_conditionbased8, pt.size = violin_pt_size)  + theme(legend.position = 'right')
     }
   else if (index_m_subclustering_conditionbased7 == "RidgePlot"){
   plots44 <- RidgePlot(subclustering_multiple_sample_clustering_sample_based, features = as.character(unique(top25_sub$gene)), ncol = 5, group.by = index_m_subclustering_conditionbased8)

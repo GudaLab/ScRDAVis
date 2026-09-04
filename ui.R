@@ -7,6 +7,32 @@ library(shinyjs)
 shinythemes::themeSelector()
 timeoutSeconds <- 86400
 
+# General-purpose OpenAI models available to GPTCelltype. Keep this shared
+# list in the UI so the main and subclustering selectors stay synchronized.
+gptcelltype_model_choices <- c(
+  "GPT-6 Astra (limited access)" = "gpt-6-astra",
+  "GPT-5.6 Sol" = "gpt-5.6-sol",
+  "GPT-5.6 Terra" = "gpt-5.6-terra",
+  "GPT-5.6 Luna" = "gpt-5.6-luna",
+  "GPT-5.5" = "gpt-5.5",
+  "GPT-5.4" = "gpt-5.4",
+  "GPT-5.4 Mini" = "gpt-5.4-mini",
+  "GPT-5.4 Nano" = "gpt-5.4-nano",
+  "GPT-5.2" = "gpt-5.2",
+  "GPT-5.1" = "gpt-5.1",
+  "GPT-5" = "gpt-5",
+  "GPT-5 Mini" = "gpt-5-mini",
+  "GPT-5 Nano" = "gpt-5-nano",
+  "GPT-4.1" = "gpt-4.1",
+  "GPT-4.1 Mini" = "gpt-4.1-mini",
+  "GPT-4 (legacy)" = "gpt-4",
+  "GPT-4 Turbo (legacy)" = "gpt-4-turbo",
+  "GPT-4o Mini" = "gpt-4o-mini",
+  "GPT-4o" = "gpt-4o",
+  "ChatGPT-4o latest" = "chatgpt-4o-latest",
+  "GPT-3.5 Turbo (legacy)" = "gpt-3.5-turbo"
+)
+
 inactivity <- sprintf("function idleTimer() {
 var t = setTimeout(logout, %s);
 window.onmousemove = resetTimer; // catches mouse movements
@@ -231,15 +257,18 @@ tags$head(
    sidebarPanel(id="multiple_sidebar",
     actionButton("info_btn1", "Help", icon = icon("info-circle"), style = "margin-top: 5px;", title = "File upload and Stats"),
                 
-     selectInput("multiple_sample_format", label = "Select Input format", choices = list("Cell ranger h5 format" = "h5", "Cellranger Matrix, Feature, Barcodes files" ="MFB", "Seurat object" = "seurat_object", "Matrix count file" = "matrix_count", "Example data to test the tool (C2_vs_P2 from GSE277476)"="exampledata" ), selected = "h5"),
+     selectInput("multiple_sample_format", label = "Select Input format", choices = list("Cell ranger h5 format" = "h5", "Cellranger Matrix, Feature, Barcodes files" ="MFB", "Seurat object" = "seurat_object", "Previously generated ScRDAVis Seurat object" = "saved_seurat_object", "Matrix count file" = "matrix_count", "Example data to test the tool (C2_vs_P2 from GSE277476)"="exampledata" ), selected = "h5"),
      
      #h3("Upload files"),
      fileInput("multiple_sample_file", label = "Upload multiple file(s) at once (eg: FILENAME1.h5 or FILENAME_1.h5)", multiple = T, accept =".h5"),
      fileInput("multiple_sample_file_mfb", label = "Upload multiple files at once (eg: FILENAME_matrix.mtx.gz, FILENAME_features.tsv, FILENAME_barcodes.tsv.gz)", multiple = T, accept =".gz"),
      fileInput("multiple_sample_file_rds", label = "Upload single seurat object file with single or multiple samples", multiple = F, accept=c(".rds", "RDS")),
+     fileInput("multiple_sample_saved_seurat_object_rds", label = "Upload a previously generated ScRDAVis Seurat object", multiple = F, accept=c(".rds", ".RDS", "RDS")),
+     uiOutput("saved_seurat_object_message"),
      fileInput("multiple_sample_file_txt", label = "Upload single matrix file with single or multiple samples (eg: FILENAME1.txt or FILENAME1.tsv)", multiple = F, accept=".txt"),
      numericInput("multiple_sample_cell", label="Include minimum number of cells expressing in gene", min = 0, max = 1000000, value = "0"),
      numericInput("multiple_sample_genes", label="Include minimum number of genes a cell must express", min = 0, max = 1000000, value = "0"),
+     selectInput("multiple_sample_violin_dots", label = "Show dots in violin plots", choices = c("Show" = "TRUE", "Hide" = "FALSE"), selected = "TRUE"),
     actionBttn("multiple_sample_submit", "Submit",  style = "unite",color = "primary" ),
      width = 3),
    mainPanel(id="multiple_main_menu",
@@ -369,6 +398,7 @@ tags$head(
            column(width =3, numericInput("multiple_sample_min_count", label = "Keep cells that are expressed at least this number of genes", value = 0)),
            column(width =3, numericInput("multiple_sample_max_count", label = "Exclude cell that expressed more than this number of genes", value = 7500)),
            column(width =3, numericInput("multiple_sample_max_mito_perc", label="Filter cells that have more than this percentage mitochondrial counts",  value = 5)),
+           column(width =3, selectInput("multiple_qc_violin_dots", label = "Show dots in violin plots", choices = c("Show" = "TRUE", "Hide" = "FALSE"), selected = "TRUE")),
            br(),
            br(),
            column(width =3, actionBttn("multiple_sample_qc_filtering", "Update filtered data",  style = "unite",color = "primary", icon = icon("download"))),
@@ -910,8 +940,27 @@ tabPanel(
   ),  
   fluidRow(   
     box(id = "m_celltype_box4",                      
-        column(6, selectInput("m_celltype5", label = "Select model", choices = c("gpt-5.2" = "gpt-5.2","gpt-5.1" = "gpt-5.1","gpt-5" = "gpt-5","gpt-5-mini" = "gpt-5-mini","gpt-5-nano" = "gpt-5-nano","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-5")),  
+        column(6, selectInput("m_celltype5", label = "Select model", choices = gptcelltype_model_choices, selected = "gpt-5")),  
         column(6, numericInput("m_celltype6", label = "Top gene numbers to predict cell type",  min = 1, max = 25, value = 10)),  
+        column(
+          12,
+          passwordInput(
+            "m_celltype_api_key",
+            label = "Your OpenAI API key (required for this run)",
+            value = "",
+            width = "100%",
+            placeholder = "Enter your own API key"
+          ),
+          tags$div(
+            class = "alert alert-info",
+            role = "note",
+            tags$strong("Private, per-run key: "),
+            "The key is sent only to OpenAI to authenticate this GPTCelltype analysis. ",
+            "It is cleared when the run completes or fails, which disables it for this app. ",
+            "It is not stored, reused for later analyses, or shared with other users. ",
+            "Clearing it here does not revoke the key in your OpenAI account."
+          )
+        ),
     ),
   ),
   fluidRow(   
@@ -991,6 +1040,7 @@ tabPanel(
         column(3, selectInput("m_clusterbased4", label = "group.by", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted"), selected = "seurat_clusters")),
         column(6, uiOutput("m_clusterbased_6")),
         column(3, selectInput("m_clusterbased5", label = "split.by", choices = c("None" = "NULL", "Condition" = "condition", "Samples" = "orig.ident"), selected = "NULL")),
+        column(3, selectInput("m_clusterbased_violin_dots", label = "Show dots in violin plots", choices = c("Show" = "TRUE", "Hide" = "FALSE"), selected = "TRUE")),
         br(),
         br(),
         column(3, actionBttn("multiple_sample_clusterbased", "Generate plots",  style = "unite",color = "primary", icon = icon("download"))),
@@ -1048,6 +1098,7 @@ tabPanel(
         column(3, selectInput("m_conditionbased7", label = "Plot type", choices = c("Dot Plot" = "Dot Plot", "Violin Plot" = "VlnPlot", "Ridge Plot"= "RidgePlot", "Feature Plot" = "FeaturePlot", "Volcano Plot" = "VolcanoPlot"), selected = "Dot Plot")),
         column(3, selectInput("m_conditionbased8", label = "group.by", choices = c("Condition" = "condition", "Samples" = "orig.ident"), selected = "condition")),
         column(6, selectInput("m_conditionbased9", label = "No. of features to display", choices = c("1" = 1, "2" = 2, "3"= 3, "4" = 4, "5" = 5, "6" = 6, "7" = 7, "8" = 8, "9" = 9, "10" = 10,"11" = 11, "12" = 12, "13"= 13, "14" = 14, "15" = 15, "16" = 16, "17" = 17, "18" = 18, "19" = 19, "20" = 20, "21" = 1, "22" = 22, "23"= 23, "24" = 24, "25" = 25, "List of gene names" = "gene_name_list"), selected = 3)),
+        column(3, selectInput("m_conditionbased_violin_dots", label = "Show dots in violin plots", choices = c("Show" = "TRUE", "Hide" = "FALSE"), selected = "TRUE")),
         column(6, textAreaInput("m_conditionbased10", label ="Enter your genes for ploting (eg: gene names separated by , )", value = "", placeholder = "KLK2,KLK3,CTSG,MS4A3,CLEC4OP,KDR", height = '400px')),
         #column(6, numericInput("m_conditionbased9", label = "No. of features to display",  min = 1, max = 50, value = 15)),
         br(),
@@ -1101,6 +1152,7 @@ tabPanel(
                  uiOutput("m_subclustering_3"),
 				 textInput("m_subclustering_4", label ="Type gene name to extract the cells eg: (FCN1) or (FCN1,PSAP)", value = "", width = NULL, placeholder = NULL),
 				 textInput("m_subclustering_5", label ="Type gene name to exclude the cells eg: (FCN1) or (FCN1,PSAP)", value = "", width = NULL, placeholder = NULL),
+                 selectInput("subclustering_multiple_sample_violin_dots", label = "Show dots in violin plots", choices = c("Show" = "TRUE", "Hide" = "FALSE"), selected = "TRUE"),
            
                  # uiOutput("m_subclustering_4"),
                  # uiOutput("m_subclustering_5"),
@@ -1416,8 +1468,27 @@ tabPanel(
                   ),  
                   fluidRow(   
                     box(id = "m_subclustering_celltype_box4",                      
-                        column(6, selectInput("m_subclustering_celltype5", label = "Select model", choices = c("gpt-5.2" = "gpt-5.2","gpt-5.1" = "gpt-5.1","gpt-5" = "gpt-5","gpt-5-mini" = "gpt-5-mini","gpt-5-nano" = "gpt-5-nano","gpt-4"="gpt-4","gpt-4-turbo"="gpt-4-turbo","gpt-4o-mini"="gpt-4o-mini","gpt-4o"="gpt-4o","chatgpt-4o-latest"="chatgpt-4o-latest","gpt-3.5-turbo"="gpt-3.5-turbo"), selected = "gpt-5")),  
+                        column(6, selectInput("m_subclustering_celltype5", label = "Select model", choices = gptcelltype_model_choices, selected = "gpt-5")),  
                         column(6, numericInput("m_subclustering_celltype6", label = "Top gene numbers to predict cell type",  min = 1, max = 25, value = 10)),  
+                        column(
+                          12,
+                          passwordInput(
+                            "m_subclustering_celltype_api_key",
+                            label = "Your OpenAI API key (required for this run)",
+                            value = "",
+                            width = "100%",
+                            placeholder = "Enter your own API key"
+                          ),
+                          tags$div(
+                            class = "alert alert-info",
+                            role = "note",
+                            tags$strong("Private, per-run key: "),
+                            "The key is sent only to OpenAI to authenticate this GPTCelltype analysis. ",
+                            "It is cleared when the run completes or fails, which disables it for this app. ",
+                            "It is not stored, reused for later analyses, or shared with other users. ",
+                            "Clearing it here does not revoke the key in your OpenAI account."
+                          )
+                        ),
                     ),
                   ),
                   fluidRow(   
@@ -1497,6 +1568,7 @@ tabPanel(
                         column(3, selectInput("m_subclustering_clusterbased4", label = "group.by", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted"), selected = "seurat_clusters")),
                         column(6, uiOutput("m_subclustering_clusterbased_6")),
                         column(3, selectInput("m_subclustering_clusterbased5", label = "split.by", choices = c("None" = "NULL", "Condition" = "condition", "Samples" = "orig.ident"), selected = "NULL")),
+                        column(3, selectInput("m_subclustering_clusterbased_violin_dots", label = "Show dots in violin plots", choices = c("Show" = "TRUE", "Hide" = "FALSE"), selected = "TRUE")),
                         br(),
                         br(),
                         column(3, actionBttn("subclustering_multiple_sample_clusterbased", "Generate plots",  style = "unite",color = "primary", icon = icon("download"))),
@@ -1555,6 +1627,7 @@ tabPanel(
                         column(3, selectInput("m_subclustering_conditionbased7", label = "Plot type", choices = c("Dot Plot" = "Dot Plot", "Violin Plot" = "VlnPlot", "Ridge Plot"= "RidgePlot", "Feature Plot" = "FeaturePlot", "Volcano Plot" = "VolcanoPlot"), selected = "Dot Plot")),
                         column(3, selectInput("m_subclustering_conditionbased8", label = "group.by", choices = c("Condition" = "condition", "Samples" = "orig.ident"), selected = "condition")),
                         column(6, selectInput("m_subclustering_conditionbased9", label = "No. of features to display", choices = c("1" = 1, "2" = 2, "3"= 3, "4" = 4, "5" = 5, "6" = 6, "7" = 7, "8" = 8, "9" = 9, "10" = 10,"11" = 11, "12" = 12, "13"= 13, "14" = 14, "15" = 15, "16" = 16, "17" = 17, "18" = 18, "19" = 19, "20" = 20, "21" = 1, "22" = 22, "23"= 23, "24" = 24, "25" = 25, "List of gene names" = "gene_name_list"), selected = 3)),
+                        column(3, selectInput("m_subclustering_conditionbased_violin_dots", label = "Show dots in violin plots", choices = c("Show" = "TRUE", "Hide" = "FALSE"), selected = "TRUE")),
                         column(6, textAreaInput("m_subclustering_conditionbased10", label ="Enter your genes for ploting (eg: gene names separated by , )", value = "", placeholder = "KLK2,KLK3,CTSG,MS4A3,CLEC4OP,KDR", height = '400px')),
                         br(),
                         column(3, actionBttn("subclustering_multiple_sample_conditionbased", "Submit",  style = "unite",color = "primary", icon = icon("download"))),
@@ -2693,9 +2766,9 @@ tabPanel(
      </ul>
     <li><strong>GPTCelltype:</strong></li>
       <ul>
-         <li>GPT Models: Utilizes various GPT models, including: GPT-5, GPT-5-mini, GPT-5-nano, GPT-4, GPT-4-turbo, GPT-4o-mini, GPT-4o, ChatGPT-4o-latest, GPT-3.5-turbo, GPT-3.5-turbo.</li>
+         <li>GPT Models: Includes current general-purpose models such as GPT-6 Astra (limited access), GPT-5.6 Sol, GPT-5.6 Terra, GPT-5.6 Luna, GPT-5.5, GPT-5.4, GPT-5.4 Mini, GPT-5.4 Nano, and GPT-4.1, along with earlier compatible models.</li>
          <li>Gene Requirements: Requires a minimum number of top genes for accurate prediction.</li>
-         <li>Availability: Available via the web platform. To use it locally, users need to update their API key by setting Sys.setenv(OPENAI_API_KEY = 'your_openai_API_key') in the global.R file.</li>
+         <li>API key: Select GPTCelltype and enter your own OpenAI API key in the password field. The key is used only for that analysis and cleared when the run completes or fails. It is not stored, reused, or shared with other users.</li>
       </ul>
   <li><strong>Own Cell Labels:</strong></li>
       <ul>
