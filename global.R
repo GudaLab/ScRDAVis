@@ -83,6 +83,7 @@ if (!require("hdWGCNA")) remotes::install_github("smorabit/hdWGCNA", upgrade = "
 if (!require("enrichR")) remotes::install_github("wjawaid/enrichR", upgrade = "never", dependencies = TRUE)
 source("scripts/PrctCellExpringGene.R")
 source("scripts/gptcelltype_with_key.R")
+source("scripts/celltype_summary.R")
 options(shiny.maxRequestSize=2000*1024^2)
 options(future.globals.maxSize= 925289600000)
 

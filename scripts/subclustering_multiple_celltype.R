@@ -69,7 +69,7 @@ datainput_subclustering_multiple_celltype <- function(index_subclustering_multip
     }
     
     plots40 <- build_annotation_dimplot(subclustering_multiple_sample_clustering, "sctype_classification")
-    return(list(data1 = subclustering_multiple_sample_clustering, data2 = unique(subclustering_multiple_sample_clustering@meta.data$seurat_clusters), data3 = unique(subclustering_multiple_sample_clustering@meta.data$sctype_classification), text_summary = 'sctype_classification', plot1 = plots40, data2 = sctype_scores))
+    return(finalize_celltype_result(list(data1 = subclustering_multiple_sample_clustering, data2 = unique(subclustering_multiple_sample_clustering@meta.data$seurat_clusters), data3 = unique(subclustering_multiple_sample_clustering@meta.data$sctype_classification), text_summary = 'sctype_classification', plot1 = plots40, data2 = sctype_scores), subclustering_multiple_sample_clustering, "sctype_classification", subclustering_multiple_sample_clustering_markers))
   }
   
   else if(index_m_subclustering_celltype1 == 2){
@@ -95,7 +95,7 @@ datainput_subclustering_multiple_celltype <- function(index_subclustering_multip
     plots40 <- build_annotation_dimplot(subclustering_multiple_sample_clustering, "singleR_labels")
     plots41 <- plotScoreHeatmap(Pred)
     plots42 <- plotDeltaDistribution(Pred)
-    return(list(data1 = subclustering_multiple_sample_clustering, data2 = unique(subclustering_multiple_sample_clustering@meta.data$seurat_clusters), data3 = unique(subclustering_multiple_sample_clustering@meta.data$singleR_labels), text_summary = 'singleR_labels', plot1 = plots40, data2 = Pred1, plot2 = plots41, plot3 = plots42))
+    return(finalize_celltype_result(list(data1 = subclustering_multiple_sample_clustering, data2 = unique(subclustering_multiple_sample_clustering@meta.data$seurat_clusters), data3 = unique(subclustering_multiple_sample_clustering@meta.data$singleR_labels), text_summary = 'singleR_labels', plot1 = plots40, data2 = Pred1, plot2 = plots41, plot3 = plots42), subclustering_multiple_sample_clustering, "singleR_labels", subclustering_multiple_sample_clustering_markers))
   }
   
   else if(index_m_subclustering_celltype1 == 3){
@@ -112,7 +112,7 @@ datainput_subclustering_multiple_celltype <- function(index_subclustering_multip
     
     # Visualize cell type annotation on UMAP
     plots40 <- build_annotation_dimplot(subclustering_multiple_sample_clustering, "GPTCelltype")
-    return(list(data1 = subclustering_multiple_sample_clustering, data2 = unique(subclustering_multiple_sample_clustering@meta.data$seurat_clusters), data3 = unique(subclustering_multiple_sample_clustering@meta.data$GPTCelltype), text_summary = 'GPTCelltype', plot1 = plots40))
+    return(finalize_celltype_result(list(data1 = subclustering_multiple_sample_clustering, data2 = unique(subclustering_multiple_sample_clustering@meta.data$seurat_clusters), data3 = unique(subclustering_multiple_sample_clustering@meta.data$GPTCelltype), text_summary = 'GPTCelltype', plot1 = plots40), subclustering_multiple_sample_clustering, "GPTCelltype", subclustering_multiple_sample_clustering_markers))
   }
   else if(index_m_subclustering_celltype1 == 4){
     cell_type <- index_m_subclustering_celltype7
@@ -120,7 +120,7 @@ datainput_subclustering_multiple_celltype <- function(index_subclustering_multip
     subclustering_multiple_sample_clustering@meta.data$cell_type <- as.factor(cell_type[as.character(Idents(subclustering_multiple_sample_clustering))])
     
     plots40 <- build_annotation_dimplot(subclustering_multiple_sample_clustering, "cell_type")
-    return(list(data1 = subclustering_multiple_sample_clustering, data2 = unique(subclustering_multiple_sample_clustering@meta.data$seurat_clusters), data3 = unique(subclustering_multiple_sample_clustering@meta.data$cell_type), text_summary = 'cell_type', plot1 = plots40))
+    return(finalize_celltype_result(list(data1 = subclustering_multiple_sample_clustering, data2 = unique(subclustering_multiple_sample_clustering@meta.data$seurat_clusters), data3 = unique(subclustering_multiple_sample_clustering@meta.data$cell_type), text_summary = 'cell_type', plot1 = plots40), subclustering_multiple_sample_clustering, "cell_type", subclustering_multiple_sample_clustering_markers))
     
   }
 }

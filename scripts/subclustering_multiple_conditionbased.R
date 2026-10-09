@@ -1,6 +1,22 @@
-datainput_subclustering_multiple_conditionbased <- function(index_subclustering_multiple_conditionbased_input, index_subclustering_multiple_sample_normalization_method, index_m_subclustering_conditionbased1, index_m_subclustering_conditionbased2, index_m_subclustering_conditionbased3, index_m_subclustering_conditionbased4, index_m_subclustering_conditionbased5, index_m_subclustering_conditionbased6, index_m_subclustering_conditionbased7, index_m_subclustering_conditionbased8, index_m_subclustering_conditionbased9, index_m_subclustering_conditionbased10, index_m_subclustering_conditionbased_violin_dots = TRUE) {
+datainput_subclustering_multiple_conditionbased <- function(index_subclustering_multiple_conditionbased_input, index_subclustering_multiple_sample_normalization_method, index_m_subclustering_conditionbased1, index_m_subclustering_conditionbased2, index_m_subclustering_conditionbased3, index_m_subclustering_conditionbased4, index_m_subclustering_conditionbased5, index_m_subclustering_conditionbased6, index_m_subclustering_conditionbased7, index_m_subclustering_conditionbased8, index_m_subclustering_conditionbased9, index_m_subclustering_conditionbased10, index_m_subclustering_conditionbased_violin_dots = TRUE, index_m_subclustering_conditionbased_cell_column = NULL, index_m_subclustering_conditionbased_cells = NULL) {
   subclustering_multiple_sample_clustering_sample_based <- index_subclustering_multiple_conditionbased_input
   violin_pt_size <- ifelse(isTRUE(as.logical(index_m_subclustering_conditionbased_violin_dots)), 1, 0)
+  # Optional: restrict the analysis to the selected cluster(s) / cell type(s).
+  # All cells are used when every group (or no valid group) is selected, as before.
+  if (!is.null(index_m_subclustering_conditionbased_cell_column) && isTRUE(index_m_subclustering_conditionbased_cell_column %in% colnames(subclustering_multiple_sample_clustering_sample_based@meta.data))) {
+    cell_groups <- as.character(subclustering_multiple_sample_clustering_sample_based@meta.data[[index_m_subclustering_conditionbased_cell_column]])
+    all_groups <- unique(cell_groups[!is.na(cell_groups)])
+    selected_groups <- intersect(as.character(index_m_subclustering_conditionbased_cells), all_groups)
+    if (length(selected_groups) > 0 && length(selected_groups) < length(all_groups)) {
+      subclustering_multiple_sample_clustering_sample_based <- subset(subclustering_multiple_sample_clustering_sample_based, cells = colnames(subclustering_multiple_sample_clustering_sample_based)[cell_groups %in% selected_groups])
+      cells_per_condition <- table(factor(as.character(subclustering_multiple_sample_clustering_sample_based@meta.data$condition), levels = c(index_m_subclustering_conditionbased1, index_m_subclustering_conditionbased2)))
+      if (any(cells_per_condition < 3)) {
+        stop(paste0("The selected cluster(s) / cell type(s) have fewer than 3 cells in one of the two conditions (",
+                    paste(names(cells_per_condition), as.integer(cells_per_condition), sep = ": ", collapse = ", "),
+                    "). Please select more clusters / cell types."))
+      }
+    }
+  }
   
   Idents(subclustering_multiple_sample_clustering_sample_based) <- "condition"
   subclustering_multiple_sample_clustering_sample_based <-subset(subclustering_multiple_sample_clustering_sample_based, idents = c(index_m_subclustering_conditionbased1, index_m_subclustering_conditionbased2))

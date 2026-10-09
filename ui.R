@@ -993,6 +993,28 @@ tabPanel(
     ),
   ),
   fluidRow(
+    box(id = "m_celltype_box11", status = "warning", width = 11,
+        solidHeader = F,
+        hr(),
+        column(
+          h3("Number of cells per cell type (assigned names)"),
+          downloadBttn(outputId = "download_m_celltype2_table", label = "Download as csv"),
+          withSpinner(type = 4, dataTableOutput("m_celltype2_table")),
+          br(),
+          hr(),
+          h3("Marker genes with the assigned cell type names"),
+          h5("Marker table from 'Identify markers in all clusters' with the cell type name of each cluster. Own labels, ScType and GPTCelltype name whole clusters; SingleR names single cells, so each cluster shows its most frequent SingleR label."),
+          downloadBttn(outputId = "download_m_celltype3_table", label = "Download as csv"),
+          withSpinner(type = 4, dataTableOutput("m_celltype3_table")),
+          br(),
+          hr(),
+          h3("Heatmap of top 5 marker genes per cluster, grouped by the assigned cell type names"),
+          actionBttn("download_m_celltype4_plot", "Download plot", style = "unite",color = "primary", icon = icon("download")),
+          withSpinner(type = 4, plotOutput("m_celltype4_plot",height = "900px")),
+          width = 11)
+    ),
+  ),
+  fluidRow(
     box(id = "m_celltype_box8",status = "warning", width = 11,
         solidHeader = F,
         hr(),
@@ -1085,6 +1107,8 @@ tabPanel(
         h3(" Differential expression analysis between two groups"),
         column(6, uiOutput("m_conditionbased_1")),
         column(6, uiOutput("m_conditionbased_2")),
+        column(6, selectInput("m_conditionbased_cellgroup", label = "Restrict the analysis to selected", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted"), selected = "seurat_clusters")),
+        column(6, uiOutput("m_conditionbased_cells_ui")),
         h3("Parameters to find the DEGs"), 
         column(3, numericInput("m_conditionbased3", label = "Minimal percentage of cells", min = 0.01, max = 0.99, value = 0.25)),
         column(3, numericInput("m_conditionbased4", label = "log fold change threshold", min = 0.01, max = 0.99, value = 0.25)),
@@ -1521,6 +1545,28 @@ tabPanel(
                     ),
                   ),
                   fluidRow(
+                    box(id = "m_subclustering_celltype_box11", status = "warning", width = 11,
+                        solidHeader = F,
+                        hr(),
+                        column(
+                          h3("Number of cells per cell type (assigned names)"),
+                          downloadBttn(outputId = "download_m_subclustering_celltype2_table", label = "Download as csv"),
+                          withSpinner(type = 4, dataTableOutput("m_subclustering_celltype2_table")),
+                          br(),
+                          hr(),
+                          h3("Marker genes with the assigned cell type names"),
+                          h5("Marker table from 'Identify markers in all clusters' with the cell type name of each cluster. Own labels, ScType and GPTCelltype name whole clusters; SingleR names single cells, so each cluster shows its most frequent SingleR label."),
+                          downloadBttn(outputId = "download_m_subclustering_celltype3_table", label = "Download as csv"),
+                          withSpinner(type = 4, dataTableOutput("m_subclustering_celltype3_table")),
+                          br(),
+                          hr(),
+                          h3("Heatmap of top 5 marker genes per cluster, grouped by the assigned cell type names"),
+                          actionBttn("download_m_subclustering_celltype4_plot", "Download plot", style = "unite",color = "primary", icon = icon("download")),
+                          withSpinner(type = 4, plotOutput("m_subclustering_celltype4_plot",height = "900px")),
+                          width = 11)
+                    ),
+                  ),
+                  fluidRow(
                     box(id = "m_subclustering_celltype_box8",status = "warning", width = 11,
                         solidHeader = F,
                         hr(),
@@ -1613,6 +1659,8 @@ tabPanel(
                         h3(" Differential expression analysis between two groups"),
                         column(6, uiOutput("m_subclustering_conditionbased_1")),
                         column(6, uiOutput("m_subclustering_conditionbased_2")),
+                        column(6, selectInput("m_subclustering_conditionbased_cellgroup", label = "Restrict the analysis to selected", choices = c("Seurat clusters" = "seurat_clusters", "Predicted or own label from previous methods" = "predicted"), selected = "seurat_clusters")),
+                        column(6, uiOutput("m_subclustering_conditionbased_cells_ui")),
                         h3("Parameters to find the DEGs"), 
                         column(3, numericInput("m_subclustering_conditionbased3", label = "Minimal percentage of cells", min = 0.01, max = 0.99, value = 0.25)),
                         column(3, numericInput("m_subclustering_conditionbased4", label = "log fold change threshold", min = 0.01, max = 0.99, value = 0.25)),
@@ -2790,6 +2838,7 @@ tabPanel(
       <ul>
          <li>Plot: Generates an image plot showing the predicted cell types <strong>(Fig. 1.7b,c)</strong>.</li>
          <li>Summary Table: Provides a summary table with the predicted cell types and associated scores <strong>(Fig. 1.7d)</strong>.</li>
+         <li>Cell type tables and heatmap: For every prediction method (including own labels), shows the number of cells per assigned cell type name, the marker gene table with the assigned names and a heatmap of the top 5 marker genes grouped by the assigned names (the marker table and heatmap need 'Identify markers in all clusters'). All three can be downloaded and are part of the bulk download.</li>
 		  <img src='images/1.7.jpg' width='800' height='475' alt=''/>
       </ul>
 </ul>
@@ -2809,7 +2858,7 @@ tabPanel(
   </li>
 <li><strong>Grouping and Splitting:</strong>
 	<ul>
-	<li>Group by: Users can organize the data by Seurat clusters or labels generated from previous cell type prediction steps.</li>
+	<li>Group by: Users can organize the data by Seurat clusters or labels generated from previous cell type prediction steps. The cluster selection list then shows the Seurat clusters or the predicted / own label names, and only the selected ones are plotted (Dot, Violin and Ridge plots).</li>
 	<li>Split by: If multiple samples are present, plots can be split by condition or sample to compare expression patterns across groups.</li>
 	</ul>
   </li>
@@ -2832,6 +2881,7 @@ tabPanel(
     <li><strong>Group Selection:</strong> 
 	<ul>
 	<li>Users can compare gene expression between two conditions by selecting one group per dropdown menu.</li>
+	<li>The comparison can be restricted to one or more Seurat clusters or predicted / own cell type labels. By default all of them are selected, so all cells are used.</li>
 	</ul>
 	</li>
     <li><strong>Customizable Parameters:</strong><ul>
